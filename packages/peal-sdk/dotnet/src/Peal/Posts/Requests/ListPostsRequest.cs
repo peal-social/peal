@@ -19,6 +19,9 @@ public record ListPostsRequest
     public string? Cursor { get; set; }
 
     [JsonIgnore]
+    public string? ExternalId { get; set; }
+
+    [JsonIgnore]
     public string? From { get; set; }
 
     [JsonIgnore]
@@ -50,6 +53,9 @@ public record ListPostsRequest
 
     [JsonIgnore]
     public string? To { get; set; }
+
+    [JsonIgnore]
+    public string? UpdatedSince { get; set; }
 
     /// <inheritdoc />
     public override string ToString()

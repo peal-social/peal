@@ -154,6 +154,15 @@ public record PostRefusal
     }
 
     /// <summary>
+    /// Create an instance of PostRefusal with <see cref="PostRefusal.PostExternalIdTaken"/>.
+    /// </summary>
+    public PostRefusal(PostRefusal.PostExternalIdTaken value)
+    {
+        Type = "PostExternalIdTaken";
+        Value = value.Value;
+    }
+
+    /// <summary>
     /// Discriminant value
     /// </summary>
     [JsonPropertyName("_tag")]
@@ -238,6 +247,11 @@ public record PostRefusal
     /// Returns true if <see cref="Type"/> is "QueueHasNoRoom"
     /// </summary>
     public bool IsQueueHasNoRoom => Type == "QueueHasNoRoom";
+
+    /// <summary>
+    /// Returns true if <see cref="Type"/> is "PostExternalIdTaken"
+    /// </summary>
+    public bool IsPostExternalIdTaken => Type == "PostExternalIdTaken";
 
     /// <summary>
     /// Returns the value as a <see cref="Peal.PostContentInvalidEncoded"/> if <see cref="Type"/> is 'PostContentInvalid', otherwise throws an exception.
@@ -374,6 +388,15 @@ public record PostRefusal
             ? (Peal.QueueHasNoRoomEncoded)Value!
             : throw new global::System.Exception("PostRefusal.Type is not 'QueueHasNoRoom'");
 
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.PostExternalIdTakenEncoded"/> if <see cref="Type"/> is 'PostExternalIdTaken', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'PostExternalIdTaken'.</exception>
+    public Peal.PostExternalIdTakenEncoded AsPostExternalIdTaken() =>
+        IsPostExternalIdTaken
+            ? (Peal.PostExternalIdTakenEncoded)Value!
+            : throw new global::System.Exception("PostRefusal.Type is not 'PostExternalIdTaken'");
+
     public T Match<T>(
         Func<Peal.PostContentInvalidEncoded, T> onPostContentInvalid,
         Func<Peal.UnknownChannelsEncoded, T> onUnknownChannels,
@@ -390,6 +413,7 @@ public record PostRefusal
         Func<Peal.SignatureNotFoundEncoded, T> onSignatureNotFound,
         Func<Peal.QueueNotFoundEncoded, T> onQueueNotFound,
         Func<Peal.QueueHasNoRoomEncoded, T> onQueueHasNoRoom,
+        Func<Peal.PostExternalIdTakenEncoded, T> onPostExternalIdTaken,
         Func<string, object?, T> onUnknown_
     )
     {
@@ -410,6 +434,7 @@ public record PostRefusal
             "SignatureNotFound" => onSignatureNotFound(AsSignatureNotFound()),
             "QueueNotFound" => onQueueNotFound(AsQueueNotFound()),
             "QueueHasNoRoom" => onQueueHasNoRoom(AsQueueHasNoRoom()),
+            "PostExternalIdTaken" => onPostExternalIdTaken(AsPostExternalIdTaken()),
             _ => onUnknown_(Type, Value),
         };
     }
@@ -430,6 +455,7 @@ public record PostRefusal
         Action<Peal.SignatureNotFoundEncoded> onSignatureNotFound,
         Action<Peal.QueueNotFoundEncoded> onQueueNotFound,
         Action<Peal.QueueHasNoRoomEncoded> onQueueHasNoRoom,
+        Action<Peal.PostExternalIdTakenEncoded> onPostExternalIdTaken,
         Action<string, object?> onUnknown_
     )
     {
@@ -479,6 +505,9 @@ public record PostRefusal
                 break;
             case "QueueHasNoRoom":
                 onQueueHasNoRoom(AsQueueHasNoRoom());
+                break;
+            case "PostExternalIdTaken":
+                onPostExternalIdTaken(AsPostExternalIdTaken());
                 break;
             default:
                 onUnknown_(Type, Value);
@@ -696,6 +725,20 @@ public record PostRefusal
         return false;
     }
 
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.PostExternalIdTakenEncoded"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsPostExternalIdTaken(out Peal.PostExternalIdTakenEncoded? value)
+    {
+        if (Type == "PostExternalIdTaken")
+        {
+            value = (Peal.PostExternalIdTakenEncoded)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
     public override string ToString() => JsonUtils.Serialize(this);
 
     public static implicit operator PostRefusal(PostRefusal.PostContentInvalid value) => new(value);
@@ -728,6 +771,9 @@ public record PostRefusal
     public static implicit operator PostRefusal(PostRefusal.QueueNotFound value) => new(value);
 
     public static implicit operator PostRefusal(PostRefusal.QueueHasNoRoom value) => new(value);
+
+    public static implicit operator PostRefusal(PostRefusal.PostExternalIdTaken value) =>
+        new(value);
 
     [Serializable]
     internal sealed class JsonConverter : JsonConverter<PostRefusal>
@@ -820,6 +866,10 @@ public record PostRefusal
                 ) ?? throw new JsonException("Failed to deserialize Peal.QueueNotFoundEncoded"),
                 "QueueHasNoRoom" => json.Deserialize<Peal.QueueHasNoRoomEncoded?>(options)
                     ?? throw new JsonException("Failed to deserialize Peal.QueueHasNoRoomEncoded"),
+                "PostExternalIdTaken" => json.Deserialize<Peal.PostExternalIdTakenEncoded?>(options)
+                    ?? throw new JsonException(
+                        "Failed to deserialize Peal.PostExternalIdTakenEncoded"
+                    ),
                 _ => json.Deserialize<object?>(options),
             };
             return new PostRefusal(discriminator, value);
@@ -849,6 +899,7 @@ public record PostRefusal
                     "SignatureNotFound" => JsonSerializer.SerializeToNode(value.Value, options),
                     "QueueNotFound" => JsonSerializer.SerializeToNode(value.Value, options),
                     "QueueHasNoRoom" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "PostExternalIdTaken" => JsonSerializer.SerializeToNode(value.Value, options),
                     _ => JsonSerializer.SerializeToNode(value.Value, options),
                 } ?? new JsonObject();
             json["_tag"] = value.Type;
@@ -1170,6 +1221,26 @@ public record PostRefusal
 
         public static implicit operator PostRefusal.QueueHasNoRoom(
             Peal.QueueHasNoRoomEncoded value
+        ) => new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for PostExternalIdTaken
+    /// </summary>
+    [Serializable]
+    public struct PostExternalIdTaken
+    {
+        public PostExternalIdTaken(Peal.PostExternalIdTakenEncoded value)
+        {
+            Value = value;
+        }
+
+        internal Peal.PostExternalIdTakenEncoded Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator PostRefusal.PostExternalIdTaken(
+            Peal.PostExternalIdTakenEncoded value
         ) => new(value);
     }
 }

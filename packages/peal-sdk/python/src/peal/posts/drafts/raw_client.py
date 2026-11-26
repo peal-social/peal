@@ -149,6 +149,7 @@ class RawDraftsClient:
         default_signatures: typing.Optional[bool] = OMIT,
         options: typing.Optional[typing.Sequence[ChannelOptions]] = OMIT,
         shorten_links: typing.Optional[bool] = OMIT,
+        external_id: typing.Optional[str] = OMIT,
         signature_id: typing.Optional[str] = OMIT,
         tag_ids: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -169,6 +170,8 @@ class RawDraftsClient:
         options : typing.Optional[typing.Sequence[ChannelOptions]]
 
         shorten_links : typing.Optional[bool]
+
+        external_id : typing.Optional[str]
 
         signature_id : typing.Optional[str]
 
@@ -199,6 +202,7 @@ class RawDraftsClient:
                     object_=options, annotation=typing.Sequence[ChannelOptions], direction="write"
                 ),
                 "shortenLinks": shorten_links,
+                "externalId": external_id,
                 "signatureId": signature_id,
                 "tagIds": tag_ids,
             },
@@ -250,6 +254,17 @@ class RawDraftsClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         typing.Any,
@@ -509,6 +524,7 @@ class AsyncRawDraftsClient:
         default_signatures: typing.Optional[bool] = OMIT,
         options: typing.Optional[typing.Sequence[ChannelOptions]] = OMIT,
         shorten_links: typing.Optional[bool] = OMIT,
+        external_id: typing.Optional[str] = OMIT,
         signature_id: typing.Optional[str] = OMIT,
         tag_ids: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -529,6 +545,8 @@ class AsyncRawDraftsClient:
         options : typing.Optional[typing.Sequence[ChannelOptions]]
 
         shorten_links : typing.Optional[bool]
+
+        external_id : typing.Optional[str]
 
         signature_id : typing.Optional[str]
 
@@ -559,6 +577,7 @@ class AsyncRawDraftsClient:
                     object_=options, annotation=typing.Sequence[ChannelOptions], direction="write"
                 ),
                 "shortenLinks": shorten_links,
+                "externalId": external_id,
                 "signatureId": signature_id,
                 "tagIds": tag_ids,
             },
@@ -610,6 +629,17 @@ class AsyncRawDraftsClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         typing.Any,

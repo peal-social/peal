@@ -21,10 +21,22 @@ class Post extends JsonSerializableType
     public PostContent $content;
 
     /**
+     * @var string $createdAt
+     */
+    #[JsonProperty('createdAt')]
+    public string $createdAt;
+
+    /**
      * @var ?PostOrigin $createdVia
      */
     #[JsonProperty('createdVia')]
     public ?PostOrigin $createdVia;
+
+    /**
+     * @var ?string $externalId
+     */
+    #[JsonProperty('externalId')]
+    public ?string $externalId;
 
     /**
      * @var string $id
@@ -99,6 +111,12 @@ class Post extends JsonSerializableType
     public array $targets;
 
     /**
+     * @var string $updatedAt
+     */
+    #[JsonProperty('updatedAt')]
+    public string $updatedAt;
+
+    /**
      * @var ?array<PostWarning> $warnings
      */
     #[JsonProperty('warnings'), ArrayType([PostWarning::class])]
@@ -107,13 +125,16 @@ class Post extends JsonSerializableType
     /**
      * @param array{
      *   content: PostContent,
+     *   createdAt: string,
      *   id: string,
      *   shortenLinks: bool,
      *   status: value-of<PostStatus>,
      *   tagIds: array<string>,
      *   targets: array<PostTarget>,
+     *   updatedAt: string,
      *   authorId?: ?string,
      *   createdVia?: ?PostOrigin,
+     *   externalId?: ?string,
      *   occurrence?: ?int,
      *   outcome?: ?value-of<PostOutcome>,
      *   queueId?: ?string,
@@ -129,7 +150,9 @@ class Post extends JsonSerializableType
     ) {
         $this->authorId = $values['authorId'] ?? null;
         $this->content = $values['content'];
+        $this->createdAt = $values['createdAt'];
         $this->createdVia = $values['createdVia'] ?? null;
+        $this->externalId = $values['externalId'] ?? null;
         $this->id = $values['id'];
         $this->occurrence = $values['occurrence'] ?? null;
         $this->outcome = $values['outcome'] ?? null;
@@ -142,6 +165,7 @@ class Post extends JsonSerializableType
         $this->status = $values['status'];
         $this->tagIds = $values['tagIds'];
         $this->targets = $values['targets'];
+        $this->updatedAt = $values['updatedAt'];
         $this->warnings = $values['warnings'] ?? null;
     }
 

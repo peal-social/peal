@@ -30,7 +30,11 @@ public final class Post {
 
     private final PostContent content;
 
+    private final String createdAt;
+
     private final Optional<PostOrigin> createdVia;
+
+    private final Optional<String> externalId;
 
     private final String id;
 
@@ -56,6 +60,8 @@ public final class Post {
 
     private final List<PostTarget> targets;
 
+    private final String updatedAt;
+
     private final Optional<List<PostWarning>> warnings;
 
     private final Map<String, Object> additionalProperties;
@@ -63,7 +69,9 @@ public final class Post {
     private Post(
             Optional<String> authorId,
             PostContent content,
+            String createdAt,
             Optional<PostOrigin> createdVia,
+            Optional<String> externalId,
             String id,
             Optional<Integer> occurrence,
             Optional<PostOutcome> outcome,
@@ -76,11 +84,14 @@ public final class Post {
             PostStatus status,
             List<String> tagIds,
             List<PostTarget> targets,
+            String updatedAt,
             Optional<List<PostWarning>> warnings,
             Map<String, Object> additionalProperties) {
         this.authorId = authorId;
         this.content = content;
+        this.createdAt = createdAt;
         this.createdVia = createdVia;
+        this.externalId = externalId;
         this.id = id;
         this.occurrence = occurrence;
         this.outcome = outcome;
@@ -93,6 +104,7 @@ public final class Post {
         this.status = status;
         this.tagIds = tagIds;
         this.targets = targets;
+        this.updatedAt = updatedAt;
         this.warnings = warnings;
         this.additionalProperties = additionalProperties;
     }
@@ -110,12 +122,25 @@ public final class Post {
         return content;
     }
 
+    @JsonProperty("createdAt")
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
     @JsonIgnore
     public Optional<PostOrigin> getCreatedVia() {
         if (createdVia == null) {
             return Optional.empty();
         }
         return createdVia;
+    }
+
+    @JsonIgnore
+    public Optional<String> getExternalId() {
+        if (externalId == null) {
+            return Optional.empty();
+        }
+        return externalId;
     }
 
     @JsonProperty("id")
@@ -199,6 +224,11 @@ public final class Post {
         return targets;
     }
 
+    @JsonProperty("updatedAt")
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
     @JsonProperty("warnings")
     public Optional<List<PostWarning>> getWarnings() {
         return warnings;
@@ -214,6 +244,12 @@ public final class Post {
     @JsonProperty("createdVia")
     private Optional<PostOrigin> _getCreatedVia() {
         return createdVia;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("externalId")
+    private Optional<String> _getExternalId() {
+        return externalId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
@@ -272,7 +308,9 @@ public final class Post {
     private boolean equalTo(Post other) {
         return authorId.equals(other.authorId)
                 && content.equals(other.content)
+                && createdAt.equals(other.createdAt)
                 && createdVia.equals(other.createdVia)
+                && externalId.equals(other.externalId)
                 && id.equals(other.id)
                 && occurrence.equals(other.occurrence)
                 && outcome.equals(other.outcome)
@@ -285,6 +323,7 @@ public final class Post {
                 && status.equals(other.status)
                 && tagIds.equals(other.tagIds)
                 && targets.equals(other.targets)
+                && updatedAt.equals(other.updatedAt)
                 && warnings.equals(other.warnings);
     }
 
@@ -293,7 +332,9 @@ public final class Post {
         return Objects.hash(
                 this.authorId,
                 this.content,
+                this.createdAt,
                 this.createdVia,
+                this.externalId,
                 this.id,
                 this.occurrence,
                 this.outcome,
@@ -306,6 +347,7 @@ public final class Post {
                 this.status,
                 this.tagIds,
                 this.targets,
+                this.updatedAt,
                 this.warnings);
     }
 
@@ -319,9 +361,13 @@ public final class Post {
     }
 
     public interface ContentStage {
-        IdStage content(@NotNull PostContent content);
+        CreatedAtStage content(@NotNull PostContent content);
 
         Builder from(Post other);
+    }
+
+    public interface CreatedAtStage {
+        IdStage createdAt(@NotNull String createdAt);
     }
 
     public interface IdStage {
@@ -333,7 +379,11 @@ public final class Post {
     }
 
     public interface StatusStage {
-        _FinalStage status(@NotNull PostStatus status);
+        UpdatedAtStage status(@NotNull PostStatus status);
+    }
+
+    public interface UpdatedAtStage {
+        _FinalStage updatedAt(@NotNull String updatedAt);
     }
 
     public interface _FinalStage {
@@ -354,6 +404,12 @@ public final class Post {
         _FinalStage createdVia(PostOrigin createdVia);
 
         _FinalStage createdVia(Nullable<PostOrigin> createdVia);
+
+        _FinalStage externalId(Optional<String> externalId);
+
+        _FinalStage externalId(String externalId);
+
+        _FinalStage externalId(Nullable<String> externalId);
 
         _FinalStage occurrence(Optional<Integer> occurrence);
 
@@ -415,14 +471,25 @@ public final class Post {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static final class Builder implements ContentStage, IdStage, ShortenLinksStage, StatusStage, _FinalStage {
+    public static final class Builder
+            implements ContentStage,
+                    CreatedAtStage,
+                    IdStage,
+                    ShortenLinksStage,
+                    StatusStage,
+                    UpdatedAtStage,
+                    _FinalStage {
         private PostContent content;
+
+        private String createdAt;
 
         private String id;
 
         private boolean shortenLinks;
 
         private PostStatus status;
+
+        private String updatedAt;
 
         private Optional<List<PostWarning>> warnings = Optional.empty();
 
@@ -444,6 +511,8 @@ public final class Post {
 
         private Optional<Integer> occurrence = Optional.empty();
 
+        private Optional<String> externalId = Optional.empty();
+
         private Optional<PostOrigin> createdVia = Optional.empty();
 
         private Optional<String> authorId = Optional.empty();
@@ -456,7 +525,9 @@ public final class Post {
         public Builder from(Post other) {
             authorId(other.getAuthorId());
             content(other.getContent());
+            createdAt(other.getCreatedAt());
             createdVia(other.getCreatedVia());
+            externalId(other.getExternalId());
             id(other.getId());
             occurrence(other.getOccurrence());
             outcome(other.getOutcome());
@@ -469,14 +540,22 @@ public final class Post {
             status(other.getStatus());
             tagIds(other.getTagIds());
             targets(other.getTargets());
+            updatedAt(other.getUpdatedAt());
             warnings(other.getWarnings());
             return this;
         }
 
         @java.lang.Override
         @JsonSetter("content")
-        public IdStage content(@NotNull PostContent content) {
+        public CreatedAtStage content(@NotNull PostContent content) {
             this.content = Objects.requireNonNull(content, "content must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("createdAt")
+        public IdStage createdAt(@NotNull String createdAt) {
+            this.createdAt = Objects.requireNonNull(createdAt, "createdAt must not be null");
             return this;
         }
 
@@ -496,8 +575,15 @@ public final class Post {
 
         @java.lang.Override
         @JsonSetter("status")
-        public _FinalStage status(@NotNull PostStatus status) {
+        public UpdatedAtStage status(@NotNull PostStatus status) {
             this.status = Objects.requireNonNull(status, "status must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("updatedAt")
+        public _FinalStage updatedAt(@NotNull String updatedAt) {
+            this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt must not be null");
             return this;
         }
 
@@ -738,6 +824,31 @@ public final class Post {
         }
 
         @java.lang.Override
+        public _FinalStage externalId(Nullable<String> externalId) {
+            if (externalId.isNull()) {
+                this.externalId = null;
+            } else if (externalId.isEmpty()) {
+                this.externalId = Optional.empty();
+            } else {
+                this.externalId = Optional.of(externalId.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage externalId(String externalId) {
+            this.externalId = Optional.ofNullable(externalId);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "externalId", nulls = Nulls.SKIP)
+        public _FinalStage externalId(Optional<String> externalId) {
+            this.externalId = externalId;
+            return this;
+        }
+
+        @java.lang.Override
         public _FinalStage createdVia(Nullable<PostOrigin> createdVia) {
             if (createdVia.isNull()) {
                 this.createdVia = null;
@@ -792,7 +903,9 @@ public final class Post {
             return new Post(
                     authorId,
                     content,
+                    createdAt,
                     createdVia,
+                    externalId,
                     id,
                     occurrence,
                     outcome,
@@ -805,6 +918,7 @@ public final class Post {
                     status,
                     tagIds,
                     targets,
+                    updatedAt,
                     warnings,
                     additionalProperties);
         }
@@ -813,7 +927,9 @@ public final class Post {
         private void putAdditionalPropertyFromJson(String key, Object value) {
             if (key.equalsIgnoreCase("authorId")
                     || key.equalsIgnoreCase("content")
+                    || key.equalsIgnoreCase("createdAt")
                     || key.equalsIgnoreCase("createdVia")
+                    || key.equalsIgnoreCase("externalId")
                     || key.equalsIgnoreCase("id")
                     || key.equalsIgnoreCase("occurrence")
                     || key.equalsIgnoreCase("outcome")
@@ -826,6 +942,7 @@ public final class Post {
                     || key.equalsIgnoreCase("status")
                     || key.equalsIgnoreCase("tagIds")
                     || key.equalsIgnoreCase("targets")
+                    || key.equalsIgnoreCase("updatedAt")
                     || key.equalsIgnoreCase("warnings")) {
                 return;
             }

@@ -75,6 +75,7 @@ class DraftsClient:
         default_signatures: typing.Optional[bool] = OMIT,
         options: typing.Optional[typing.Sequence[ChannelOptions]] = OMIT,
         shorten_links: typing.Optional[bool] = OMIT,
+        external_id: typing.Optional[str] = OMIT,
         signature_id: typing.Optional[str] = OMIT,
         tag_ids: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -95,6 +96,8 @@ class DraftsClient:
         options : typing.Optional[typing.Sequence[ChannelOptions]]
 
         shorten_links : typing.Optional[bool]
+
+        external_id : typing.Optional[str]
 
         signature_id : typing.Optional[str]
 
@@ -142,6 +145,7 @@ class DraftsClient:
             default_signatures=default_signatures,
             options=options,
             shorten_links=shorten_links,
+            external_id=external_id,
             signature_id=signature_id,
             tag_ids=tag_ids,
             request_options=request_options,
@@ -248,6 +252,7 @@ class AsyncDraftsClient:
         default_signatures: typing.Optional[bool] = OMIT,
         options: typing.Optional[typing.Sequence[ChannelOptions]] = OMIT,
         shorten_links: typing.Optional[bool] = OMIT,
+        external_id: typing.Optional[str] = OMIT,
         signature_id: typing.Optional[str] = OMIT,
         tag_ids: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -268,6 +273,8 @@ class AsyncDraftsClient:
         options : typing.Optional[typing.Sequence[ChannelOptions]]
 
         shorten_links : typing.Optional[bool]
+
+        external_id : typing.Optional[str]
 
         signature_id : typing.Optional[str]
 
@@ -323,6 +330,7 @@ class AsyncDraftsClient:
             default_signatures=default_signatures,
             options=options,
             shorten_links=shorten_links,
+            external_id=external_id,
             signature_id=signature_id,
             tag_ids=tag_ids,
             request_options=request_options,

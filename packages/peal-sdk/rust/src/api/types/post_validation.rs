@@ -9,6 +9,9 @@ pub struct PostValidation {
     pub channels: Vec<ChannelPreview>,
     #[serde(default)]
     pub duplicates: Vec<DuplicateOnChannel>,
+    #[serde(rename = "externalIdTakenBy")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub external_id_taken_by: Option<String>,
     #[serde(rename = "planLimit")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub plan_limit: Option<PlanShortfall>,
@@ -46,6 +49,7 @@ pub struct PostValidationBuilder {
     awaits_approval: Option<bool>,
     channels: Option<Vec<ChannelPreview>>,
     duplicates: Option<Vec<DuplicateOnChannel>>,
+    external_id_taken_by: Option<String>,
     plan_limit: Option<PlanShortfall>,
     queue_no_room: Option<QueueNoRoom>,
     queue_slot: Option<String>,
@@ -70,6 +74,11 @@ impl PostValidationBuilder {
 
     pub fn duplicates(mut self, value: Vec<DuplicateOnChannel>) -> Self {
         self.duplicates = Some(value);
+        self
+    }
+
+    pub fn external_id_taken_by(mut self, value: impl Into<String>) -> Self {
+        self.external_id_taken_by = Some(value.into());
         self
     }
 
@@ -138,6 +147,7 @@ impl PostValidationBuilder {
             duplicates: self
                 .duplicates
                 .ok_or_else(|| BuildError::missing_field("duplicates"))?,
+            external_id_taken_by: self.external_id_taken_by,
             plan_limit: self.plan_limit,
             queue_no_room: self.queue_no_room,
             queue_slot: self.queue_slot,

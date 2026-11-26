@@ -17,6 +17,8 @@ module Peal
 
       field :shorten_links, -> { Internal::Types::Boolean }, optional: true, nullable: false, api_name: "shortenLinks"
 
+      field :external_id, -> { String }, optional: true, nullable: true, api_name: "externalId"
+
       field :signature_id, -> { String }, optional: true, nullable: false, api_name: "signatureId"
 
       field :tag_ids, -> { Internal::Types::Array[String] }, optional: true, nullable: false, api_name: "tagIds"

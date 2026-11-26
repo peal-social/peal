@@ -21,6 +21,9 @@ class PostValidation(UniversalBaseModel):
     ]
     channels: typing.List[ChannelPreview]
     duplicates: typing.List[DuplicateOnChannel]
+    external_id_taken_by: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="externalIdTakenBy"), pydantic.Field(alias="externalIdTakenBy")
+    ] = None
     plan_limit: typing_extensions.Annotated[
         typing.Optional[PlanShortfall], FieldMetadata(alias="planLimit"), pydantic.Field(alias="planLimit")
     ] = None

@@ -5,7 +5,9 @@ import * as Peal from "../index.js";
 export interface Post {
     authorId: string | null;
     content: Peal.PostContent;
+    createdAt: string;
     createdVia: Peal.PostOrigin | null;
+    externalId: string | null;
     id: string;
     occurrence: number | null;
     outcome: Peal.PostOutcome | null;
@@ -18,5 +20,6 @@ export interface Post {
     status: Peal.PostStatus;
     tagIds: string[];
     targets: Peal.PostTarget[];
+    updatedAt: string;
     warnings?: Peal.PostWarning[] | undefined;
 }

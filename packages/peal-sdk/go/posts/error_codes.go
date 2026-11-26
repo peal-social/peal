@@ -34,13 +34,13 @@ var ErrorCodes internal.ErrorCodes = internal.ErrorCodes{
 			APIError: apiError,
 		}
 	},
-	422: func(apiError *core.APIError) error {
-		return &peal.UnprocessableEntityError{
+	409: func(apiError *core.APIError) error {
+		return &peal.ConflictError{
 			APIError: apiError,
 		}
 	},
-	409: func(apiError *core.APIError) error {
-		return &peal.ConflictError{
+	422: func(apiError *core.APIError) error {
+		return &peal.UnprocessableEntityError{
 			APIError: apiError,
 		}
 	},

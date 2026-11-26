@@ -25,6 +25,9 @@ class BulkPost(UniversalBaseModel):
     default_signatures: typing_extensions.Annotated[
         typing.Optional[bool], FieldMetadata(alias="defaultSignatures"), pydantic.Field(alias="defaultSignatures")
     ] = None
+    external_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="externalId"), pydantic.Field(alias="externalId")
+    ] = None
     options: typing.Optional[typing.List[ChannelOptions]] = None
     shorten_links: typing_extensions.Annotated[
         typing.Optional[bool], FieldMetadata(alias="shortenLinks"), pydantic.Field(alias="shortenLinks")

@@ -14,6 +14,9 @@ pub struct PostsListQueryRequest {
     pub created_via: Option<PostOriginVia>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cursor: Option<String>,
+    #[serde(rename = "externalId")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub external_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub from: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -39,6 +42,9 @@ pub struct PostsListQueryRequest {
     pub tag_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub to: Option<String>,
+    #[serde(rename = "updatedSince")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub updated_since: Option<String>,
 }
 
 impl PostsListQueryRequest {
@@ -54,6 +60,7 @@ pub struct PostsListQueryRequestBuilder {
     channel_id: Option<String>,
     created_via: Option<PostOriginVia>,
     cursor: Option<String>,
+    external_id: Option<String>,
     from: Option<String>,
     limit: Option<String>,
     outcome: Option<PostOutcome>,
@@ -65,6 +72,7 @@ pub struct PostsListQueryRequestBuilder {
     status: Option<PostStatus>,
     tag_id: Option<String>,
     to: Option<String>,
+    updated_since: Option<String>,
 }
 
 impl PostsListQueryRequestBuilder {
@@ -85,6 +93,11 @@ impl PostsListQueryRequestBuilder {
 
     pub fn cursor(mut self, value: impl Into<String>) -> Self {
         self.cursor = Some(value.into());
+        self
+    }
+
+    pub fn external_id(mut self, value: impl Into<String>) -> Self {
+        self.external_id = Some(value.into());
         self
     }
 
@@ -143,6 +156,11 @@ impl PostsListQueryRequestBuilder {
         self
     }
 
+    pub fn updated_since(mut self, value: impl Into<String>) -> Self {
+        self.updated_since = Some(value.into());
+        self
+    }
+
     /// Consumes the builder and constructs a [`PostsListQueryRequest`].
     pub fn build(self) -> Result<PostsListQueryRequest, BuildError> {
         Ok(PostsListQueryRequest {
@@ -150,6 +168,7 @@ impl PostsListQueryRequestBuilder {
             channel_id: self.channel_id,
             created_via: self.created_via,
             cursor: self.cursor,
+            external_id: self.external_id,
             from: self.from,
             limit: self.limit,
             outcome: self.outcome,
@@ -161,6 +180,7 @@ impl PostsListQueryRequestBuilder {
             status: self.status,
             tag_id: self.tag_id,
             to: self.to,
+            updated_since: self.updated_since,
         })
     }
 }

@@ -343,6 +343,29 @@ class PostRefusal_QueueHasNoRoom(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+class PostRefusal_PostExternalIdTaken(UniversalBaseModel):
+    type: typing_extensions.Annotated[
+        typing.Literal["PostExternalIdTaken"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
+    ] = "PostExternalIdTaken"
+    code: typing.Optional[str] = None
+    message: typing.Optional[str] = None
+    request_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="requestId"), pydantic.Field(alias="requestId")
+    ] = None
+    post_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="postId"), pydantic.Field(alias="postId")
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
 PostRefusal = typing_extensions.Annotated[
     typing.Union[
         PostRefusal_PostContentInvalid,
@@ -360,6 +383,7 @@ PostRefusal = typing_extensions.Annotated[
         PostRefusal_SignatureNotFound,
         PostRefusal_QueueNotFound,
         PostRefusal_QueueHasNoRoom,
+        PostRefusal_PostExternalIdTaken,
     ],
     pydantic.Field(discriminator="type"),
 ]

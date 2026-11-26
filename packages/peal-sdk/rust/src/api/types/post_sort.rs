@@ -7,6 +7,8 @@ pub enum PostSort {
     CreatedAsc,
     ScheduledDesc,
     ScheduledAsc,
+    UpdatedDesc,
+    UpdatedAsc,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -19,6 +21,8 @@ impl Serialize for PostSort {
             Self::CreatedAsc => serializer.serialize_str("createdAsc"),
             Self::ScheduledDesc => serializer.serialize_str("scheduledDesc"),
             Self::ScheduledAsc => serializer.serialize_str("scheduledAsc"),
+            Self::UpdatedDesc => serializer.serialize_str("updatedDesc"),
+            Self::UpdatedAsc => serializer.serialize_str("updatedAsc"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -32,6 +36,8 @@ impl<'de> Deserialize<'de> for PostSort {
             "createdAsc" => Ok(Self::CreatedAsc),
             "scheduledDesc" => Ok(Self::ScheduledDesc),
             "scheduledAsc" => Ok(Self::ScheduledAsc),
+            "updatedDesc" => Ok(Self::UpdatedDesc),
+            "updatedAsc" => Ok(Self::UpdatedAsc),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -44,6 +50,8 @@ impl fmt::Display for PostSort {
             Self::CreatedAsc => write!(f, "createdAsc"),
             Self::ScheduledDesc => write!(f, "scheduledDesc"),
             Self::ScheduledAsc => write!(f, "scheduledAsc"),
+            Self::UpdatedDesc => write!(f, "updatedDesc"),
+            Self::UpdatedAsc => write!(f, "updatedAsc"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

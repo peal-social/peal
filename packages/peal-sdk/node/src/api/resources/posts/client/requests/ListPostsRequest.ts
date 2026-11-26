@@ -11,6 +11,7 @@ export interface ListPostsRequest {
     channelId?: string;
     createdVia?: Peal.PostOriginVia;
     cursor?: string;
+    externalId?: string;
     from?: string;
     limit?: string;
     outcome?: Peal.PostOutcome;
@@ -22,4 +23,5 @@ export interface ListPostsRequest {
     status?: Peal.PostStatus;
     tagId?: string;
     to?: string;
+    updatedSince?: string;
 }

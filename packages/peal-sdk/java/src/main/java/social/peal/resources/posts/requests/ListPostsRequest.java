@@ -34,6 +34,8 @@ public final class ListPostsRequest {
 
     private final Optional<String> cursor;
 
+    private final Optional<String> externalId;
+
     private final Optional<String> from;
 
     private final Optional<String> limit;
@@ -56,6 +58,8 @@ public final class ListPostsRequest {
 
     private final Optional<String> to;
 
+    private final Optional<String> updatedSince;
+
     private final Map<String, Object> additionalProperties;
 
     private ListPostsRequest(
@@ -63,6 +67,7 @@ public final class ListPostsRequest {
             Optional<String> channelId,
             Optional<PostOriginVia> createdVia,
             Optional<String> cursor,
+            Optional<String> externalId,
             Optional<String> from,
             Optional<String> limit,
             Optional<PostOutcome> outcome,
@@ -74,11 +79,13 @@ public final class ListPostsRequest {
             Optional<PostStatus> status,
             Optional<String> tagId,
             Optional<String> to,
+            Optional<String> updatedSince,
             Map<String, Object> additionalProperties) {
         this.authorId = authorId;
         this.channelId = channelId;
         this.createdVia = createdVia;
         this.cursor = cursor;
+        this.externalId = externalId;
         this.from = from;
         this.limit = limit;
         this.outcome = outcome;
@@ -90,6 +97,7 @@ public final class ListPostsRequest {
         this.status = status;
         this.tagId = tagId;
         this.to = to;
+        this.updatedSince = updatedSince;
         this.additionalProperties = additionalProperties;
     }
 
@@ -111,6 +119,11 @@ public final class ListPostsRequest {
     @JsonProperty("cursor")
     public Optional<String> getCursor() {
         return cursor;
+    }
+
+    @JsonProperty("externalId")
+    public Optional<String> getExternalId() {
+        return externalId;
     }
 
     @JsonProperty("from")
@@ -168,6 +181,11 @@ public final class ListPostsRequest {
         return to;
     }
 
+    @JsonProperty("updatedSince")
+    public Optional<String> getUpdatedSince() {
+        return updatedSince;
+    }
+
     @java.lang.Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -184,6 +202,7 @@ public final class ListPostsRequest {
                 && channelId.equals(other.channelId)
                 && createdVia.equals(other.createdVia)
                 && cursor.equals(other.cursor)
+                && externalId.equals(other.externalId)
                 && from.equals(other.from)
                 && limit.equals(other.limit)
                 && outcome.equals(other.outcome)
@@ -194,7 +213,8 @@ public final class ListPostsRequest {
                 && sort.equals(other.sort)
                 && status.equals(other.status)
                 && tagId.equals(other.tagId)
-                && to.equals(other.to);
+                && to.equals(other.to)
+                && updatedSince.equals(other.updatedSince);
     }
 
     @java.lang.Override
@@ -204,6 +224,7 @@ public final class ListPostsRequest {
                 this.channelId,
                 this.createdVia,
                 this.cursor,
+                this.externalId,
                 this.from,
                 this.limit,
                 this.outcome,
@@ -214,7 +235,8 @@ public final class ListPostsRequest {
                 this.sort,
                 this.status,
                 this.tagId,
-                this.to);
+                this.to,
+                this.updatedSince);
     }
 
     @java.lang.Override
@@ -235,6 +257,8 @@ public final class ListPostsRequest {
         private Optional<PostOriginVia> createdVia = Optional.empty();
 
         private Optional<String> cursor = Optional.empty();
+
+        private Optional<String> externalId = Optional.empty();
 
         private Optional<String> from = Optional.empty();
 
@@ -258,6 +282,8 @@ public final class ListPostsRequest {
 
         private Optional<String> to = Optional.empty();
 
+        private Optional<String> updatedSince = Optional.empty();
+
         private Map<String, Object> additionalProperties = new HashMap<>();
 
         private Builder() {}
@@ -267,6 +293,7 @@ public final class ListPostsRequest {
             channelId(other.getChannelId());
             createdVia(other.getCreatedVia());
             cursor(other.getCursor());
+            externalId(other.getExternalId());
             from(other.getFrom());
             limit(other.getLimit());
             outcome(other.getOutcome());
@@ -278,6 +305,7 @@ public final class ListPostsRequest {
             status(other.getStatus());
             tagId(other.getTagId());
             to(other.getTo());
+            updatedSince(other.getUpdatedSince());
             return this;
         }
 
@@ -322,6 +350,17 @@ public final class ListPostsRequest {
 
         public Builder cursor(String cursor) {
             this.cursor = Optional.ofNullable(cursor);
+            return this;
+        }
+
+        @JsonSetter(value = "externalId", nulls = Nulls.SKIP)
+        public Builder externalId(Optional<String> externalId) {
+            this.externalId = externalId;
+            return this;
+        }
+
+        public Builder externalId(String externalId) {
+            this.externalId = Optional.ofNullable(externalId);
             return this;
         }
 
@@ -446,12 +485,24 @@ public final class ListPostsRequest {
             return this;
         }
 
+        @JsonSetter(value = "updatedSince", nulls = Nulls.SKIP)
+        public Builder updatedSince(Optional<String> updatedSince) {
+            this.updatedSince = updatedSince;
+            return this;
+        }
+
+        public Builder updatedSince(String updatedSince) {
+            this.updatedSince = Optional.ofNullable(updatedSince);
+            return this;
+        }
+
         public ListPostsRequest build() {
             return new ListPostsRequest(
                     authorId,
                     channelId,
                     createdVia,
                     cursor,
+                    externalId,
                     from,
                     limit,
                     outcome,
@@ -463,6 +514,7 @@ public final class ListPostsRequest {
                     status,
                     tagId,
                     to,
+                    updatedSince,
                     additionalProperties);
         }
 
@@ -472,6 +524,7 @@ public final class ListPostsRequest {
                     || key.equalsIgnoreCase("channelId")
                     || key.equalsIgnoreCase("createdVia")
                     || key.equalsIgnoreCase("cursor")
+                    || key.equalsIgnoreCase("externalId")
                     || key.equalsIgnoreCase("from")
                     || key.equalsIgnoreCase("limit")
                     || key.equalsIgnoreCase("outcome")
@@ -482,7 +535,8 @@ public final class ListPostsRequest {
                     || key.equalsIgnoreCase("sort")
                     || key.equalsIgnoreCase("status")
                     || key.equalsIgnoreCase("tagId")
-                    || key.equalsIgnoreCase("to")) {
+                    || key.equalsIgnoreCase("to")
+                    || key.equalsIgnoreCase("updatedSince")) {
                 return;
             }
             this.additionalProperties.put(key, value);

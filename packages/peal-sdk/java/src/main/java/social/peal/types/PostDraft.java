@@ -5,6 +5,7 @@ package social.peal.types;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,6 +19,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
+import social.peal.core.Nullable;
+import social.peal.core.NullableNonemptyFilter;
 import social.peal.core.ObjectMappers;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
@@ -35,6 +38,8 @@ public final class PostDraft {
 
     private final Optional<Boolean> shortenLinks;
 
+    private final Optional<String> externalId;
+
     private final Optional<String> signatureId;
 
     private final Optional<List<String>> tagIds;
@@ -48,6 +53,7 @@ public final class PostDraft {
             Optional<Boolean> defaultSignatures,
             Optional<List<ChannelOptions>> options,
             Optional<Boolean> shortenLinks,
+            Optional<String> externalId,
             Optional<String> signatureId,
             Optional<List<String>> tagIds,
             Map<String, Object> additionalProperties) {
@@ -57,6 +63,7 @@ public final class PostDraft {
         this.defaultSignatures = defaultSignatures;
         this.options = options;
         this.shortenLinks = shortenLinks;
+        this.externalId = externalId;
         this.signatureId = signatureId;
         this.tagIds = tagIds;
         this.additionalProperties = additionalProperties;
@@ -92,6 +99,14 @@ public final class PostDraft {
         return shortenLinks;
     }
 
+    @JsonIgnore
+    public Optional<String> getExternalId() {
+        if (externalId == null) {
+            return Optional.empty();
+        }
+        return externalId;
+    }
+
     @JsonProperty("signatureId")
     public Optional<String> getSignatureId() {
         return signatureId;
@@ -100,6 +115,12 @@ public final class PostDraft {
     @JsonProperty("tagIds")
     public Optional<List<String>> getTagIds() {
         return tagIds;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("externalId")
+    private Optional<String> _getExternalId() {
+        return externalId;
     }
 
     @java.lang.Override
@@ -120,6 +141,7 @@ public final class PostDraft {
                 && defaultSignatures.equals(other.defaultSignatures)
                 && options.equals(other.options)
                 && shortenLinks.equals(other.shortenLinks)
+                && externalId.equals(other.externalId)
                 && signatureId.equals(other.signatureId)
                 && tagIds.equals(other.tagIds);
     }
@@ -133,6 +155,7 @@ public final class PostDraft {
                 this.defaultSignatures,
                 this.options,
                 this.shortenLinks,
+                this.externalId,
                 this.signatureId,
                 this.tagIds);
     }
@@ -181,6 +204,12 @@ public final class PostDraft {
 
         _FinalStage shortenLinks(Boolean shortenLinks);
 
+        _FinalStage externalId(Optional<String> externalId);
+
+        _FinalStage externalId(String externalId);
+
+        _FinalStage externalId(Nullable<String> externalId);
+
         _FinalStage signatureId(Optional<String> signatureId);
 
         _FinalStage signatureId(String signatureId);
@@ -197,6 +226,8 @@ public final class PostDraft {
         private Optional<List<String>> tagIds = Optional.empty();
 
         private Optional<String> signatureId = Optional.empty();
+
+        private Optional<String> externalId = Optional.empty();
 
         private Optional<Boolean> shortenLinks = Optional.empty();
 
@@ -220,6 +251,7 @@ public final class PostDraft {
             defaultSignatures(other.getDefaultSignatures());
             options(other.getOptions());
             shortenLinks(other.getShortenLinks());
+            externalId(other.getExternalId());
             signatureId(other.getSignatureId());
             tagIds(other.getTagIds());
             return this;
@@ -255,6 +287,31 @@ public final class PostDraft {
         @JsonSetter(value = "signatureId", nulls = Nulls.SKIP)
         public _FinalStage signatureId(Optional<String> signatureId) {
             this.signatureId = signatureId;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage externalId(Nullable<String> externalId) {
+            if (externalId.isNull()) {
+                this.externalId = null;
+            } else if (externalId.isEmpty()) {
+                this.externalId = Optional.empty();
+            } else {
+                this.externalId = Optional.of(externalId.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage externalId(String externalId) {
+            this.externalId = Optional.ofNullable(externalId);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "externalId", nulls = Nulls.SKIP)
+        public _FinalStage externalId(Optional<String> externalId) {
+            this.externalId = externalId;
             return this;
         }
 
@@ -343,6 +400,7 @@ public final class PostDraft {
                     defaultSignatures,
                     options,
                     shortenLinks,
+                    externalId,
                     signatureId,
                     tagIds,
                     additionalProperties);
@@ -356,6 +414,7 @@ public final class PostDraft {
                     || key.equalsIgnoreCase("defaultSignatures")
                     || key.equalsIgnoreCase("options")
                     || key.equalsIgnoreCase("shortenLinks")
+                    || key.equalsIgnoreCase("externalId")
                     || key.equalsIgnoreCase("signatureId")
                     || key.equalsIgnoreCase("tagIds")) {
                 return;

@@ -24,6 +24,7 @@ class PostRefusal extends JsonSerializableType
      *   |'SignatureNotFound'
      *   |'QueueNotFound'
      *   |'QueueHasNoRoom'
+     *   |'PostExternalIdTaken'
      *   |'_unknown'
      * ) $type
      */
@@ -46,6 +47,7 @@ class PostRefusal extends JsonSerializableType
      *   |SignatureNotFoundEncoded
      *   |QueueNotFoundEncoded
      *   |QueueHasNoRoomEncoded
+     *   |PostExternalIdTakenEncoded
      *   |mixed
      * ) $value
      */
@@ -69,6 +71,7 @@ class PostRefusal extends JsonSerializableType
      *   |'SignatureNotFound'
      *   |'QueueNotFound'
      *   |'QueueHasNoRoom'
+     *   |'PostExternalIdTaken'
      *   |'_unknown'
      * ),
      *   value: (
@@ -87,6 +90,7 @@ class PostRefusal extends JsonSerializableType
      *   |SignatureNotFoundEncoded
      *   |QueueNotFoundEncoded
      *   |QueueHasNoRoomEncoded
+     *   |PostExternalIdTakenEncoded
      *   |mixed
      * ),
      * } $values
@@ -275,6 +279,18 @@ class PostRefusal extends JsonSerializableType
         return new PostRefusal([
             'type' => 'QueueHasNoRoom',
             'value' => $queueHasNoRoom,
+        ]);
+    }
+
+    /**
+     * @param PostExternalIdTakenEncoded $postExternalIdTaken
+     * @return PostRefusal
+     */
+    public static function postExternalIdTaken(PostExternalIdTakenEncoded $postExternalIdTaken): PostRefusal
+    {
+        return new PostRefusal([
+            'type' => 'PostExternalIdTaken',
+            'value' => $postExternalIdTaken,
         ]);
     }
 
@@ -609,6 +625,28 @@ class PostRefusal extends JsonSerializableType
     }
 
     /**
+     * @return bool
+     */
+    public function isPostExternalIdTaken(): bool
+    {
+        return $this->value instanceof PostExternalIdTakenEncoded && $this->type === 'PostExternalIdTaken';
+    }
+
+    /**
+     * @return PostExternalIdTakenEncoded
+     */
+    public function asPostExternalIdTaken(): PostExternalIdTakenEncoded
+    {
+        if (!($this->value instanceof PostExternalIdTakenEncoded && $this->type === 'PostExternalIdTaken')) {
+            throw new Exception(
+                "Expected PostExternalIdTaken; got " . $this->type . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
      * @return string
      */
     public function __toString(): string
@@ -686,6 +724,10 @@ class PostRefusal extends JsonSerializableType
                 break;
             case 'QueueHasNoRoom':
                 $value = $this->asQueueHasNoRoom()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'PostExternalIdTaken':
+                $value = $this->asPostExternalIdTaken()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
             case '_unknown':
@@ -768,6 +810,9 @@ class PostRefusal extends JsonSerializableType
                 break;
             case 'QueueHasNoRoom':
                 $args['value'] = QueueHasNoRoomEncoded::jsonDeserialize($data);
+                break;
+            case 'PostExternalIdTaken':
+                $args['value'] = PostExternalIdTakenEncoded::jsonDeserialize($data);
                 break;
             case '_unknown':
             default:

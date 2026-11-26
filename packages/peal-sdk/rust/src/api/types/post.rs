@@ -7,9 +7,15 @@ pub struct Post {
     pub author_id: Option<String>,
     #[serde(default)]
     pub content: PostContent,
+    #[serde(rename = "createdAt")]
+    #[serde(default)]
+    pub created_at: String,
     #[serde(rename = "createdVia")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub created_via: Option<PostOrigin>,
+    #[serde(rename = "externalId")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub external_id: Option<String>,
     #[serde(default)]
     pub id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -39,6 +45,9 @@ pub struct Post {
     pub tag_ids: Vec<String>,
     #[serde(default)]
     pub targets: Vec<PostTarget>,
+    #[serde(rename = "updatedAt")]
+    #[serde(default)]
+    pub updated_at: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub warnings: Option<Vec<PostWarning>>,
 }
@@ -54,7 +63,9 @@ impl Post {
 pub struct PostBuilder {
     author_id: Option<String>,
     content: Option<PostContent>,
+    created_at: Option<String>,
     created_via: Option<PostOrigin>,
+    external_id: Option<String>,
     id: Option<String>,
     occurrence: Option<i64>,
     outcome: Option<PostOutcome>,
@@ -67,6 +78,7 @@ pub struct PostBuilder {
     status: Option<PostStatus>,
     tag_ids: Option<Vec<String>>,
     targets: Option<Vec<PostTarget>>,
+    updated_at: Option<String>,
     warnings: Option<Vec<PostWarning>>,
 }
 
@@ -81,8 +93,18 @@ impl PostBuilder {
         self
     }
 
+    pub fn created_at(mut self, value: impl Into<String>) -> Self {
+        self.created_at = Some(value.into());
+        self
+    }
+
     pub fn created_via(mut self, value: PostOrigin) -> Self {
         self.created_via = Some(value);
+        self
+    }
+
+    pub fn external_id(mut self, value: impl Into<String>) -> Self {
+        self.external_id = Some(value.into());
         self
     }
 
@@ -146,6 +168,11 @@ impl PostBuilder {
         self
     }
 
+    pub fn updated_at(mut self, value: impl Into<String>) -> Self {
+        self.updated_at = Some(value.into());
+        self
+    }
+
     pub fn warnings(mut self, value: Vec<PostWarning>) -> Self {
         self.warnings = Some(value);
         self
@@ -154,18 +181,24 @@ impl PostBuilder {
     /// Consumes the builder and constructs a [`Post`].
     /// This method will fail if any of the following fields are not set:
     /// - [`content`](PostBuilder::content)
+    /// - [`created_at`](PostBuilder::created_at)
     /// - [`id`](PostBuilder::id)
     /// - [`shorten_links`](PostBuilder::shorten_links)
     /// - [`status`](PostBuilder::status)
     /// - [`tag_ids`](PostBuilder::tag_ids)
     /// - [`targets`](PostBuilder::targets)
+    /// - [`updated_at`](PostBuilder::updated_at)
     pub fn build(self) -> Result<Post, BuildError> {
         Ok(Post {
             author_id: self.author_id,
             content: self
                 .content
                 .ok_or_else(|| BuildError::missing_field("content"))?,
+            created_at: self
+                .created_at
+                .ok_or_else(|| BuildError::missing_field("created_at"))?,
             created_via: self.created_via,
+            external_id: self.external_id,
             id: self.id.ok_or_else(|| BuildError::missing_field("id"))?,
             occurrence: self.occurrence,
             outcome: self.outcome,
@@ -186,6 +219,9 @@ impl PostBuilder {
             targets: self
                 .targets
                 .ok_or_else(|| BuildError::missing_field("targets"))?,
+            updated_at: self
+                .updated_at
+                .ok_or_else(|| BuildError::missing_field("updated_at"))?,
             warnings: self.warnings,
         })
     }

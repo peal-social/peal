@@ -222,11 +222,13 @@ public class LeaveOutRestTest : BaseMockServerTest
                 },
                 "text": "text"
               },
+              "createdAt": "createdAt",
               "createdVia": {
                 "id": "id",
                 "name": "name",
                 "via": "web"
               },
+              "externalId": "externalId",
               "id": "id",
               "occurrence": 1,
               "outcome": "published",
@@ -354,6 +356,7 @@ public class LeaveOutRestTest : BaseMockServerTest
                   "unconfirmedReason": "noResponse"
                 }
               ],
+              "updatedAt": "updatedAt",
               "warnings": [
                 {
                   "_tag": "channelsDropped",
@@ -443,11 +446,13 @@ public class LeaveOutRestTest : BaseMockServerTest
                 },
                 "text": "text"
               },
+              "createdAt": "createdAt",
               "createdVia": {
                 "id": "id",
                 "name": "name",
                 "via": "web"
               },
+              "externalId": "externalId",
               "id": "id",
               "occurrence": 1,
               "outcome": "published",
@@ -498,6 +503,7 @@ public class LeaveOutRestTest : BaseMockServerTest
                   "unconfirmedReason": "noResponse"
                 }
               ],
+              "updatedAt": "updatedAt",
               "warnings": [
                 {
                   "_tag": "channelsDropped",

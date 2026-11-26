@@ -38,6 +38,8 @@ module Peal
       member -> { Peal::Types::QueueNotFoundEncoded }, key: "QueueNotFound"
 
       member -> { Peal::Types::QueueHasNoRoomEncoded }, key: "QueueHasNoRoom"
+
+      member -> { Peal::Types::PostExternalIDTakenEncoded }, key: "PostExternalIdTaken"
     end
   end
 end

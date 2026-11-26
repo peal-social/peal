@@ -222,11 +222,13 @@ public class CancelTest : BaseMockServerTest
                 },
                 "text": "text"
               },
+              "createdAt": "createdAt",
               "createdVia": {
                 "id": "id",
                 "name": "name",
                 "via": "web"
               },
+              "externalId": "externalId",
               "id": "id",
               "occurrence": 1,
               "outcome": "published",
@@ -354,6 +356,7 @@ public class CancelTest : BaseMockServerTest
                   "unconfirmedReason": "noResponse"
                 }
               ],
+              "updatedAt": "updatedAt",
               "warnings": [
                 {
                   "_tag": "channelsDropped",
@@ -441,11 +444,13 @@ public class CancelTest : BaseMockServerTest
                 },
                 "text": "text"
               },
+              "createdAt": "createdAt",
               "createdVia": {
                 "id": "id",
                 "name": "name",
                 "via": "web"
               },
+              "externalId": "externalId",
               "id": "id",
               "occurrence": 1,
               "outcome": "published",
@@ -496,6 +501,7 @@ public class CancelTest : BaseMockServerTest
                   "unconfirmedReason": "noResponse"
                 }
               ],
+              "updatedAt": "updatedAt",
               "warnings": [
                 {
                   "_tag": "channelsDropped",

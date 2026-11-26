@@ -16,6 +16,9 @@ pub struct PostToValidate {
     #[serde(rename = "defaultSignatures")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub default_signatures: Option<bool>,
+    #[serde(rename = "externalId")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub external_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options: Option<Vec<ChannelOptions>>,
     #[serde(rename = "shortenLinks")]
@@ -42,6 +45,7 @@ pub struct PostToValidateBuilder {
     channel_sets: Option<Vec<String>>,
     content: Option<PostContent>,
     default_signatures: Option<bool>,
+    external_id: Option<String>,
     options: Option<Vec<ChannelOptions>>,
     shorten_links: Option<bool>,
     signature_id: Option<String>,
@@ -71,6 +75,11 @@ impl PostToValidateBuilder {
 
     pub fn default_signatures(mut self, value: bool) -> Self {
         self.default_signatures = Some(value);
+        self
+    }
+
+    pub fn external_id(mut self, value: impl Into<String>) -> Self {
+        self.external_id = Some(value.into());
         self
     }
 
@@ -109,6 +118,7 @@ impl PostToValidateBuilder {
                 .content
                 .ok_or_else(|| BuildError::missing_field("content"))?,
             default_signatures: self.default_signatures,
+            external_id: self.external_id,
             options: self.options,
             shorten_links: self.shorten_links,
             signature_id: self.signature_id,

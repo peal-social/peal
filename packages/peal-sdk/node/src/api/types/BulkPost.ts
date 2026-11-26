@@ -8,6 +8,7 @@ export interface BulkPost {
     channelSets?: string[] | undefined;
     content: Peal.PostContent;
     defaultSignatures?: boolean | undefined;
+    externalId?: string | undefined;
     options?: Peal.ChannelOptions[] | undefined;
     shortenLinks?: boolean | undefined;
     signatureId?: string | undefined;

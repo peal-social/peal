@@ -21,6 +21,9 @@ public record PostValidation : IJsonOnDeserialized
     public IEnumerable<DuplicateOnChannel> Duplicates { get; set; } =
         new List<DuplicateOnChannel>();
 
+    [JsonPropertyName("externalIdTakenBy")]
+    public string? ExternalIdTakenBy { get; set; }
+
     [JsonPropertyName("planLimit")]
     public PlanShortfall? PlanLimit { get; set; }
 

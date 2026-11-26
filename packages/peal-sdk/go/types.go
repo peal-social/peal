@@ -45272,26 +45272,30 @@ func (p *PollCapabilitiesDurationMinutes) String() string {
 var (
 	postFieldAuthorID     = big.NewInt(1 << 0)
 	postFieldContent      = big.NewInt(1 << 1)
-	postFieldCreatedVia   = big.NewInt(1 << 2)
-	postFieldID           = big.NewInt(1 << 3)
-	postFieldOccurrence   = big.NewInt(1 << 4)
-	postFieldOutcome      = big.NewInt(1 << 5)
-	postFieldQueueID      = big.NewInt(1 << 6)
-	postFieldRecyclingID  = big.NewInt(1 << 7)
-	postFieldSchedule     = big.NewInt(1 << 8)
-	postFieldScheduledBy  = big.NewInt(1 << 9)
-	postFieldScheduledVia = big.NewInt(1 << 10)
-	postFieldShortenLinks = big.NewInt(1 << 11)
-	postFieldStatus       = big.NewInt(1 << 12)
-	postFieldTagIDs       = big.NewInt(1 << 13)
-	postFieldTargets      = big.NewInt(1 << 14)
-	postFieldWarnings     = big.NewInt(1 << 15)
+	postFieldCreatedAt    = big.NewInt(1 << 2)
+	postFieldCreatedVia   = big.NewInt(1 << 3)
+	postFieldExternalID   = big.NewInt(1 << 4)
+	postFieldID           = big.NewInt(1 << 5)
+	postFieldOccurrence   = big.NewInt(1 << 6)
+	postFieldOutcome      = big.NewInt(1 << 7)
+	postFieldQueueID      = big.NewInt(1 << 8)
+	postFieldRecyclingID  = big.NewInt(1 << 9)
+	postFieldSchedule     = big.NewInt(1 << 10)
+	postFieldScheduledBy  = big.NewInt(1 << 11)
+	postFieldScheduledVia = big.NewInt(1 << 12)
+	postFieldShortenLinks = big.NewInt(1 << 13)
+	postFieldStatus       = big.NewInt(1 << 14)
+	postFieldTagIDs       = big.NewInt(1 << 15)
+	postFieldTargets      = big.NewInt(1 << 16)
+	postFieldUpdatedAt    = big.NewInt(1 << 17)
+	postFieldWarnings     = big.NewInt(1 << 18)
 )
 
 // postNullableFields maps the wire names of Post's nullable fields (required or optional) to their field bits.
 var postNullableFields = map[string]*big.Int{
 	"authorId":     postFieldAuthorID,
 	"createdVia":   postFieldCreatedVia,
+	"externalId":   postFieldExternalID,
 	"occurrence":   postFieldOccurrence,
 	"outcome":      postFieldOutcome,
 	"queueId":      postFieldQueueID,
@@ -45304,7 +45308,9 @@ var postNullableFields = map[string]*big.Int{
 type Post struct {
 	AuthorID     *string        `json:"authorId,omitempty" url:"authorId,omitempty"`
 	Content      *PostContent   `json:"content" url:"content"`
+	CreatedAt    string         `json:"createdAt" url:"createdAt"`
 	CreatedVia   *PostOrigin    `json:"createdVia,omitempty" url:"createdVia,omitempty"`
+	ExternalID   *string        `json:"externalId,omitempty" url:"externalId,omitempty"`
 	ID           string         `json:"id" url:"id"`
 	Occurrence   *int           `json:"occurrence,omitempty" url:"occurrence,omitempty"`
 	Outcome      *PostOutcome   `json:"outcome,omitempty" url:"outcome,omitempty"`
@@ -45317,6 +45323,7 @@ type Post struct {
 	Status       PostStatus     `json:"status" url:"status"`
 	TagIDs       []string       `json:"tagIds" url:"tagIds"`
 	Targets      []*PostTarget  `json:"targets" url:"targets"`
+	UpdatedAt    string         `json:"updatedAt" url:"updatedAt"`
 	Warnings     []*PostWarning `json:"warnings,omitempty" url:"warnings,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -45340,11 +45347,25 @@ func (p *Post) GetContent() *PostContent {
 	return p.Content
 }
 
+func (p *Post) GetCreatedAt() string {
+	if p == nil {
+		return ""
+	}
+	return p.CreatedAt
+}
+
 func (p *Post) GetCreatedVia() *PostOrigin {
 	if p == nil {
 		return nil
 	}
 	return p.CreatedVia
+}
+
+func (p *Post) GetExternalID() *string {
+	if p == nil {
+		return nil
+	}
+	return p.ExternalID
 }
 
 func (p *Post) GetID() string {
@@ -45431,6 +45452,13 @@ func (p *Post) GetTargets() []*PostTarget {
 	return p.Targets
 }
 
+func (p *Post) GetUpdatedAt() string {
+	if p == nil {
+		return ""
+	}
+	return p.UpdatedAt
+}
+
 func (p *Post) GetWarnings() []*PostWarning {
 	if p == nil {
 		return nil
@@ -45468,11 +45496,25 @@ func (p *Post) SetContent(content *PostContent) {
 	p.require(postFieldContent)
 }
 
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *Post) SetCreatedAt(createdAt string) {
+	p.CreatedAt = createdAt
+	p.require(postFieldCreatedAt)
+}
+
 // SetCreatedVia sets the CreatedVia field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (p *Post) SetCreatedVia(createdVia *PostOrigin) {
 	p.CreatedVia = createdVia
 	p.require(postFieldCreatedVia)
+}
+
+// SetExternalID sets the ExternalID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *Post) SetExternalID(externalID *string) {
+	p.ExternalID = externalID
+	p.require(postFieldExternalID)
 }
 
 // SetID sets the ID field and marks it as non-optional;
@@ -45557,6 +45599,13 @@ func (p *Post) SetTagIDs(tagIDs []string) {
 func (p *Post) SetTargets(targets []*PostTarget) {
 	p.Targets = targets
 	p.require(postFieldTargets)
+}
+
+// SetUpdatedAt sets the UpdatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *Post) SetUpdatedAt(updatedAt string) {
+	p.UpdatedAt = updatedAt
+	p.require(postFieldUpdatedAt)
 }
 
 // SetWarnings sets the Warnings field and marks it as non-optional;
@@ -45784,9 +45833,15 @@ var (
 	postDraftFieldDefaultSignatures = big.NewInt(1 << 3)
 	postDraftFieldOptions           = big.NewInt(1 << 4)
 	postDraftFieldShortenLinks      = big.NewInt(1 << 5)
-	postDraftFieldSignatureID       = big.NewInt(1 << 6)
-	postDraftFieldTagIDs            = big.NewInt(1 << 7)
+	postDraftFieldExternalID        = big.NewInt(1 << 6)
+	postDraftFieldSignatureID       = big.NewInt(1 << 7)
+	postDraftFieldTagIDs            = big.NewInt(1 << 8)
 )
+
+// postDraftNullableFields maps the wire names of PostDraft's nullable fields (required or optional) to their field bits.
+var postDraftNullableFields = map[string]*big.Int{
+	"externalId": postDraftFieldExternalID,
+}
 
 type PostDraft struct {
 	ChannelIDs        []string          `json:"channelIds" url:"channelIds"`
@@ -45795,6 +45850,7 @@ type PostDraft struct {
 	DefaultSignatures *bool             `json:"defaultSignatures,omitempty" url:"defaultSignatures,omitempty"`
 	Options           []*ChannelOptions `json:"options,omitempty" url:"options,omitempty"`
 	ShortenLinks      *bool             `json:"shortenLinks,omitempty" url:"shortenLinks,omitempty"`
+	ExternalID        *string           `json:"externalId,omitempty" url:"externalId,omitempty"`
 	SignatureID       *string           `json:"signatureId,omitempty" url:"signatureId,omitempty"`
 	TagIDs            []string          `json:"tagIds,omitempty" url:"tagIds,omitempty"`
 
@@ -45845,6 +45901,13 @@ func (p *PostDraft) GetShortenLinks() *bool {
 		return nil
 	}
 	return p.ShortenLinks
+}
+
+func (p *PostDraft) GetExternalID() *string {
+	if p == nil {
+		return nil
+	}
+	return p.ExternalID
 }
 
 func (p *PostDraft) GetSignatureID() *string {
@@ -45919,6 +45982,13 @@ func (p *PostDraft) SetShortenLinks(shortenLinks *bool) {
 	p.require(postDraftFieldShortenLinks)
 }
 
+// SetExternalID sets the ExternalID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PostDraft) SetExternalID(externalID *string) {
+	p.ExternalID = externalID
+	p.require(postDraftFieldExternalID)
+}
+
 // SetSignatureID sets the SignatureID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (p *PostDraft) SetSignatureID(signatureID *string) {
@@ -45945,6 +46015,13 @@ func (p *PostDraft) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	p.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, postDraftNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		p.require(presentFields)
+	}
 	p.rawJSON = json.RawMessage(data)
 	return nil
 }

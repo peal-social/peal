@@ -18,6 +18,9 @@ pub struct PostDraft {
     #[serde(rename = "shortenLinks")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub shorten_links: Option<bool>,
+    #[serde(rename = "externalId")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub external_id: Option<String>,
     #[serde(rename = "signatureId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub signature_id: Option<String>,
@@ -41,6 +44,7 @@ pub struct PostDraftBuilder {
     default_signatures: Option<bool>,
     options: Option<Vec<ChannelOptions>>,
     shorten_links: Option<bool>,
+    external_id: Option<String>,
     signature_id: Option<String>,
     tag_ids: Option<Vec<String>>,
 }
@@ -76,6 +80,11 @@ impl PostDraftBuilder {
         self
     }
 
+    pub fn external_id(mut self, value: impl Into<String>) -> Self {
+        self.external_id = Some(value.into());
+        self
+    }
+
     pub fn signature_id(mut self, value: impl Into<String>) -> Self {
         self.signature_id = Some(value.into());
         self
@@ -102,6 +111,7 @@ impl PostDraftBuilder {
             default_signatures: self.default_signatures,
             options: self.options,
             shorten_links: self.shorten_links,
+            external_id: self.external_id,
             signature_id: self.signature_id,
             tag_ids: self.tag_ids,
         })

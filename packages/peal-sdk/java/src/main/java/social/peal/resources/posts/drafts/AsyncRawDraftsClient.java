@@ -256,6 +256,11 @@ public class AsyncRawDraftsClient {
                                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
                                         response));
                                 return;
+                            case 409:
+                                future.completeExceptionally(new ConflictError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 422:
                                 future.completeExceptionally(new UnprocessableEntityError(
                                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),

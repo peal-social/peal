@@ -215,11 +215,13 @@ public class BulkTest : BaseMockServerTest
                       },
                       "text": "text"
                     },
+                    "createdAt": "createdAt",
                     "createdVia": {
                       "id": "id",
                       "name": "name",
                       "via": "web"
                     },
+                    "externalId": "externalId",
                     "id": "id",
                     "occurrence": 1,
                     "outcome": "published",
@@ -347,6 +349,7 @@ public class BulkTest : BaseMockServerTest
                         "unconfirmedReason": "noResponse"
                       }
                     ],
+                    "updatedAt": "updatedAt",
                     "warnings": [
                       {
                         "_tag": "channelsDropped",
@@ -498,11 +501,13 @@ public class BulkTest : BaseMockServerTest
                       },
                       "text": "text"
                     },
+                    "createdAt": "createdAt",
                     "createdVia": {
                       "id": "id",
                       "name": "name",
                       "via": "web"
                     },
+                    "externalId": "externalId",
                     "id": "id",
                     "occurrence": 1,
                     "outcome": "published",
@@ -630,6 +635,7 @@ public class BulkTest : BaseMockServerTest
                         "unconfirmedReason": "noResponse"
                       }
                     ],
+                    "updatedAt": "updatedAt",
                     "warnings": [
                       {
                         "_tag": "channelsDropped",
@@ -713,6 +719,7 @@ public class BulkTest : BaseMockServerTest
                             Text = "text",
                         },
                         DefaultSignatures = null,
+                        ExternalId = null,
                         Options = null,
                         ShortenLinks = null,
                         SignatureId = null,
@@ -756,6 +763,7 @@ public class BulkTest : BaseMockServerTest
                             Text = "text",
                         },
                         DefaultSignatures = null,
+                        ExternalId = null,
                         Options = null,
                         ShortenLinks = null,
                         SignatureId = null,
@@ -827,6 +835,7 @@ public class BulkTest : BaseMockServerTest
                       ],
                       "text": "text"
                     },
+                    "createdAt": "createdAt",
                     "id": "id",
                     "shortenLinks": true,
                     "status": "draft",
@@ -849,7 +858,8 @@ public class BulkTest : BaseMockServerTest
                         "round": 1,
                         "status": "pending"
                       }
-                    ]
+                    ],
+                    "updatedAt": "updatedAt"
                   },
                   "replayed": true
                 }

@@ -6,6 +6,7 @@ export interface PostValidation {
     awaitsApproval: boolean;
     channels: Peal.ChannelPreview[];
     duplicates: Peal.DuplicateOnChannel[];
+    externalIdTakenBy: string | null;
     planLimit: Peal.PlanShortfall | null;
     queueNoRoom?: Peal.QueueNoRoom | undefined;
     queueSlot?: string | undefined;

@@ -275,6 +275,7 @@ public class ValidateTest : BaseMockServerTest
                   "postId": "postId"
                 }
               ],
+              "externalIdTakenBy": "externalIdTakenBy",
               "planLimit": {
                 "allowed": 1000000,
                 "billingUrl": "billingUrl",
@@ -377,6 +378,7 @@ public class ValidateTest : BaseMockServerTest
                     Text = "text",
                 },
                 DefaultSignatures = null,
+                ExternalId = null,
                 Options = null,
                 ShortenLinks = null,
                 SignatureId = null,
@@ -478,6 +480,7 @@ public class ValidateTest : BaseMockServerTest
                   "postId": "postId"
                 }
               ],
+              "externalIdTakenBy": "externalIdTakenBy",
               "planLimit": {
                 "allowed": 1000000,
                 "billingUrl": "billingUrl",

@@ -254,11 +254,13 @@ public class UpdateTest : BaseMockServerTest
                 },
                 "text": "text"
               },
+              "createdAt": "createdAt",
               "createdVia": {
                 "id": "id",
                 "name": "name",
                 "via": "web"
               },
+              "externalId": "externalId",
               "id": "id",
               "occurrence": 1,
               "outcome": "published",
@@ -386,6 +388,7 @@ public class UpdateTest : BaseMockServerTest
                   "unconfirmedReason": "noResponse"
                 }
               ],
+              "updatedAt": "updatedAt",
               "warnings": [
                 {
                   "_tag": "channelsDropped",
@@ -464,6 +467,7 @@ public class UpdateTest : BaseMockServerTest
                     DefaultSignatures = null,
                     Options = null,
                     ShortenLinks = null,
+                    ExternalId = null,
                     SignatureId = null,
                     TagIds = null,
                 },
@@ -541,11 +545,13 @@ public class UpdateTest : BaseMockServerTest
                 },
                 "text": "text"
               },
+              "createdAt": "createdAt",
               "createdVia": {
                 "id": "id",
                 "name": "name",
                 "via": "web"
               },
+              "externalId": "externalId",
               "id": "id",
               "occurrence": 1,
               "outcome": "published",
@@ -596,6 +602,7 @@ public class UpdateTest : BaseMockServerTest
                   "unconfirmedReason": "noResponse"
                 }
               ],
+              "updatedAt": "updatedAt",
               "warnings": [
                 {
                   "_tag": "channelsDropped",

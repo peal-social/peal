@@ -2,4 +2,7 @@
 
 import typing
 
-PostSort = typing.Union[typing.Literal["createdDesc", "createdAsc", "scheduledDesc", "scheduledAsc"], typing.Any]
+PostSort = typing.Union[
+    typing.Literal["createdDesc", "createdAsc", "scheduledDesc", "scheduledAsc", "updatedDesc", "updatedAsc"],
+    typing.Any,
+]

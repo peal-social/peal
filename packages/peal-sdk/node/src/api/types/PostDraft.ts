@@ -9,6 +9,7 @@ export interface PostDraft {
     defaultSignatures?: boolean | undefined;
     options?: Peal.ChannelOptions[] | undefined;
     shortenLinks?: boolean | undefined;
+    externalId?: (string | null) | undefined;
     signatureId?: string | undefined;
     tagIds?: string[] | undefined;
 }

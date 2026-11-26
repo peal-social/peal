@@ -7,6 +7,7 @@ export const ImportColumn = {
         At: "at",
         TimeZone: "time_zone",
         AllowDuplicate: "allow_duplicate",
-        IdempotencyKey: "idempotency_key"
+        IdempotencyKey: "idempotency_key",
+        ExternalId: "external_id"
     } as const;
 export type ImportColumn = typeof ImportColumn[keyof typeof ImportColumn];

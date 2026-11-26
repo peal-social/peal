@@ -86,6 +86,10 @@ public final class PostRefusal {
         return new PostRefusal(new QueueHasNoRoomValue(value));
     }
 
+    public static PostRefusal postExternalIdTaken(PostExternalIdTakenEncoded value) {
+        return new PostRefusal(new PostExternalIdTakenValue(value));
+    }
+
     public boolean isPostContentInvalid() {
         return value instanceof PostContentInvalidValue;
     }
@@ -144,6 +148,10 @@ public final class PostRefusal {
 
     public boolean isQueueHasNoRoom() {
         return value instanceof QueueHasNoRoomValue;
+    }
+
+    public boolean isPostExternalIdTaken() {
+        return value instanceof PostExternalIdTakenValue;
     }
 
     public boolean _isUnknown() {
@@ -255,6 +263,13 @@ public final class PostRefusal {
         return Optional.empty();
     }
 
+    public Optional<PostExternalIdTakenEncoded> getPostExternalIdTaken() {
+        if (isPostExternalIdTaken()) {
+            return Optional.of(((PostExternalIdTakenValue) value).value);
+        }
+        return Optional.empty();
+    }
+
     public Optional<Object> _getUnknown() {
         if (_isUnknown()) {
             return Optional.of(((_UnknownValue) value).value);
@@ -314,6 +329,8 @@ public final class PostRefusal {
 
         T visitQueueHasNoRoom(QueueHasNoRoomEncoded queueHasNoRoom);
 
+        T visitPostExternalIdTaken(PostExternalIdTakenEncoded postExternalIdTaken);
+
         T _visitUnknown(Object unknownType);
     }
 
@@ -333,7 +350,8 @@ public final class PostRefusal {
         @JsonSubTypes.Type(ChannelSetNotFoundValue.class),
         @JsonSubTypes.Type(SignatureNotFoundValue.class),
         @JsonSubTypes.Type(QueueNotFoundValue.class),
-        @JsonSubTypes.Type(QueueHasNoRoomValue.class)
+        @JsonSubTypes.Type(QueueHasNoRoomValue.class),
+        @JsonSubTypes.Type(PostExternalIdTakenValue.class)
     })
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
@@ -926,6 +944,46 @@ public final class PostRefusal {
         }
 
         private boolean equalTo(QueueHasNoRoomValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "PostRefusal{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("PostExternalIdTaken")
+    @JsonIgnoreProperties("_tag")
+    private static final class PostExternalIdTakenValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
+        private PostExternalIdTakenEncoded value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private PostExternalIdTakenValue() {}
+
+        private PostExternalIdTakenValue(PostExternalIdTakenEncoded value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitPostExternalIdTaken(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof PostExternalIdTakenValue && equalTo((PostExternalIdTakenValue) other);
+        }
+
+        private boolean equalTo(PostExternalIdTakenValue other) {
             return value.equals(other.value);
         }
 

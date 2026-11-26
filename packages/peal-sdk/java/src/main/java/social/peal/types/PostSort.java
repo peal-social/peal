@@ -15,6 +15,10 @@ public final class PostSort {
 
     public static final PostSort SCHEDULED_ASC = new PostSort(Value.SCHEDULED_ASC, "scheduledAsc");
 
+    public static final PostSort UPDATED_DESC = new PostSort(Value.UPDATED_DESC, "updatedDesc");
+
+    public static final PostSort UPDATED_ASC = new PostSort(Value.UPDATED_ASC, "updatedAsc");
+
     private final Value value;
 
     private final String string;
@@ -54,6 +58,10 @@ public final class PostSort {
                 return visitor.visitCreatedDesc();
             case SCHEDULED_ASC:
                 return visitor.visitScheduledAsc();
+            case UPDATED_DESC:
+                return visitor.visitUpdatedDesc();
+            case UPDATED_ASC:
+                return visitor.visitUpdatedAsc();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -71,6 +79,10 @@ public final class PostSort {
                 return CREATED_DESC;
             case "scheduledAsc":
                 return SCHEDULED_ASC;
+            case "updatedDesc":
+                return UPDATED_DESC;
+            case "updatedAsc":
+                return UPDATED_ASC;
             default:
                 return new PostSort(Value.UNKNOWN, value);
         }
@@ -85,6 +97,10 @@ public final class PostSort {
 
         SCHEDULED_ASC,
 
+        UPDATED_DESC,
+
+        UPDATED_ASC,
+
         UNKNOWN
     }
 
@@ -96,6 +112,10 @@ public final class PostSort {
         T visitScheduledDesc();
 
         T visitScheduledAsc();
+
+        T visitUpdatedDesc();
+
+        T visitUpdatedAsc();
 
         T visitUnknown(String unknownType);
     }

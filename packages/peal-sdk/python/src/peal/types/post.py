@@ -20,8 +20,12 @@ class Post(UniversalBaseModel):
         typing.Optional[str], FieldMetadata(alias="authorId"), pydantic.Field(alias="authorId")
     ] = None
     content: PostContent
+    created_at: typing_extensions.Annotated[str, FieldMetadata(alias="createdAt"), pydantic.Field(alias="createdAt")]
     created_via: typing_extensions.Annotated[
         typing.Optional[PostOrigin], FieldMetadata(alias="createdVia"), pydantic.Field(alias="createdVia")
+    ] = None
+    external_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="externalId"), pydantic.Field(alias="externalId")
     ] = None
     id: str
     occurrence: typing.Optional[int] = None
@@ -47,6 +51,7 @@ class Post(UniversalBaseModel):
         typing.List[str], FieldMetadata(alias="tagIds"), pydantic.Field(alias="tagIds")
     ]
     targets: typing.List[PostTarget]
+    updated_at: typing_extensions.Annotated[str, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")]
     warnings: typing.Optional[typing.List[PostWarning]] = None
 
     if IS_PYDANTIC_V2:

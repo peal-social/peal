@@ -3,5 +3,6 @@
 import typing
 
 ImportColumn = typing.Union[
-    typing.Literal["text", "channels", "media", "at", "time_zone", "allow_duplicate", "idempotency_key"], typing.Any
+    typing.Literal["text", "channels", "media", "at", "time_zone", "allow_duplicate", "idempotency_key", "external_id"],
+    typing.Any,
 ]

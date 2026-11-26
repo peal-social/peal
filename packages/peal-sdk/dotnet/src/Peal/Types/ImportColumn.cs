@@ -22,6 +22,8 @@ public readonly record struct ImportColumn : IStringEnum
 
     public static readonly ImportColumn IdempotencyKey = new(Values.IdempotencyKey);
 
+    public static readonly ImportColumn ExternalId = new(Values.ExternalId);
+
     public ImportColumn(string value)
     {
         Value = value;
@@ -131,5 +133,7 @@ public readonly record struct ImportColumn : IStringEnum
         public const string AllowDuplicate = "allow_duplicate";
 
         public const string IdempotencyKey = "idempotency_key";
+
+        public const string ExternalId = "external_id";
     }
 }

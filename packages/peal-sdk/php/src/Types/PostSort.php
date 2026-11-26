@@ -8,4 +8,6 @@ enum PostSort: string
     case CreatedAsc = "createdAsc";
     case ScheduledDesc = "scheduledDesc";
     case ScheduledAsc = "scheduledAsc";
+    case UpdatedDesc = "updatedDesc";
+    case UpdatedAsc = "updatedAsc";
 }

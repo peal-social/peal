@@ -17,7 +17,8 @@ export type PostRefusal =
     | Peal.PostRefusal.ChannelSetNotFound
     | Peal.PostRefusal.SignatureNotFound
     | Peal.PostRefusal.QueueNotFound
-    | Peal.PostRefusal.QueueHasNoRoom;
+    | Peal.PostRefusal.QueueHasNoRoom
+    | Peal.PostRefusal.PostExternalIdTaken;
 
 export namespace PostRefusal {
     export interface PostContentInvalid extends Peal.PostContentInvalidEncoded {
@@ -78,5 +79,9 @@ export namespace PostRefusal {
 
     export interface QueueHasNoRoom extends Peal.QueueHasNoRoomEncoded {
         _tag: "QueueHasNoRoom";
+    }
+
+    export interface PostExternalIdTaken extends Peal.PostExternalIdTakenEncoded {
+        _tag: "PostExternalIdTaken";
     }
 }

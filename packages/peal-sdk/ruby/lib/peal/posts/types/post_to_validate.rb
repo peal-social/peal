@@ -14,6 +14,8 @@ module Peal
 
         field :default_signatures, -> { Internal::Types::Boolean }, optional: true, nullable: false, api_name: "defaultSignatures"
 
+        field :external_id, -> { String }, optional: true, nullable: false, api_name: "externalId"
+
         field :options, -> { Internal::Types::Array[Peal::Types::ChannelOptions] }, optional: true, nullable: false
 
         field :shorten_links, -> { Internal::Types::Boolean }, optional: true, nullable: false, api_name: "shortenLinks"

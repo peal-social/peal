@@ -821,6 +821,8 @@ if typing.TYPE_CHECKING:
     from .post_content_invalid_encoded import PostContentInvalidEncoded
     from .post_content_invalid_encoded_tag import PostContentInvalidEncodedTag
     from .post_draft import PostDraft
+    from .post_external_id_taken_encoded import PostExternalIdTakenEncoded
+    from .post_external_id_taken_encoded_tag import PostExternalIdTakenEncodedTag
     from .post_format_capabilities import PostFormatCapabilities
     from .post_metrics import PostMetrics
     from .post_not_found_encoded import PostNotFoundEncoded
@@ -843,6 +845,7 @@ if typing.TYPE_CHECKING:
         PostRefusal_InvalidTimeZone,
         PostRefusal_PlanLimitReached,
         PostRefusal_PostContentInvalid,
+        PostRefusal_PostExternalIdTaken,
         PostRefusal_PostNotFound,
         PostRefusal_QueueHasNoRoom,
         PostRefusal_QueueNotFound,
@@ -1986,6 +1989,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PostContentInvalidEncoded": ".post_content_invalid_encoded",
     "PostContentInvalidEncodedTag": ".post_content_invalid_encoded_tag",
     "PostDraft": ".post_draft",
+    "PostExternalIdTakenEncoded": ".post_external_id_taken_encoded",
+    "PostExternalIdTakenEncodedTag": ".post_external_id_taken_encoded_tag",
     "PostFormatCapabilities": ".post_format_capabilities",
     "PostMetrics": ".post_metrics",
     "PostNotFoundEncoded": ".post_not_found_encoded",
@@ -2007,6 +2012,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PostRefusal_InvalidTimeZone": ".post_refusal",
     "PostRefusal_PlanLimitReached": ".post_refusal",
     "PostRefusal_PostContentInvalid": ".post_refusal",
+    "PostRefusal_PostExternalIdTaken": ".post_refusal",
     "PostRefusal_PostNotFound": ".post_refusal",
     "PostRefusal_QueueHasNoRoom": ".post_refusal",
     "PostRefusal_QueueNotFound": ".post_refusal",
@@ -3172,6 +3178,8 @@ __all__ = [
     "PostContentInvalidEncoded",
     "PostContentInvalidEncodedTag",
     "PostDraft",
+    "PostExternalIdTakenEncoded",
+    "PostExternalIdTakenEncodedTag",
     "PostFormatCapabilities",
     "PostMetrics",
     "PostNotFoundEncoded",
@@ -3193,6 +3201,7 @@ __all__ = [
     "PostRefusal_InvalidTimeZone",
     "PostRefusal_PlanLimitReached",
     "PostRefusal_PostContentInvalid",
+    "PostRefusal_PostExternalIdTaken",
     "PostRefusal_PostNotFound",
     "PostRefusal_QueueHasNoRoom",
     "PostRefusal_QueueNotFound",

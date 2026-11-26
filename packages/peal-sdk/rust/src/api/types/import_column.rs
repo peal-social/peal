@@ -10,6 +10,7 @@ pub enum ImportColumn {
     TimeZone,
     AllowDuplicate,
     IdempotencyKey,
+    ExternalId,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -25,6 +26,7 @@ impl Serialize for ImportColumn {
             Self::TimeZone => serializer.serialize_str("time_zone"),
             Self::AllowDuplicate => serializer.serialize_str("allow_duplicate"),
             Self::IdempotencyKey => serializer.serialize_str("idempotency_key"),
+            Self::ExternalId => serializer.serialize_str("external_id"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -41,6 +43,7 @@ impl<'de> Deserialize<'de> for ImportColumn {
             "time_zone" => Ok(Self::TimeZone),
             "allow_duplicate" => Ok(Self::AllowDuplicate),
             "idempotency_key" => Ok(Self::IdempotencyKey),
+            "external_id" => Ok(Self::ExternalId),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -56,6 +59,7 @@ impl fmt::Display for ImportColumn {
             Self::TimeZone => write!(f, "time_zone"),
             Self::AllowDuplicate => write!(f, "allow_duplicate"),
             Self::IdempotencyKey => write!(f, "idempotency_key"),
+            Self::ExternalId => write!(f, "external_id"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

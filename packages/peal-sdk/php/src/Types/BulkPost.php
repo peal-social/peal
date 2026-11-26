@@ -39,6 +39,12 @@ class BulkPost extends JsonSerializableType
     public ?bool $defaultSignatures;
 
     /**
+     * @var ?string $externalId
+     */
+    #[JsonProperty('externalId')]
+    public ?string $externalId;
+
+    /**
      * @var ?array<ChannelOptions> $options
      */
     #[JsonProperty('options'), ArrayType([ChannelOptions::class])]
@@ -82,6 +88,7 @@ class BulkPost extends JsonSerializableType
      *   allowDuplicate?: ?bool,
      *   channelSets?: ?array<string>,
      *   defaultSignatures?: ?bool,
+     *   externalId?: ?string,
      *   options?: ?array<ChannelOptions>,
      *   shortenLinks?: ?bool,
      *   signatureId?: ?string,
@@ -97,6 +104,7 @@ class BulkPost extends JsonSerializableType
         $this->channelSets = $values['channelSets'] ?? null;
         $this->content = $values['content'];
         $this->defaultSignatures = $values['defaultSignatures'] ?? null;
+        $this->externalId = $values['externalId'] ?? null;
         $this->options = $values['options'] ?? null;
         $this->shortenLinks = $values['shortenLinks'] ?? null;
         $this->signatureId = $values['signatureId'] ?? null;

@@ -4,6 +4,8 @@ export const PostSort = {
         CreatedDesc: "createdDesc",
         CreatedAsc: "createdAsc",
         ScheduledDesc: "scheduledDesc",
-        ScheduledAsc: "scheduledAsc"
+        ScheduledAsc: "scheduledAsc",
+        UpdatedDesc: "updatedDesc",
+        UpdatedAsc: "updatedAsc"
     } as const;
 export type PostSort = typeof PostSort[keyof typeof PostSort];

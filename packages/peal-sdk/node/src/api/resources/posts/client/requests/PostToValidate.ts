@@ -25,6 +25,7 @@ export interface PostToValidate {
     channelSets?: string[];
     content: Peal.PostContent;
     defaultSignatures?: boolean;
+    externalId?: string;
     options?: Peal.ChannelOptions[];
     shortenLinks?: boolean;
     signatureId?: string;

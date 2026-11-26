@@ -14,6 +14,7 @@ module Peal
       TIME_ZONE = "time_zone"
       ALLOW_DUPLICATE = "allow_duplicate"
       IDEMPOTENCY_KEY = "idempotency_key"
+      EXTERNAL_ID = "external_id"
     end
   end
 end

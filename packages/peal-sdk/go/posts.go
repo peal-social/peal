@@ -241,11 +241,12 @@ var (
 	newPostFieldChannelSets       = big.NewInt(1 << 4)
 	newPostFieldContent           = big.NewInt(1 << 5)
 	newPostFieldDefaultSignatures = big.NewInt(1 << 6)
-	newPostFieldOptions           = big.NewInt(1 << 7)
-	newPostFieldShortenLinks      = big.NewInt(1 << 8)
-	newPostFieldSignatureID       = big.NewInt(1 << 9)
-	newPostFieldTagIDs            = big.NewInt(1 << 10)
-	newPostFieldWhen              = big.NewInt(1 << 11)
+	newPostFieldExternalID        = big.NewInt(1 << 7)
+	newPostFieldOptions           = big.NewInt(1 << 8)
+	newPostFieldShortenLinks      = big.NewInt(1 << 9)
+	newPostFieldSignatureID       = big.NewInt(1 << 10)
+	newPostFieldTagIDs            = big.NewInt(1 << 11)
+	newPostFieldWhen              = big.NewInt(1 << 12)
 )
 
 type NewPost struct {
@@ -256,6 +257,7 @@ type NewPost struct {
 	ChannelSets       []string          `json:"channelSets,omitempty" url:"-"`
 	Content           *PostContent      `json:"content" url:"-"`
 	DefaultSignatures *bool             `json:"defaultSignatures,omitempty" url:"-"`
+	ExternalID        *string           `json:"externalId,omitempty" url:"-"`
 	Options           []*ChannelOptions `json:"options,omitempty" url:"-"`
 	ShortenLinks      *bool             `json:"shortenLinks,omitempty" url:"-"`
 	SignatureID       *string           `json:"signatureId,omitempty" url:"-"`
@@ -322,6 +324,13 @@ func (n *NewPost) SetContent(content *PostContent) {
 func (n *NewPost) SetDefaultSignatures(defaultSignatures *bool) {
 	n.DefaultSignatures = defaultSignatures
 	n.require(newPostFieldDefaultSignatures)
+}
+
+// SetExternalID sets the ExternalID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NewPost) SetExternalID(externalID *string) {
+	n.ExternalID = externalID
+	n.require(newPostFieldExternalID)
 }
 
 // SetOptions sets the Options field and marks it as non-optional;
@@ -687,39 +696,43 @@ func (l *LeaveOutRestPostsRequest) SetTargetID(targetID string) {
 }
 
 var (
-	listPostsRequestFieldAuthorID    = big.NewInt(1 << 0)
-	listPostsRequestFieldChannelID   = big.NewInt(1 << 1)
-	listPostsRequestFieldCreatedVia  = big.NewInt(1 << 2)
-	listPostsRequestFieldCursor      = big.NewInt(1 << 3)
-	listPostsRequestFieldFrom        = big.NewInt(1 << 4)
-	listPostsRequestFieldLimit       = big.NewInt(1 << 5)
-	listPostsRequestFieldOutcome     = big.NewInt(1 << 6)
-	listPostsRequestFieldPlatform    = big.NewInt(1 << 7)
-	listPostsRequestFieldQueueID     = big.NewInt(1 << 8)
-	listPostsRequestFieldRecyclingID = big.NewInt(1 << 9)
-	listPostsRequestFieldRemoved     = big.NewInt(1 << 10)
-	listPostsRequestFieldSort        = big.NewInt(1 << 11)
-	listPostsRequestFieldStatus      = big.NewInt(1 << 12)
-	listPostsRequestFieldTagID       = big.NewInt(1 << 13)
-	listPostsRequestFieldTo          = big.NewInt(1 << 14)
+	listPostsRequestFieldAuthorID     = big.NewInt(1 << 0)
+	listPostsRequestFieldChannelID    = big.NewInt(1 << 1)
+	listPostsRequestFieldCreatedVia   = big.NewInt(1 << 2)
+	listPostsRequestFieldCursor       = big.NewInt(1 << 3)
+	listPostsRequestFieldExternalID   = big.NewInt(1 << 4)
+	listPostsRequestFieldFrom         = big.NewInt(1 << 5)
+	listPostsRequestFieldLimit        = big.NewInt(1 << 6)
+	listPostsRequestFieldOutcome      = big.NewInt(1 << 7)
+	listPostsRequestFieldPlatform     = big.NewInt(1 << 8)
+	listPostsRequestFieldQueueID      = big.NewInt(1 << 9)
+	listPostsRequestFieldRecyclingID  = big.NewInt(1 << 10)
+	listPostsRequestFieldRemoved      = big.NewInt(1 << 11)
+	listPostsRequestFieldSort         = big.NewInt(1 << 12)
+	listPostsRequestFieldStatus       = big.NewInt(1 << 13)
+	listPostsRequestFieldTagID        = big.NewInt(1 << 14)
+	listPostsRequestFieldTo           = big.NewInt(1 << 15)
+	listPostsRequestFieldUpdatedSince = big.NewInt(1 << 16)
 )
 
 type ListPostsRequest struct {
-	AuthorID    *string                  `json:"-" url:"authorId,omitempty"`
-	ChannelID   *string                  `json:"-" url:"channelId,omitempty"`
-	CreatedVia  *PostOriginVia           `json:"-" url:"createdVia,omitempty"`
-	Cursor      *string                  `json:"-" url:"cursor,omitempty"`
-	From        *string                  `json:"-" url:"from,omitempty"`
-	Limit       *string                  `json:"-" url:"limit,omitempty"`
-	Outcome     *PostOutcome             `json:"-" url:"outcome,omitempty"`
-	Platform    *Platform                `json:"-" url:"platform,omitempty"`
-	QueueID     *string                  `json:"-" url:"queueId,omitempty"`
-	RecyclingID *string                  `json:"-" url:"recyclingId,omitempty"`
-	Removed     *ListPostsRequestRemoved `json:"-" url:"removed,omitempty"`
-	Sort        *PostSort                `json:"-" url:"sort,omitempty"`
-	Status      *PostStatus              `json:"-" url:"status,omitempty"`
-	TagID       *string                  `json:"-" url:"tagId,omitempty"`
-	To          *string                  `json:"-" url:"to,omitempty"`
+	AuthorID     *string                  `json:"-" url:"authorId,omitempty"`
+	ChannelID    *string                  `json:"-" url:"channelId,omitempty"`
+	CreatedVia   *PostOriginVia           `json:"-" url:"createdVia,omitempty"`
+	Cursor       *string                  `json:"-" url:"cursor,omitempty"`
+	ExternalID   *string                  `json:"-" url:"externalId,omitempty"`
+	From         *string                  `json:"-" url:"from,omitempty"`
+	Limit        *string                  `json:"-" url:"limit,omitempty"`
+	Outcome      *PostOutcome             `json:"-" url:"outcome,omitempty"`
+	Platform     *Platform                `json:"-" url:"platform,omitempty"`
+	QueueID      *string                  `json:"-" url:"queueId,omitempty"`
+	RecyclingID  *string                  `json:"-" url:"recyclingId,omitempty"`
+	Removed      *ListPostsRequestRemoved `json:"-" url:"removed,omitempty"`
+	Sort         *PostSort                `json:"-" url:"sort,omitempty"`
+	Status       *PostStatus              `json:"-" url:"status,omitempty"`
+	TagID        *string                  `json:"-" url:"tagId,omitempty"`
+	To           *string                  `json:"-" url:"to,omitempty"`
+	UpdatedSince *string                  `json:"-" url:"updatedSince,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -760,6 +773,13 @@ func (l *ListPostsRequest) SetCreatedVia(createdVia *PostOriginVia) {
 func (l *ListPostsRequest) SetCursor(cursor *string) {
 	l.Cursor = cursor
 	l.require(listPostsRequestFieldCursor)
+}
+
+// SetExternalID sets the ExternalID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetExternalID(externalID *string) {
+	l.ExternalID = externalID
+	l.require(listPostsRequestFieldExternalID)
 }
 
 // SetFrom sets the From field and marks it as non-optional;
@@ -837,6 +857,13 @@ func (l *ListPostsRequest) SetTagID(tagID *string) {
 func (l *ListPostsRequest) SetTo(to *string) {
 	l.To = to
 	l.require(listPostsRequestFieldTo)
+}
+
+// SetUpdatedSince sets the UpdatedSince field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListPostsRequest) SetUpdatedSince(updatedSince *string) {
+	l.UpdatedSince = updatedSince
+	l.require(listPostsRequestFieldUpdatedSince)
 }
 
 var (
@@ -1064,6 +1091,63 @@ func (s *SchedulePost) MarshalJSON() ([]byte, error) {
 }
 
 var (
+	postExternalIDChangeFieldPostID     = big.NewInt(1 << 0)
+	postExternalIDChangeFieldExternalID = big.NewInt(1 << 1)
+)
+
+type PostExternalIDChange struct {
+	PostID     string  `json:"-" url:"-"`
+	ExternalID *string `json:"externalId,omitempty" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (p *PostExternalIDChange) require(field *big.Int) {
+	next := new(big.Int)
+	if p.explicitFields != nil {
+		next.Set(p.explicitFields)
+	}
+	next.Or(next, field)
+	p.explicitFields = next
+}
+
+// SetPostID sets the PostID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PostExternalIDChange) SetPostID(postID string) {
+	p.PostID = postID
+	p.require(postExternalIDChangeFieldPostID)
+}
+
+// SetExternalID sets the ExternalID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PostExternalIDChange) SetExternalID(externalID *string) {
+	p.ExternalID = externalID
+	p.require(postExternalIDChangeFieldExternalID)
+}
+
+func (p *PostExternalIDChange) UnmarshalJSON(data []byte) error {
+	type unmarshaler PostExternalIDChange
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*p = PostExternalIDChange(body)
+	return nil
+}
+
+func (p *PostExternalIDChange) MarshalJSON() ([]byte, error) {
+	type embed PostExternalIDChange
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*p),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
 	postTagsFieldPostID = big.NewInt(1 << 0)
 	postTagsFieldTagIDs = big.NewInt(1 << 1)
 )
@@ -1214,12 +1298,13 @@ var (
 	bulkPostFieldChannelSets       = big.NewInt(1 << 2)
 	bulkPostFieldContent           = big.NewInt(1 << 3)
 	bulkPostFieldDefaultSignatures = big.NewInt(1 << 4)
-	bulkPostFieldOptions           = big.NewInt(1 << 5)
-	bulkPostFieldShortenLinks      = big.NewInt(1 << 6)
-	bulkPostFieldSignatureID       = big.NewInt(1 << 7)
-	bulkPostFieldTagIDs            = big.NewInt(1 << 8)
-	bulkPostFieldWhen              = big.NewInt(1 << 9)
-	bulkPostFieldIdempotencyKey    = big.NewInt(1 << 10)
+	bulkPostFieldExternalID        = big.NewInt(1 << 5)
+	bulkPostFieldOptions           = big.NewInt(1 << 6)
+	bulkPostFieldShortenLinks      = big.NewInt(1 << 7)
+	bulkPostFieldSignatureID       = big.NewInt(1 << 8)
+	bulkPostFieldTagIDs            = big.NewInt(1 << 9)
+	bulkPostFieldWhen              = big.NewInt(1 << 10)
+	bulkPostFieldIdempotencyKey    = big.NewInt(1 << 11)
 )
 
 type BulkPost struct {
@@ -1228,6 +1313,7 @@ type BulkPost struct {
 	ChannelSets       []string          `json:"channelSets,omitempty" url:"channelSets,omitempty"`
 	Content           *PostContent      `json:"content" url:"content"`
 	DefaultSignatures *bool             `json:"defaultSignatures,omitempty" url:"defaultSignatures,omitempty"`
+	ExternalID        *string           `json:"externalId,omitempty" url:"externalId,omitempty"`
 	Options           []*ChannelOptions `json:"options,omitempty" url:"options,omitempty"`
 	ShortenLinks      *bool             `json:"shortenLinks,omitempty" url:"shortenLinks,omitempty"`
 	SignatureID       *string           `json:"signatureId,omitempty" url:"signatureId,omitempty"`
@@ -1275,6 +1361,13 @@ func (b *BulkPost) GetDefaultSignatures() *bool {
 		return nil
 	}
 	return b.DefaultSignatures
+}
+
+func (b *BulkPost) GetExternalID() *string {
+	if b == nil {
+		return nil
+	}
+	return b.ExternalID
 }
 
 func (b *BulkPost) GetOptions() []*ChannelOptions {
@@ -1368,6 +1461,13 @@ func (b *BulkPost) SetContent(content *PostContent) {
 func (b *BulkPost) SetDefaultSignatures(defaultSignatures *bool) {
 	b.DefaultSignatures = defaultSignatures
 	b.require(bulkPostFieldDefaultSignatures)
+}
+
+// SetExternalID sets the ExternalID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BulkPost) SetExternalID(externalID *string) {
+	b.ExternalID = externalID
+	b.require(bulkPostFieldExternalID)
 }
 
 // SetOptions sets the Options field and marks it as non-optional;
@@ -9895,6 +9995,7 @@ const (
 	ImportColumnTimeZone       ImportColumn = "time_zone"
 	ImportColumnAllowDuplicate ImportColumn = "allow_duplicate"
 	ImportColumnIdempotencyKey ImportColumn = "idempotency_key"
+	ImportColumnExternalID     ImportColumn = "external_id"
 )
 
 func NewImportColumnFromString(s string) (ImportColumn, error) {
@@ -9913,6 +10014,8 @@ func NewImportColumnFromString(s string) (ImportColumn, error) {
 		return ImportColumnAllowDuplicate, nil
 	case "idempotency_key":
 		return ImportColumnIdempotencyKey, nil
+	case "external_id":
+		return ImportColumnExternalID, nil
 	}
 	var t ImportColumn
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -12468,6 +12571,187 @@ func (p PostContentInvalidEncodedTag) Ptr() *PostContentInvalidEncodedTag {
 }
 
 var (
+	postExternalIDTakenEncodedFieldTag       = big.NewInt(1 << 0)
+	postExternalIDTakenEncodedFieldCode      = big.NewInt(1 << 1)
+	postExternalIDTakenEncodedFieldMessage   = big.NewInt(1 << 2)
+	postExternalIDTakenEncodedFieldRequestID = big.NewInt(1 << 3)
+	postExternalIDTakenEncodedFieldPostID    = big.NewInt(1 << 4)
+)
+
+// postExternalIDTakenEncodedNullableFields maps the wire names of PostExternalIDTakenEncoded's nullable fields (required or optional) to their field bits.
+var postExternalIDTakenEncodedNullableFields = map[string]*big.Int{
+	"postId": postExternalIDTakenEncodedFieldPostID,
+}
+
+type PostExternalIDTakenEncoded struct {
+	Tag       PostExternalIDTakenEncodedTag `json:"_tag" url:"_tag"`
+	Code      *string                       `json:"code,omitempty" url:"code,omitempty"`
+	Message   *string                       `json:"message,omitempty" url:"message,omitempty"`
+	RequestID *string                       `json:"requestId,omitempty" url:"requestId,omitempty"`
+	PostID    *string                       `json:"postId,omitempty" url:"postId,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (p *PostExternalIDTakenEncoded) GetTag() PostExternalIDTakenEncodedTag {
+	if p == nil {
+		return ""
+	}
+	return p.Tag
+}
+
+func (p *PostExternalIDTakenEncoded) GetCode() *string {
+	if p == nil {
+		return nil
+	}
+	return p.Code
+}
+
+func (p *PostExternalIDTakenEncoded) GetMessage() *string {
+	if p == nil {
+		return nil
+	}
+	return p.Message
+}
+
+func (p *PostExternalIDTakenEncoded) GetRequestID() *string {
+	if p == nil {
+		return nil
+	}
+	return p.RequestID
+}
+
+func (p *PostExternalIDTakenEncoded) GetPostID() *string {
+	if p == nil {
+		return nil
+	}
+	return p.PostID
+}
+
+func (p *PostExternalIDTakenEncoded) GetExtraProperties() map[string]interface{} {
+	if p == nil {
+		return nil
+	}
+	return p.extraProperties
+}
+
+func (p *PostExternalIDTakenEncoded) require(field *big.Int) {
+	next := new(big.Int)
+	if p.explicitFields != nil {
+		next.Set(p.explicitFields)
+	}
+	next.Or(next, field)
+	p.explicitFields = next
+}
+
+// SetTag sets the Tag field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PostExternalIDTakenEncoded) SetTag(tag PostExternalIDTakenEncodedTag) {
+	p.Tag = tag
+	p.require(postExternalIDTakenEncodedFieldTag)
+}
+
+// SetCode sets the Code field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PostExternalIDTakenEncoded) SetCode(code *string) {
+	p.Code = code
+	p.require(postExternalIDTakenEncodedFieldCode)
+}
+
+// SetMessage sets the Message field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PostExternalIDTakenEncoded) SetMessage(message *string) {
+	p.Message = message
+	p.require(postExternalIDTakenEncodedFieldMessage)
+}
+
+// SetRequestID sets the RequestID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PostExternalIDTakenEncoded) SetRequestID(requestID *string) {
+	p.RequestID = requestID
+	p.require(postExternalIDTakenEncodedFieldRequestID)
+}
+
+// SetPostID sets the PostID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PostExternalIDTakenEncoded) SetPostID(postID *string) {
+	p.PostID = postID
+	p.require(postExternalIDTakenEncodedFieldPostID)
+}
+
+func (p *PostExternalIDTakenEncoded) UnmarshalJSON(data []byte) error {
+	type unmarshaler PostExternalIDTakenEncoded
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*p = PostExternalIDTakenEncoded(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *p)
+	if err != nil {
+		return err
+	}
+	p.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, postExternalIDTakenEncodedNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		p.require(presentFields)
+	}
+	p.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (p *PostExternalIDTakenEncoded) MarshalJSON() ([]byte, error) {
+	type embed PostExternalIDTakenEncoded
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*p),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, p.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (p *PostExternalIDTakenEncoded) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	if len(p.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(p.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(p); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", p)
+}
+
+type PostExternalIDTakenEncodedTag string
+
+const (
+	PostExternalIDTakenEncodedTagPostExternalIDTaken PostExternalIDTakenEncodedTag = "PostExternalIdTaken"
+)
+
+func NewPostExternalIDTakenEncodedTagFromString(s string) (PostExternalIDTakenEncodedTag, error) {
+	switch s {
+	case "PostExternalIdTaken":
+		return PostExternalIDTakenEncodedTagPostExternalIDTaken, nil
+	}
+	var t PostExternalIDTakenEncodedTag
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (p PostExternalIDTakenEncodedTag) Ptr() *PostExternalIDTakenEncodedTag {
+	return &p
+}
+
+var (
 	postNotFoundEncodedFieldCode      = big.NewInt(1 << 0)
 	postNotFoundEncodedFieldMessage   = big.NewInt(1 << 1)
 	postNotFoundEncodedFieldRequestID = big.NewInt(1 << 2)
@@ -12732,6 +13016,7 @@ type PostRefusal struct {
 	SignatureNotFound    *SignatureNotFoundEncoded
 	QueueNotFound        *QueueNotFoundEncoded
 	QueueHasNoRoom       *QueueHasNoRoomEncoded
+	PostExternalIDTaken  *PostExternalIDTakenEncoded
 
 	rawJSON json.RawMessage
 }
@@ -12848,6 +13133,13 @@ func (p *PostRefusal) GetQueueHasNoRoom() *QueueHasNoRoomEncoded {
 	return p.QueueHasNoRoom
 }
 
+func (p *PostRefusal) GetPostExternalIDTaken() *PostExternalIDTakenEncoded {
+	if p == nil {
+		return nil
+	}
+	return p.PostExternalIDTaken
+}
+
 func (p *PostRefusal) UnmarshalJSON(data []byte) error {
 	var unmarshaler struct {
 		Type string `json:"_tag"`
@@ -12950,6 +13242,12 @@ func (p *PostRefusal) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		p.QueueHasNoRoom = value
+	case "PostExternalIdTaken":
+		value := new(PostExternalIDTakenEncoded)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		p.PostExternalIDTaken = value
 	}
 	p.rawJSON = json.RawMessage(data)
 	return nil
@@ -13004,6 +13302,9 @@ func (p PostRefusal) MarshalJSON() ([]byte, error) {
 	if p.QueueHasNoRoom != nil {
 		return internal.MarshalJSONWithExtraProperty(p.QueueHasNoRoom, "_tag", "QueueHasNoRoom")
 	}
+	if p.PostExternalIDTaken != nil {
+		return internal.MarshalJSONWithExtraProperty(p.PostExternalIDTaken, "_tag", "PostExternalIdTaken")
+	}
 	if len(p.rawJSON) > 0 {
 		return p.rawJSON, nil
 	}
@@ -13026,6 +13327,7 @@ type PostRefusalVisitor interface {
 	VisitSignatureNotFound(*SignatureNotFoundEncoded) error
 	VisitQueueNotFound(*QueueNotFoundEncoded) error
 	VisitQueueHasNoRoom(*QueueHasNoRoomEncoded) error
+	VisitPostExternalIDTaken(*PostExternalIDTakenEncoded) error
 }
 
 func (p *PostRefusal) Accept(visitor PostRefusalVisitor) error {
@@ -13073,6 +13375,9 @@ func (p *PostRefusal) Accept(visitor PostRefusalVisitor) error {
 	}
 	if p.QueueHasNoRoom != nil {
 		return visitor.VisitQueueHasNoRoom(p.QueueHasNoRoom)
+	}
+	if p.PostExternalIDTaken != nil {
+		return visitor.VisitPostExternalIDTaken(p.PostExternalIDTaken)
 	}
 	return fmt.Errorf("type %T does not define a non-empty union type", p)
 }
@@ -13127,6 +13432,9 @@ func (p *PostRefusal) validate() error {
 	if p.QueueHasNoRoom != nil {
 		fields = append(fields, "QueueHasNoRoom")
 	}
+	if p.PostExternalIDTaken != nil {
+		fields = append(fields, "PostExternalIdTaken")
+	}
 	if len(fields) == 0 {
 		if p.Type != "" {
 			if len(p.rawJSON) > 0 {
@@ -13160,6 +13468,8 @@ const (
 	PostSortCreatedAsc    PostSort = "createdAsc"
 	PostSortScheduledDesc PostSort = "scheduledDesc"
 	PostSortScheduledAsc  PostSort = "scheduledAsc"
+	PostSortUpdatedDesc   PostSort = "updatedDesc"
+	PostSortUpdatedAsc    PostSort = "updatedAsc"
 )
 
 func NewPostSortFromString(s string) (PostSort, error) {
@@ -13172,6 +13482,10 @@ func NewPostSortFromString(s string) (PostSort, error) {
 		return PostSortScheduledDesc, nil
 	case "scheduledAsc":
 		return PostSortScheduledAsc, nil
+	case "updatedDesc":
+		return PostSortUpdatedDesc, nil
+	case "updatedAsc":
+		return PostSortUpdatedAsc, nil
 	}
 	var t PostSort
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -13708,39 +14022,42 @@ func (p *PostUnpublish) String() string {
 }
 
 var (
-	postValidationFieldAwaitsApproval  = big.NewInt(1 << 0)
-	postValidationFieldChannels        = big.NewInt(1 << 1)
-	postValidationFieldDuplicates      = big.NewInt(1 << 2)
-	postValidationFieldPlanLimit       = big.NewInt(1 << 3)
-	postValidationFieldQueueNoRoom     = big.NewInt(1 << 4)
-	postValidationFieldQueueSlot       = big.NewInt(1 << 5)
-	postValidationFieldSchedule        = big.NewInt(1 << 6)
-	postValidationFieldUnknownChannels = big.NewInt(1 << 7)
-	postValidationFieldUnknownMedia    = big.NewInt(1 << 8)
-	postValidationFieldValid           = big.NewInt(1 << 9)
-	postValidationFieldViolations      = big.NewInt(1 << 10)
-	postValidationFieldWarnings        = big.NewInt(1 << 11)
+	postValidationFieldAwaitsApproval    = big.NewInt(1 << 0)
+	postValidationFieldChannels          = big.NewInt(1 << 1)
+	postValidationFieldDuplicates        = big.NewInt(1 << 2)
+	postValidationFieldExternalIDTakenBy = big.NewInt(1 << 3)
+	postValidationFieldPlanLimit         = big.NewInt(1 << 4)
+	postValidationFieldQueueNoRoom       = big.NewInt(1 << 5)
+	postValidationFieldQueueSlot         = big.NewInt(1 << 6)
+	postValidationFieldSchedule          = big.NewInt(1 << 7)
+	postValidationFieldUnknownChannels   = big.NewInt(1 << 8)
+	postValidationFieldUnknownMedia      = big.NewInt(1 << 9)
+	postValidationFieldValid             = big.NewInt(1 << 10)
+	postValidationFieldViolations        = big.NewInt(1 << 11)
+	postValidationFieldWarnings          = big.NewInt(1 << 12)
 )
 
 // postValidationNullableFields maps the wire names of PostValidation's nullable fields (required or optional) to their field bits.
 var postValidationNullableFields = map[string]*big.Int{
-	"planLimit": postValidationFieldPlanLimit,
-	"schedule":  postValidationFieldSchedule,
+	"externalIdTakenBy": postValidationFieldExternalIDTakenBy,
+	"planLimit":         postValidationFieldPlanLimit,
+	"schedule":          postValidationFieldSchedule,
 }
 
 type PostValidation struct {
-	AwaitsApproval  bool                  `json:"awaitsApproval" url:"awaitsApproval"`
-	Channels        []*ChannelPreview     `json:"channels" url:"channels"`
-	Duplicates      []*DuplicateOnChannel `json:"duplicates" url:"duplicates"`
-	PlanLimit       *PlanShortfall        `json:"planLimit,omitempty" url:"planLimit,omitempty"`
-	QueueNoRoom     *QueueNoRoom          `json:"queueNoRoom,omitempty" url:"queueNoRoom,omitempty"`
-	QueueSlot       *string               `json:"queueSlot,omitempty" url:"queueSlot,omitempty"`
-	Schedule        *ScheduleCheck        `json:"schedule,omitempty" url:"schedule,omitempty"`
-	UnknownChannels []string              `json:"unknownChannels" url:"unknownChannels"`
-	UnknownMedia    []string              `json:"unknownMedia" url:"unknownMedia"`
-	Valid           bool                  `json:"valid" url:"valid"`
-	Violations      []*ContentViolation   `json:"violations" url:"violations"`
-	Warnings        []*PostWarning        `json:"warnings,omitempty" url:"warnings,omitempty"`
+	AwaitsApproval    bool                  `json:"awaitsApproval" url:"awaitsApproval"`
+	Channels          []*ChannelPreview     `json:"channels" url:"channels"`
+	Duplicates        []*DuplicateOnChannel `json:"duplicates" url:"duplicates"`
+	ExternalIDTakenBy *string               `json:"externalIdTakenBy,omitempty" url:"externalIdTakenBy,omitempty"`
+	PlanLimit         *PlanShortfall        `json:"planLimit,omitempty" url:"planLimit,omitempty"`
+	QueueNoRoom       *QueueNoRoom          `json:"queueNoRoom,omitempty" url:"queueNoRoom,omitempty"`
+	QueueSlot         *string               `json:"queueSlot,omitempty" url:"queueSlot,omitempty"`
+	Schedule          *ScheduleCheck        `json:"schedule,omitempty" url:"schedule,omitempty"`
+	UnknownChannels   []string              `json:"unknownChannels" url:"unknownChannels"`
+	UnknownMedia      []string              `json:"unknownMedia" url:"unknownMedia"`
+	Valid             bool                  `json:"valid" url:"valid"`
+	Violations        []*ContentViolation   `json:"violations" url:"violations"`
+	Warnings          []*PostWarning        `json:"warnings,omitempty" url:"warnings,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -13768,6 +14085,13 @@ func (p *PostValidation) GetDuplicates() []*DuplicateOnChannel {
 		return nil
 	}
 	return p.Duplicates
+}
+
+func (p *PostValidation) GetExternalIDTakenBy() *string {
+	if p == nil {
+		return nil
+	}
+	return p.ExternalIDTakenBy
 }
 
 func (p *PostValidation) GetPlanLimit() *PlanShortfall {
@@ -13868,6 +14192,13 @@ func (p *PostValidation) SetChannels(channels []*ChannelPreview) {
 func (p *PostValidation) SetDuplicates(duplicates []*DuplicateOnChannel) {
 	p.Duplicates = duplicates
 	p.require(postValidationFieldDuplicates)
+}
+
+// SetExternalIDTakenBy sets the ExternalIDTakenBy field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PostValidation) SetExternalIDTakenBy(externalIDTakenBy *string) {
+	p.ExternalIDTakenBy = externalIDTakenBy
+	p.require(postValidationFieldExternalIDTakenBy)
 }
 
 // SetPlanLimit sets the PlanLimit field and marks it as non-optional;
@@ -15822,10 +16153,11 @@ var (
 	postToValidateFieldChannelSets       = big.NewInt(1 << 2)
 	postToValidateFieldContent           = big.NewInt(1 << 3)
 	postToValidateFieldDefaultSignatures = big.NewInt(1 << 4)
-	postToValidateFieldOptions           = big.NewInt(1 << 5)
-	postToValidateFieldShortenLinks      = big.NewInt(1 << 6)
-	postToValidateFieldSignatureID       = big.NewInt(1 << 7)
-	postToValidateFieldWhen              = big.NewInt(1 << 8)
+	postToValidateFieldExternalID        = big.NewInt(1 << 5)
+	postToValidateFieldOptions           = big.NewInt(1 << 6)
+	postToValidateFieldShortenLinks      = big.NewInt(1 << 7)
+	postToValidateFieldSignatureID       = big.NewInt(1 << 8)
+	postToValidateFieldWhen              = big.NewInt(1 << 9)
 )
 
 type PostToValidate struct {
@@ -15834,6 +16166,7 @@ type PostToValidate struct {
 	ChannelSets       []string          `json:"channelSets,omitempty" url:"-"`
 	Content           *PostContent      `json:"content" url:"-"`
 	DefaultSignatures *bool             `json:"defaultSignatures,omitempty" url:"-"`
+	ExternalID        *string           `json:"externalId,omitempty" url:"-"`
 	Options           []*ChannelOptions `json:"options,omitempty" url:"-"`
 	ShortenLinks      *bool             `json:"shortenLinks,omitempty" url:"-"`
 	SignatureID       *string           `json:"signatureId,omitempty" url:"-"`
@@ -15885,6 +16218,13 @@ func (p *PostToValidate) SetContent(content *PostContent) {
 func (p *PostToValidate) SetDefaultSignatures(defaultSignatures *bool) {
 	p.DefaultSignatures = defaultSignatures
 	p.require(postToValidateFieldDefaultSignatures)
+}
+
+// SetExternalID sets the ExternalID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PostToValidate) SetExternalID(externalID *string) {
+	p.ExternalID = externalID
+	p.require(postToValidateFieldExternalID)
 }
 
 // SetOptions sets the Options field and marks it as non-optional;

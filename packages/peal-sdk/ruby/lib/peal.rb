@@ -51,6 +51,7 @@ require_relative "peal/posts/types/update_posts_request"
 require_relative "peal/posts/types/outcome_posts_request"
 require_relative "peal/posts/types/attempts_posts_request"
 require_relative "peal/posts/types/post_tags"
+require_relative "peal/posts/types/post_external_id_change"
 require_relative "peal/posts/types/duplicate_posts_request"
 require_relative "peal/posts/types/schedule_post"
 require_relative "peal/posts/types/reschedule_posts_request"
@@ -756,6 +757,8 @@ module Peal
     autoload :InvalidTimeZoneEncoded, ::File.join(__dir__, "peal/types/invalid_time_zone_encoded")
     autoload :PostContentInvalidEncodedTag, ::File.join(__dir__, "peal/types/post_content_invalid_encoded_tag")
     autoload :PostContentInvalidEncoded, ::File.join(__dir__, "peal/types/post_content_invalid_encoded")
+    autoload :PostExternalIDTakenEncodedTag, ::File.join(__dir__, "peal/types/post_external_id_taken_encoded_tag")
+    autoload :PostExternalIDTakenEncoded, ::File.join(__dir__, "peal/types/post_external_id_taken_encoded")
     autoload :PostNotFoundEncoded, ::File.join(__dir__, "peal/types/post_not_found_encoded")
     autoload :QueueHasNoRoomEncodedTag, ::File.join(__dir__, "peal/types/queue_has_no_room_encoded_tag")
     autoload :QueueNoRoom, ::File.join(__dir__, "peal/types/queue_no_room")

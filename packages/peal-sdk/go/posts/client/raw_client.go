@@ -558,6 +558,53 @@ func (r *RawClient) SetTags(
 	}, nil
 }
 
+func (r *RawClient) SetExternalID(
+	ctx context.Context,
+	request *peal.PostExternalIDChange,
+	opts ...option.RequestOption,
+) (*core.Response[*peal.Post], error) {
+	options := core.NewRequestOptions(opts...)
+	baseURL := internal.ResolveBaseURL(
+		options.BaseURL,
+		r.baseURL,
+		"https://app.peal.social",
+	)
+	endpointURL := internal.EncodeURL(
+		baseURL+"/api/v1/posts/%v/external-id",
+		request.PostID,
+	)
+	headers := internal.MergeHeaders(
+		r.options.ToHeader(),
+		options.ToHeader(),
+	)
+	headers.Add("Content-Type", "application/json")
+	var response *peal.Post
+	raw, err := r.caller.Call(
+		ctx,
+		&internal.CallParams{
+			URL:             endpointURL,
+			Method:          http.MethodPut,
+			Headers:         headers,
+			MaxAttempts:     options.MaxAttempts,
+			DisableRetries:  options.DisableRetries,
+			BodyProperties:  options.BodyProperties,
+			QueryParameters: options.QueryParameters,
+			Client:          options.HTTPClient,
+			Request:         request,
+			Response:        &response,
+			ErrorDecoder:    internal.NewErrorDecoder(peal.ErrorCodes),
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &core.Response[*peal.Post]{
+		StatusCode: raw.StatusCode,
+		Header:     raw.Header,
+		Body:       response,
+	}, nil
+}
+
 func (r *RawClient) Duplicate(
 	ctx context.Context,
 	request *peal.DuplicatePostsRequest,

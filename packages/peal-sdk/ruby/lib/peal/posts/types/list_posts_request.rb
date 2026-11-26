@@ -12,6 +12,8 @@ module Peal
 
         field :cursor, -> { String }, optional: true, nullable: false
 
+        field :external_id, -> { String }, optional: true, nullable: false, api_name: "externalId"
+
         field :from, -> { String }, optional: true, nullable: false
 
         field :limit, -> { String }, optional: true, nullable: false
@@ -33,6 +35,8 @@ module Peal
         field :tag_id, -> { String }, optional: true, nullable: false, api_name: "tagId"
 
         field :to, -> { String }, optional: true, nullable: false
+
+        field :updated_since, -> { String }, optional: true, nullable: false, api_name: "updatedSince"
       end
     end
   end

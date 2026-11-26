@@ -33,6 +33,8 @@ public final class BulkPost {
 
     private final Optional<Boolean> defaultSignatures;
 
+    private final Optional<String> externalId;
+
     private final Optional<List<ChannelOptions>> options;
 
     private final Optional<Boolean> shortenLinks;
@@ -53,6 +55,7 @@ public final class BulkPost {
             Optional<List<String>> channelSets,
             PostContent content,
             Optional<Boolean> defaultSignatures,
+            Optional<String> externalId,
             Optional<List<ChannelOptions>> options,
             Optional<Boolean> shortenLinks,
             Optional<String> signatureId,
@@ -65,6 +68,7 @@ public final class BulkPost {
         this.channelSets = channelSets;
         this.content = content;
         this.defaultSignatures = defaultSignatures;
+        this.externalId = externalId;
         this.options = options;
         this.shortenLinks = shortenLinks;
         this.signatureId = signatureId;
@@ -97,6 +101,11 @@ public final class BulkPost {
     @JsonProperty("defaultSignatures")
     public Optional<Boolean> getDefaultSignatures() {
         return defaultSignatures;
+    }
+
+    @JsonProperty("externalId")
+    public Optional<String> getExternalId() {
+        return externalId;
     }
 
     @JsonProperty("options")
@@ -146,6 +155,7 @@ public final class BulkPost {
                 && channelSets.equals(other.channelSets)
                 && content.equals(other.content)
                 && defaultSignatures.equals(other.defaultSignatures)
+                && externalId.equals(other.externalId)
                 && options.equals(other.options)
                 && shortenLinks.equals(other.shortenLinks)
                 && signatureId.equals(other.signatureId)
@@ -162,6 +172,7 @@ public final class BulkPost {
                 this.channelSets,
                 this.content,
                 this.defaultSignatures,
+                this.externalId,
                 this.options,
                 this.shortenLinks,
                 this.signatureId,
@@ -214,6 +225,10 @@ public final class BulkPost {
 
         _FinalStage defaultSignatures(Boolean defaultSignatures);
 
+        _FinalStage externalId(Optional<String> externalId);
+
+        _FinalStage externalId(String externalId);
+
         _FinalStage options(Optional<List<ChannelOptions>> options);
 
         _FinalStage options(List<ChannelOptions> options);
@@ -251,6 +266,8 @@ public final class BulkPost {
 
         private Optional<List<ChannelOptions>> options = Optional.empty();
 
+        private Optional<String> externalId = Optional.empty();
+
         private Optional<Boolean> defaultSignatures = Optional.empty();
 
         private Optional<List<String>> channelSets = Optional.empty();
@@ -270,6 +287,7 @@ public final class BulkPost {
             channelSets(other.getChannelSets());
             content(other.getContent());
             defaultSignatures(other.getDefaultSignatures());
+            externalId(other.getExternalId());
             options(other.getOptions());
             shortenLinks(other.getShortenLinks());
             signatureId(other.getSignatureId());
@@ -359,6 +377,19 @@ public final class BulkPost {
         }
 
         @java.lang.Override
+        public _FinalStage externalId(String externalId) {
+            this.externalId = Optional.ofNullable(externalId);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "externalId", nulls = Nulls.SKIP)
+        public _FinalStage externalId(Optional<String> externalId) {
+            this.externalId = externalId;
+            return this;
+        }
+
+        @java.lang.Override
         public _FinalStage defaultSignatures(Boolean defaultSignatures) {
             this.defaultSignatures = Optional.ofNullable(defaultSignatures);
             return this;
@@ -429,6 +460,7 @@ public final class BulkPost {
                     channelSets,
                     content,
                     defaultSignatures,
+                    externalId,
                     options,
                     shortenLinks,
                     signatureId,
@@ -445,6 +477,7 @@ public final class BulkPost {
                     || key.equalsIgnoreCase("channelSets")
                     || key.equalsIgnoreCase("content")
                     || key.equalsIgnoreCase("defaultSignatures")
+                    || key.equalsIgnoreCase("externalId")
                     || key.equalsIgnoreCase("options")
                     || key.equalsIgnoreCase("shortenLinks")
                     || key.equalsIgnoreCase("signatureId")

@@ -31,6 +31,8 @@ public final class PostValidation {
 
     private final List<DuplicateOnChannel> duplicates;
 
+    private final Optional<String> externalIdTakenBy;
+
     private final Optional<PlanShortfall> planLimit;
 
     private final Optional<QueueNoRoom> queueNoRoom;
@@ -55,6 +57,7 @@ public final class PostValidation {
             boolean awaitsApproval,
             List<ChannelPreview> channels,
             List<DuplicateOnChannel> duplicates,
+            Optional<String> externalIdTakenBy,
             Optional<PlanShortfall> planLimit,
             Optional<QueueNoRoom> queueNoRoom,
             Optional<String> queueSlot,
@@ -68,6 +71,7 @@ public final class PostValidation {
         this.awaitsApproval = awaitsApproval;
         this.channels = channels;
         this.duplicates = duplicates;
+        this.externalIdTakenBy = externalIdTakenBy;
         this.planLimit = planLimit;
         this.queueNoRoom = queueNoRoom;
         this.queueSlot = queueSlot;
@@ -93,6 +97,14 @@ public final class PostValidation {
     @JsonProperty("duplicates")
     public List<DuplicateOnChannel> getDuplicates() {
         return duplicates;
+    }
+
+    @JsonIgnore
+    public Optional<String> getExternalIdTakenBy() {
+        if (externalIdTakenBy == null) {
+            return Optional.empty();
+        }
+        return externalIdTakenBy;
     }
 
     @JsonIgnore
@@ -147,6 +159,12 @@ public final class PostValidation {
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("externalIdTakenBy")
+    private Optional<String> _getExternalIdTakenBy() {
+        return externalIdTakenBy;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("planLimit")
     private Optional<PlanShortfall> _getPlanLimit() {
         return planLimit;
@@ -173,6 +191,7 @@ public final class PostValidation {
         return awaitsApproval == other.awaitsApproval
                 && channels.equals(other.channels)
                 && duplicates.equals(other.duplicates)
+                && externalIdTakenBy.equals(other.externalIdTakenBy)
                 && planLimit.equals(other.planLimit)
                 && queueNoRoom.equals(other.queueNoRoom)
                 && queueSlot.equals(other.queueSlot)
@@ -190,6 +209,7 @@ public final class PostValidation {
                 this.awaitsApproval,
                 this.channels,
                 this.duplicates,
+                this.externalIdTakenBy,
                 this.planLimit,
                 this.queueNoRoom,
                 this.queueSlot,
@@ -238,6 +258,12 @@ public final class PostValidation {
         _FinalStage addDuplicates(DuplicateOnChannel duplicates);
 
         _FinalStage addAllDuplicates(List<DuplicateOnChannel> duplicates);
+
+        _FinalStage externalIdTakenBy(Optional<String> externalIdTakenBy);
+
+        _FinalStage externalIdTakenBy(String externalIdTakenBy);
+
+        _FinalStage externalIdTakenBy(Nullable<String> externalIdTakenBy);
 
         _FinalStage planLimit(Optional<PlanShortfall> planLimit);
 
@@ -304,6 +330,8 @@ public final class PostValidation {
 
         private Optional<PlanShortfall> planLimit = Optional.empty();
 
+        private Optional<String> externalIdTakenBy = Optional.empty();
+
         private List<DuplicateOnChannel> duplicates = new ArrayList<>();
 
         private List<ChannelPreview> channels = new ArrayList<>();
@@ -317,6 +345,7 @@ public final class PostValidation {
             awaitsApproval(other.getAwaitsApproval());
             channels(other.getChannels());
             duplicates(other.getDuplicates());
+            externalIdTakenBy(other.getExternalIdTakenBy());
             planLimit(other.getPlanLimit());
             queueNoRoom(other.getQueueNoRoom());
             queueSlot(other.getQueueSlot());
@@ -505,6 +534,31 @@ public final class PostValidation {
         }
 
         @java.lang.Override
+        public _FinalStage externalIdTakenBy(Nullable<String> externalIdTakenBy) {
+            if (externalIdTakenBy.isNull()) {
+                this.externalIdTakenBy = null;
+            } else if (externalIdTakenBy.isEmpty()) {
+                this.externalIdTakenBy = Optional.empty();
+            } else {
+                this.externalIdTakenBy = Optional.of(externalIdTakenBy.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage externalIdTakenBy(String externalIdTakenBy) {
+            this.externalIdTakenBy = Optional.ofNullable(externalIdTakenBy);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "externalIdTakenBy", nulls = Nulls.SKIP)
+        public _FinalStage externalIdTakenBy(Optional<String> externalIdTakenBy) {
+            this.externalIdTakenBy = externalIdTakenBy;
+            return this;
+        }
+
+        @java.lang.Override
         public _FinalStage addAllDuplicates(List<DuplicateOnChannel> duplicates) {
             if (duplicates != null) {
                 this.duplicates.addAll(duplicates);
@@ -558,6 +612,7 @@ public final class PostValidation {
                     awaitsApproval,
                     channels,
                     duplicates,
+                    externalIdTakenBy,
                     planLimit,
                     queueNoRoom,
                     queueSlot,
@@ -575,6 +630,7 @@ public final class PostValidation {
             if (key.equalsIgnoreCase("awaitsApproval")
                     || key.equalsIgnoreCase("channels")
                     || key.equalsIgnoreCase("duplicates")
+                    || key.equalsIgnoreCase("externalIdTakenBy")
                     || key.equalsIgnoreCase("planLimit")
                     || key.equalsIgnoreCase("queueNoRoom")
                     || key.equalsIgnoreCase("queueSlot")

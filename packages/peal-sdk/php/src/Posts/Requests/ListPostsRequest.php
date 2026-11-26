@@ -33,6 +33,11 @@ class ListPostsRequest extends JsonSerializableType
     public ?string $cursor;
 
     /**
+     * @var ?string $externalId
+     */
+    public ?string $externalId;
+
+    /**
      * @var ?string $from
      */
     public ?string $from;
@@ -88,11 +93,17 @@ class ListPostsRequest extends JsonSerializableType
     public ?string $to;
 
     /**
+     * @var ?string $updatedSince
+     */
+    public ?string $updatedSince;
+
+    /**
      * @param array{
      *   authorId?: ?string,
      *   channelId?: ?string,
      *   createdVia?: ?value-of<PostOriginVia>,
      *   cursor?: ?string,
+     *   externalId?: ?string,
      *   from?: ?string,
      *   limit?: ?string,
      *   outcome?: ?value-of<PostOutcome>,
@@ -104,6 +115,7 @@ class ListPostsRequest extends JsonSerializableType
      *   status?: ?value-of<PostStatus>,
      *   tagId?: ?string,
      *   to?: ?string,
+     *   updatedSince?: ?string,
      * } $values
      */
     public function __construct(
@@ -113,6 +125,7 @@ class ListPostsRequest extends JsonSerializableType
         $this->channelId = $values['channelId'] ?? null;
         $this->createdVia = $values['createdVia'] ?? null;
         $this->cursor = $values['cursor'] ?? null;
+        $this->externalId = $values['externalId'] ?? null;
         $this->from = $values['from'] ?? null;
         $this->limit = $values['limit'] ?? null;
         $this->outcome = $values['outcome'] ?? null;
@@ -124,5 +137,6 @@ class ListPostsRequest extends JsonSerializableType
         $this->status = $values['status'] ?? null;
         $this->tagId = $values['tagId'] ?? null;
         $this->to = $values['to'] ?? null;
+        $this->updatedSince = $values['updatedSince'] ?? null;
     }
 }

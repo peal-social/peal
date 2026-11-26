@@ -25,6 +25,9 @@ class PostDraft(UniversalBaseModel):
     shorten_links: typing_extensions.Annotated[
         typing.Optional[bool], FieldMetadata(alias="shortenLinks"), pydantic.Field(alias="shortenLinks")
     ] = None
+    external_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="externalId"), pydantic.Field(alias="externalId")
+    ] = None
     signature_id: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="signatureId"), pydantic.Field(alias="signatureId")
     ] = None

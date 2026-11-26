@@ -29,6 +29,9 @@ public record PostDraft : IJsonOnDeserialized
     [JsonPropertyName("shortenLinks")]
     public bool? ShortenLinks { get; set; }
 
+    [JsonPropertyName("externalId")]
+    public string? ExternalId { get; set; }
+
     [JsonPropertyName("signatureId")]
     public string? SignatureId { get; set; }
 

@@ -11,6 +11,8 @@ module Peal
       CREATED_ASC = "createdAsc"
       SCHEDULED_DESC = "scheduledDesc"
       SCHEDULED_ASC = "scheduledAsc"
+      UPDATED_DESC = "updatedDesc"
+      UPDATED_ASC = "updatedAsc"
     end
   end
 end

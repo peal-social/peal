@@ -82,6 +82,7 @@ async fn main() {
                 allow_duplicate: None,
                 channel_sets: None,
                 default_signatures: None,
+                external_id: None,
                 options: None,
                 shorten_links: None,
                 signature_id: None,

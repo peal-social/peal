@@ -446,6 +446,32 @@ func TestPostsSetTagsWithWireMock(
 	VerifyRequestCount(t, "TestPostsSetTagsWithWireMock", "PUT", "/api/v1/posts/postId/tags", nil, 1)
 }
 
+func TestPostsSetExternalIDWithWireMock(
+	t *testing.T,
+) {
+	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
+	if WireMockBaseURL == "" {
+		WireMockBaseURL = "http://localhost:8080"
+	}
+	client := client.NewClient(
+		option.WithBaseURL(WireMockBaseURL),
+		option.WithToken("test-token"),
+	)
+	request := &peal.PostExternalIDChange{
+		PostID: "postId",
+	}
+	_, invocationErr := client.Posts.SetExternalID(
+		context.TODO(),
+		request,
+		option.WithHTTPHeader(
+			http.Header{"X-Test-Id": []string{"TestPostsSetExternalIDWithWireMock"}},
+		),
+	)
+
+	require.NoError(t, invocationErr, "Client method call should succeed")
+	VerifyRequestCount(t, "TestPostsSetExternalIDWithWireMock", "PUT", "/api/v1/posts/postId/external-id", nil, 1)
+}
+
 func TestPostsDuplicateWithWireMock(
 	t *testing.T,
 ) {

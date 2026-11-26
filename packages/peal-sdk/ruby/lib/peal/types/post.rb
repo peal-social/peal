@@ -9,7 +9,11 @@ module Peal
 
       field :content, -> { Peal::Types::PostContent }, optional: false, nullable: false
 
+      field :created_at, -> { String }, optional: false, nullable: false, api_name: "createdAt"
+
       field :created_via, -> { Peal::Types::PostOrigin }, optional: false, nullable: true, api_name: "createdVia"
+
+      field :external_id, -> { String }, optional: false, nullable: true, api_name: "externalId"
 
       field :id, -> { String }, optional: false, nullable: false
 
@@ -34,6 +38,8 @@ module Peal
       field :tag_ids, -> { Internal::Types::Array[String] }, optional: false, nullable: false, api_name: "tagIds"
 
       field :targets, -> { Internal::Types::Array[Peal::Types::PostTarget] }, optional: false, nullable: false
+
+      field :updated_at, -> { String }, optional: false, nullable: false, api_name: "updatedAt"
 
       field :warnings, -> { Internal::Types::Array[Peal::Types::PostWarning] }, optional: true, nullable: false
     end

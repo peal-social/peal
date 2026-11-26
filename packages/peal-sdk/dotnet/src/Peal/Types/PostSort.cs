@@ -16,6 +16,10 @@ public readonly record struct PostSort : IStringEnum
 
     public static readonly PostSort ScheduledAsc = new(Values.ScheduledAsc);
 
+    public static readonly PostSort UpdatedDesc = new(Values.UpdatedDesc);
+
+    public static readonly PostSort UpdatedAsc = new(Values.UpdatedAsc);
+
     public PostSort(string value)
     {
         Value = value;
@@ -117,5 +121,9 @@ public readonly record struct PostSort : IStringEnum
         public const string ScheduledDesc = "scheduledDesc";
 
         public const string ScheduledAsc = "scheduledAsc";
+
+        public const string UpdatedDesc = "updatedDesc";
+
+        public const string UpdatedAsc = "updatedAsc";
     }
 }

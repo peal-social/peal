@@ -17,6 +17,8 @@ public final class ImportColumn {
 
     public static final ImportColumn IDEMPOTENCY_KEY = new ImportColumn(Value.IDEMPOTENCY_KEY, "idempotency_key");
 
+    public static final ImportColumn EXTERNAL_ID = new ImportColumn(Value.EXTERNAL_ID, "external_id");
+
     public static final ImportColumn MEDIA = new ImportColumn(Value.MEDIA, "media");
 
     public static final ImportColumn ALLOW_DUPLICATE = new ImportColumn(Value.ALLOW_DUPLICATE, "allow_duplicate");
@@ -62,6 +64,8 @@ public final class ImportColumn {
                 return visitor.visitTimeZone();
             case IDEMPOTENCY_KEY:
                 return visitor.visitIdempotencyKey();
+            case EXTERNAL_ID:
+                return visitor.visitExternalId();
             case MEDIA:
                 return visitor.visitMedia();
             case ALLOW_DUPLICATE:
@@ -85,6 +89,8 @@ public final class ImportColumn {
                 return TIME_ZONE;
             case "idempotency_key":
                 return IDEMPOTENCY_KEY;
+            case "external_id":
+                return EXTERNAL_ID;
             case "media":
                 return MEDIA;
             case "allow_duplicate":
@@ -109,6 +115,8 @@ public final class ImportColumn {
 
         IDEMPOTENCY_KEY,
 
+        EXTERNAL_ID,
+
         UNKNOWN
     }
 
@@ -126,6 +134,8 @@ public final class ImportColumn {
         T visitAllowDuplicate();
 
         T visitIdempotencyKey();
+
+        T visitExternalId();
 
         T visitUnknown(String unknownType);
     }

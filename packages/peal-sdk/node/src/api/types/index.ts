@@ -586,6 +586,7 @@ export * from "./PostChannel.js";
 export * from "./PostContent.js";
 export * from "./PostContentInvalidEncoded.js";
 export * from "./PostDraft.js";
+export * from "./PostExternalIdTakenEncoded.js";
 export * from "./PostFormatCapabilities.js";
 export * from "./PostMetrics.js";
 export * from "./PostNotFoundEncoded.js";

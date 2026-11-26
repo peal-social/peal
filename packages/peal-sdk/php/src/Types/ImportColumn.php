@@ -11,4 +11,5 @@ enum ImportColumn: string
     case TimeZone = "time_zone";
     case AllowDuplicate = "allow_duplicate";
     case IdempotencyKey = "idempotency_key";
+    case ExternalId = "external_id";
 }

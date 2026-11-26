@@ -11,6 +11,8 @@ module Peal
 
       field :duplicates, -> { Internal::Types::Array[Peal::Types::DuplicateOnChannel] }, optional: false, nullable: false
 
+      field :external_id_taken_by, -> { String }, optional: false, nullable: true, api_name: "externalIdTakenBy"
+
       field :plan_limit, -> { Peal::Types::PlanShortfall }, optional: false, nullable: true, api_name: "planLimit"
 
       field :queue_no_room, -> { Peal::Types::QueueNoRoom }, optional: true, nullable: false, api_name: "queueNoRoom"

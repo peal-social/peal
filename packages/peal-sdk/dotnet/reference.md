@@ -66,7 +66,7 @@ await client.Posts.CalendarAsync(new CalendarPostsRequest { From = "from", To = 
 <dl>
 <dd>
 
-Lists the workspace's posts, whatever their state, a page at a time: 20 unless `limit` (at most 100) says otherwise. Every filter given must hold: `status` (draft, scheduled, publishing, finished, cancelled), `outcome` (how a finished post ended, such as `failed` or `partiallyPublished`), `channelId` (posts with a target on that channel), `platform` (posts with a target on a connected channel of that platform), `tagId` (posts filed under that tag), `queueId` (posts that queue placed), `recyclingId` (posts that recycling rule made), `removed` (`true`: posts Peal deleted from at least one channel's platform; `false`: posts deleted from none), `from` (included) and `to` (excluded), on the scheduled instant, which leave out posts without a time, `createdVia` (`web`, `apiKey` or `application`) and `authorId`. `sort` orders them by creation (`createdDesc`, the default, or `createdAsc`) or by scheduled instant (`scheduledDesc`, `scheduledAsc`, which list only posts with a time). Pass the page's `nextCursor` as `cursor`, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and `channels` gives the platform of each channel the page names. Needs post:read and channel:read.
+Lists the workspace's posts, whatever their state, a page at a time: 20 unless `limit` (at most 100) says otherwise. Every filter given must hold: `status` (draft, scheduled, publishing, finished, cancelled), `outcome` (how a finished post ended, such as `failed` or `partiallyPublished`), `channelId` (posts with a target on that channel), `platform` (posts with a target on a connected channel of that platform), `tagId` (posts filed under that tag), `queueId` (posts that queue placed), `recyclingId` (posts that recycling rule made), `removed` (`true`: posts Peal deleted from at least one channel's platform; `false`: posts deleted from none), `from` (included) and `to` (excluded), on the scheduled instant, which leave out posts without a time, `createdVia` (`web`, `apiKey` or `application`), `authorId`, `externalId` (the post that has that id of yours, exactly, and the cancelled ones that had it) and `updatedSince` (posts whose `updatedAt` is at or after that instant). `sort` orders them by creation (`createdDesc`, the default, or `createdAsc`), by scheduled instant (`scheduledDesc`, `scheduledAsc`, which list only posts with a time), or by when each last changed (`updatedDesc`, `updatedAsc`). To keep another system in step, walk `sort=updatedAsc` with `updatedSince` until `nextCursor` is null, keep the last post's `updatedAt` and start the next run from it: that list never holds a post changed in the last 5 seconds, so a change made while you walk comes at the end or on the next run, and is never skipped, though a post may come twice. Pass the page's `nextCursor` as `cursor`, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and `channels` gives the platform of each channel the page names. Needs post:read and channel:read.
 </dd>
 </dl>
 </dd>
@@ -120,7 +120,7 @@ await client.Posts.ListAsync(new ListPostsRequest());
 <dl>
 <dd>
 
-Creates a post and sends it to some of the workspace's channels in one call: `when` is `now`, which publishes at once, `at` an instant, kept with its IANA time zone, or `queue`, which puts it on the next free slot of a queue (`queueId`, or the workspace's default queue), decided when the request is received so that posts sent together never take the same slot; it is then an ordinary scheduled post, through every rule a time chosen by hand goes through, the plan's room counted in the slot's month (PlanLimitReached, never a later month), and with no channel or channel set named it goes to the queue's (QueueHasNoRoom when the queue has no free slot within 366 days). Instead of listing channels, or beside them, it may name channel sets (`channelSets`, by id or name): it goes to their connected channels, with the options each set keeps where it gives none, and a channel of a set that is no longer connected is left out and told in the answer's `warnings`, never silently; a set none of whose channels is left, with no other channel, is refused (UnknownChannels). A channel on which it gives no options takes the channel's default options. `defaultSignatures` puts each channel's default signature under its text, and `signatureId` one signature on every channel: signatures are text of the post, counted against each platform's limit, and never added twice. It goes through every rule scheduling a draft does (each platform's limits on text, media and options, the account's own, the plan's), and answers every violation at once (PostContentInvalid): nothing is made then. In a workspace that asks for approvals, a post that needs one is answered with the status `awaitingApproval`: it keeps its time and goes out only once it is approved. What it publishes reaches the platforms' public, and cannot be taken back from Peal once it is out; until its time, cancel or unschedule it. Send an `Idempotency-Key` header (any text of your choosing, at most 255 characters, such as a UUID) to make a request safe to send again: within 24 hours, the same key with the same body answers the post the first request made, as it now stands, and makes no other; the same key with another body is refused (IdempotencyKeyReused), and answers PostNotFound once that post was deleted. Keys are kept per workspace, as digests. Apart from keys, a post whose content already goes to one of its channels less than 23 hours from its time is refused (DuplicatePost), as a request made twice by mistake would be, unless it says `allowDuplicate: true`; scheduling a draft is not checked. It answers as soon as the post is made, while it publishes, unless `wait` says to wait for the outcome: up to that many seconds (60 at most) for a post that goes out now, the answer is then the post once every channel has its result (`status` `finished`, with its `outcome`, each target `published` with its `permalink` or `failed` with its `failureReason`), or the post as it stands when the time runs out, some targets still `pending` or `publishing`: it goes on publishing, and `GET …/posts/{postId}/outcome` waits for the rest. The answer is 201 either way: the post was made. `shortenLinks: true` sends its links shortened where the server has short links (`links.status`), `false` as written; left out, the post takes the workspace's default (`byDefault`) when it is made, and keeps it. Needs post:schedule and channel:read, and media:read when it shows media; an OAuth client needs the scope workspace:publish.
+Creates a post and sends it to some of the workspace's channels in one call: `when` is `now`, which publishes at once, `at` an instant, kept with its IANA time zone, or `queue`, which puts it on the next free slot of a queue (`queueId`, or the workspace's default queue), decided when the request is received so that posts sent together never take the same slot; it is then an ordinary scheduled post, through every rule a time chosen by hand goes through, the plan's room counted in the slot's month (PlanLimitReached, never a later month), and with no channel or channel set named it goes to the queue's (QueueHasNoRoom when the queue has no free slot within 366 days). Instead of listing channels, or beside them, it may name channel sets (`channelSets`, by id or name): it goes to their connected channels, with the options each set keeps where it gives none, and a channel of a set that is no longer connected is left out and told in the answer's `warnings`, never silently; a set none of whose channels is left, with no other channel, is refused (UnknownChannels). A channel on which it gives no options takes the channel's default options. `defaultSignatures` puts each channel's default signature under its text, and `signatureId` one signature on every channel: signatures are text of the post, counted against each platform's limit, and never added twice. It goes through every rule scheduling a draft does (each platform's limits on text, media and options, the account's own, the plan's), and answers every violation at once (PostContentInvalid): nothing is made then. In a workspace that asks for approvals, a post that needs one is answered with the status `awaitingApproval`: it keeps its time and goes out only once it is approved. What it publishes reaches the platforms' public, and cannot be taken back from Peal once it is out; until its time, cancel or unschedule it. Send an `Idempotency-Key` header (any text of your choosing, at most 255 characters, such as a UUID) to make a request safe to send again: within 24 hours, the same key with the same body answers the post the first request made, as it now stands, and makes no other; the same key with another body is refused (IdempotencyKeyReused), and answers PostNotFound once that post was deleted. Keys are kept per workspace, as digests. A key lasts a day; for good, give the post your own id (`externalId`, at most 255 characters): a second post with it, however long after, is refused (PostExternalIdTaken, naming the post that has it), the key's replay answering first. Apart from keys, a post whose content already goes to one of its channels less than 23 hours from its time is refused (DuplicatePost), as a request made twice by mistake would be, unless it says `allowDuplicate: true`; scheduling a draft is not checked. It answers as soon as the post is made, while it publishes, unless `wait` says to wait for the outcome: up to that many seconds (60 at most) for a post that goes out now, the answer is then the post once every channel has its result (`status` `finished`, with its `outcome`, each target `published` with its `permalink` or `failed` with its `failureReason`), or the post as it stands when the time runs out, some targets still `pending` or `publishing`: it goes on publishing, and `GET …/posts/{postId}/outcome` waits for the rest. The answer is 201 either way: the post was made. `shortenLinks: true` sends its links shortened where the server has short links (`links.status`), `false` as written; left out, the post takes the workspace's default (`byDefault`) when it is made, and keeps it. Needs post:schedule and channel:read, and media:read when it shows media; an OAuth client needs the scope workspace:publish.
 </dd>
 </dl>
 </dd>
@@ -270,7 +270,7 @@ await client.Posts.BulkAsync(
 <dl>
 <dd>
 
-Creates and sends the posts a CSV file lists, one per row, at most 100 rows under its first line, which names the columns, in any order: `text` and `channels` (channel ids separated by spaces, commas or semicolons) are required columns, `at` too (`now`, an instant with its offset such as 2026-11-20T09:00:00Z, or a local time without one such as 2026-11-20 10:00, read in the row's `time_zone`, an IANA zone, UTC if left out); `media` (ids of ready media of the workspace), `allow_duplicate` (`true` or `false`) and `idempotency_key` are optional. Cells follow RFC 4180, strictly: a cell with a comma, a quote or a line break is written between double quotes, a quote inside it doubled; a quote anywhere else is ImportUnreadable (`strayQuote`). Blank lines are no rows. The file is checked first, every row, as `validate` checks a post and as the file it is (a row an earlier row leaves no room for in its month, one that repeats an earlier row's content near its time, and one that carries an earlier row's key with another post are refused; a row with more or fewer cells than the first line names is unreadable, never guessed); unless every row is valid, nothing is made, and `rows` says which are `valid`, `refused` (with what `create` would have answered) or `unreadable` (with the cells at fault). `dryRun` stops there even when every row is valid. Otherwise the rows are then made in order as `bulk` makes its items, each `created` or, when something changed since the check or a row repeats an earlier one, `refused`. The answer is 200 once the file was read; a file that cannot be read at all is ImportUnreadable. An `Idempotency-Key` header works as on `bulk`, by row. A file has no column for short links: each post takes the workspace's default (`links.status`'s `byDefault`). Needs post:schedule, post:read and channel:read, and media:read for rows with media; an OAuth client needs the scope workspace:publish.
+Creates and sends the posts a CSV file lists, one per row, at most 100 rows under its first line, which names the columns, in any order: `text` and `channels` (channel ids separated by spaces, commas or semicolons) are required columns, `at` too (`now`, an instant with its offset such as 2026-11-20T09:00:00Z, or a local time without one such as 2026-11-20 10:00, read in the row's `time_zone`, an IANA zone, UTC if left out); `media` (ids of ready media of the workspace), `allow_duplicate` (`true` or `false`), `idempotency_key` and `external_id` (your own id for the post, unique among the workspace's posts that are not cancelled: a row whose id a post or an earlier row has is refused, PostExternalIdTaken) are optional. Cells follow RFC 4180, strictly: a cell with a comma, a quote or a line break is written between double quotes, a quote inside it doubled; a quote anywhere else is ImportUnreadable (`strayQuote`). Blank lines are no rows. The file is checked first, every row, as `validate` checks a post and as the file it is (a row an earlier row leaves no room for in its month, one that repeats an earlier row's content near its time, and one that carries an earlier row's key with another post are refused; a row with more or fewer cells than the first line names is unreadable, never guessed); unless every row is valid, nothing is made, and `rows` says which are `valid`, `refused` (with what `create` would have answered) or `unreadable` (with the cells at fault). `dryRun` stops there even when every row is valid. Otherwise the rows are then made in order as `bulk` makes its items, each `created` or, when something changed since the check or a row repeats an earlier one, `refused`. The answer is 200 once the file was read; a file that cannot be read at all is ImportUnreadable. An `Idempotency-Key` header works as on `bulk`, by row. A file has no column for short links: each post takes the workspace's default (`links.status`'s `byDefault`). Needs post:schedule, post:read and channel:read, and media:read for rows with media; an OAuth client needs the scope workspace:publish.
 </dd>
 </dl>
 </dd>
@@ -449,7 +449,7 @@ await client.Posts.GetAsync(new GetPostsRequest { PostId = "postId" });
 <dl>
 <dd>
 
-Replaces a draft's content, channels and options: options left out are removed. Its tags are replaced by `tagIds` when given, and kept otherwise. A post that is no longer a draft is a conflict. Needs post:update, channel:read, and media:read when it shows media.
+Replaces a draft's content, channels and options: options left out are removed. Its tags are replaced by `tagIds` when given, and kept otherwise; so is its `externalId`, which null removes, and which another post that is not cancelled may not have (PostExternalIdTaken). A post that is no longer a draft is a conflict. Needs post:update, channel:read, and media:read when it shows media.
 </dd>
 </dl>
 </dd>
@@ -669,6 +669,62 @@ await client.Posts.SetTagsAsync(
 <dd>
 
 **request:** `PostTags` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Posts.<a href="/src/Peal/Posts/PostsClient.cs">SetExternalIdAsync</a>(PostExternalIdChange { ... }) -> WithRawResponseTask&lt;Post&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gives a post your own id for it (`externalId`, at most 255 characters), instead of the one it had, or none with null. It says nothing to the platforms, so a post takes it whatever its status, sent or not: give ids to posts made before your system kept them, or take one off a post to free it. Another post that is not cancelled with the same id is refused (PostExternalIdTaken, naming it); a cancelled post frees its id. Needs post:update.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Posts.SetExternalIdAsync(
+    new PostExternalIdChange { PostId = "postId", ExternalId = null }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `PostExternalIdChange` 
     
 </dd>
 </dl>

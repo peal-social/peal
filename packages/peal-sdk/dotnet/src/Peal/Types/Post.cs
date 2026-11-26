@@ -17,8 +17,14 @@ public record Post : IJsonOnDeserialized
     [JsonPropertyName("content")]
     public required PostContent Content { get; set; }
 
+    [JsonPropertyName("createdAt")]
+    public required string CreatedAt { get; set; }
+
     [JsonPropertyName("createdVia")]
     public PostOrigin? CreatedVia { get; set; }
+
+    [JsonPropertyName("externalId")]
+    public string? ExternalId { get; set; }
 
     [JsonPropertyName("id")]
     public required string Id { get; set; }
@@ -55,6 +61,9 @@ public record Post : IJsonOnDeserialized
 
     [JsonPropertyName("targets")]
     public IEnumerable<PostTarget> Targets { get; set; } = new List<PostTarget>();
+
+    [JsonPropertyName("updatedAt")]
+    public required string UpdatedAt { get; set; }
 
     [JsonPropertyName("warnings")]
     public IEnumerable<PostWarning>? Warnings { get; set; }

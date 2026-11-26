@@ -27,6 +27,12 @@ class PostValidation extends JsonSerializableType
     public array $duplicates;
 
     /**
+     * @var ?string $externalIdTakenBy
+     */
+    #[JsonProperty('externalIdTakenBy')]
+    public ?string $externalIdTakenBy;
+
+    /**
      * @var ?PlanShortfall $planLimit
      */
     #[JsonProperty('planLimit')]
@@ -89,6 +95,7 @@ class PostValidation extends JsonSerializableType
      *   unknownMedia: array<string>,
      *   valid: bool,
      *   violations: array<ContentViolation>,
+     *   externalIdTakenBy?: ?string,
      *   planLimit?: ?PlanShortfall,
      *   queueNoRoom?: ?value-of<QueueNoRoom>,
      *   queueSlot?: ?string,
@@ -102,6 +109,7 @@ class PostValidation extends JsonSerializableType
         $this->awaitsApproval = $values['awaitsApproval'];
         $this->channels = $values['channels'];
         $this->duplicates = $values['duplicates'];
+        $this->externalIdTakenBy = $values['externalIdTakenBy'] ?? null;
         $this->planLimit = $values['planLimit'] ?? null;
         $this->queueNoRoom = $values['queueNoRoom'] ?? null;
         $this->queueSlot = $values['queueSlot'] ?? null;

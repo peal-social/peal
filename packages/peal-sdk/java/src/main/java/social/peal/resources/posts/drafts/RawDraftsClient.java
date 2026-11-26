@@ -208,6 +208,9 @@ public class RawDraftsClient {
                     case 404:
                         throw new NotFoundError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 409:
+                        throw new ConflictError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 422:
                         throw new UnprocessableEntityError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);

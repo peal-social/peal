@@ -11,6 +11,7 @@ export type { ListPostsRequest } from "./ListPostsRequest.js";
 export type { LivePostEdit } from "./LivePostEdit.js";
 export type { NewPost } from "./NewPost.js";
 export type { OutcomePostsRequest } from "./OutcomePostsRequest.js";
+export type { PostExternalIdChange } from "./PostExternalIdChange.js";
 export type { PostImport } from "./PostImport.js";
 export type { PostTags } from "./PostTags.js";
 export type { PostToValidate } from "./PostToValidate.js";

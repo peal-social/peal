@@ -26,6 +26,9 @@ public record BulkPost : IJsonOnDeserialized
     [JsonPropertyName("defaultSignatures")]
     public bool? DefaultSignatures { get; set; }
 
+    [JsonPropertyName("externalId")]
+    public string? ExternalId { get; set; }
+
     [JsonPropertyName("options")]
     public IEnumerable<ChannelOptions>? Options { get; set; }
 

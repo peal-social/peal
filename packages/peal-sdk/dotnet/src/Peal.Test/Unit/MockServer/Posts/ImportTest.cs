@@ -150,11 +150,13 @@ public class ImportTest : BaseMockServerTest
                       },
                       "text": "text"
                     },
+                    "createdAt": "createdAt",
                     "createdVia": {
                       "id": "id",
                       "name": "name",
                       "via": "web"
                     },
+                    "externalId": "externalId",
                     "id": "id",
                     "occurrence": 1,
                     "outcome": "published",
@@ -282,6 +284,7 @@ public class ImportTest : BaseMockServerTest
                         "unconfirmedReason": "noResponse"
                       }
                     ],
+                    "updatedAt": "updatedAt",
                     "warnings": [
                       {
                         "_tag": "channelsDropped",
@@ -433,11 +436,13 @@ public class ImportTest : BaseMockServerTest
                       },
                       "text": "text"
                     },
+                    "createdAt": "createdAt",
                     "createdVia": {
                       "id": "id",
                       "name": "name",
                       "via": "web"
                     },
+                    "externalId": "externalId",
                     "id": "id",
                     "occurrence": 1,
                     "outcome": "published",
@@ -565,6 +570,7 @@ public class ImportTest : BaseMockServerTest
                         "unconfirmedReason": "noResponse"
                       }
                     ],
+                    "updatedAt": "updatedAt",
                     "warnings": [
                       {
                         "_tag": "channelsDropped",
@@ -647,6 +653,7 @@ public class ImportTest : BaseMockServerTest
                       ],
                       "text": "text"
                     },
+                    "createdAt": "createdAt",
                     "id": "id",
                     "shortenLinks": true,
                     "status": "draft",
@@ -669,7 +676,8 @@ public class ImportTest : BaseMockServerTest
                         "round": 1,
                         "status": "pending"
                       }
-                    ]
+                    ],
+                    "updatedAt": "updatedAt"
                   },
                   "replayed": true,
                   "row": 1

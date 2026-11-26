@@ -174,6 +174,20 @@ pub enum PostRefusal {
         reason: QueueNoRoom,
     },
 
+    #[non_exhaustive]
+    PostExternalIdTaken {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        code: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        message: Option<String>,
+        #[serde(rename = "requestId")]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        request_id: Option<String>,
+        #[serde(rename = "postId")]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        post_id: Option<String>,
+    },
+
     /// Catch-all variant for unrecognized discriminant values.
     /// If the server sends a discriminant not recognized by the current SDK
     /// version, the raw payload is captured here so callers can still inspect it.
@@ -295,6 +309,15 @@ impl PostRefusal {
             request_id: None,
             queue_id,
             reason,
+        }
+    }
+
+    pub fn post_external_id_taken() -> Self {
+        Self::PostExternalIdTaken {
+            code: None,
+            message: None,
+            request_id: None,
+            post_id: None,
         }
     }
 
@@ -775,6 +798,62 @@ impl PostRefusal {
             request_id: Some(request_id),
             queue_id,
             reason,
+        }
+    }
+
+    pub fn post_external_id_taken_with_code(
+        code: String,
+        message: Option<String>,
+        request_id: Option<String>,
+        post_id: Option<String>,
+    ) -> Self {
+        Self::PostExternalIdTaken {
+            code: Some(code),
+            message,
+            request_id,
+            post_id,
+        }
+    }
+
+    pub fn post_external_id_taken_with_message(
+        code: Option<String>,
+        message: String,
+        request_id: Option<String>,
+        post_id: Option<String>,
+    ) -> Self {
+        Self::PostExternalIdTaken {
+            code,
+            message: Some(message),
+            request_id,
+            post_id,
+        }
+    }
+
+    pub fn post_external_id_taken_with_request_id(
+        code: Option<String>,
+        message: Option<String>,
+        request_id: String,
+        post_id: Option<String>,
+    ) -> Self {
+        Self::PostExternalIdTaken {
+            code,
+            message,
+            request_id: Some(request_id),
+            post_id,
+        }
+    }
+
+    pub fn post_external_id_taken_with_post_id(
+        code: Option<String>,
+        message: Option<String>,
+        request_id: Option<String>,
+        post_id: String,
+    ) -> Self {
+        Self::PostExternalIdTaken {
+            code,
+            message,
+            request_id,
+            post_id: Some(post_id),
         }
     }
 
