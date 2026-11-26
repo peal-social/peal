@@ -718,7 +718,7 @@ An external id is unique in the workspace among posts that aren't cancelled. A s
 }
 ```
 
-So a program that sends a creation again, an hour or a month later, never makes two posts. An `Idempotency-Key` is checked first: the same request under the same key answers the post it made. A cancelled post and a deleted draft free their id. When one record makes several posts, give each its own id, such as `crm-record-42:linkedin`.
+So a program that sends a creation again, an hour or a month later, never makes two posts. An `Idempotency-Key` is checked first: the same request under the same key answers the post it made. A post whose `status` is `cancelled` and a deleted draft free their id. A post cancelled while it was publishing ends `finished`, with the outcome `cancelled`, and keeps it: take it off with `setExternalId`. When one record makes several posts, give each its own id, such as `crm-record-42:linkedin`.
 
 | Request             | What it does with the id                                                     |
 | ------------------- | ---------------------------------------------------------------------------- |

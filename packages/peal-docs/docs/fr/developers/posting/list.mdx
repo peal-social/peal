@@ -400,7 +400,9 @@ curl "https://api.example.com/api/v1/posts?sort=updatedAsc&updatedSince=2026-11-
   Un brouillon supprimé n’est plus dans aucune liste, donc un parcours ne le
   montre jamais. Après la mise à jour qui a ajouté `updatedAt`, toutes les
   publications existantes ont le même instant : le premier parcours les lit
-  toutes une fois.
+  toutes une fois. Une synchronisation peut aussi revoir une publication,
+  inchangée, après une mise à jour ou un retour en arrière de Peal : traitez-la
+  comme la même.
 </Callout>
 
 <Callout

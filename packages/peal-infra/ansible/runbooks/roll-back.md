@@ -914,8 +914,9 @@ stores what the release before cannot read:
 The release that gives a post its caller's own id and says when it last
 changed adds two columns to `publishing.posts`, `external_id` and
 `updated_at` (with a default), a unique index on the first and an index
-on the second. The release before runs against them: it reads neither
-and writes neither, so while it runs
+on the second, and two more indexes on `external_id`. The release before
+runs against them: it reads neither column and writes neither, so while
+it runs
 
 - a post it makes has no external id, and it never refuses an id another
   post has: it takes no `externalId` in a request at all;
@@ -924,9 +925,22 @@ and writes neither, so while it runs
   `sort=updatedAsc` and `updatedSince` misses those changes;
 - a webhook event stored with `data.externalId` and still to deliver is
   sent without it, as the release before writes a body from what it
-  decodes.
+  decodes;
+- a retry of a request sent with `externalId` under an `Idempotency-Key`
+  is refused `IdempotencyKeyReused`, as the release before reads the
+  request without the id and its fingerprint differs: no second post is
+  made.
 
-Nothing to check before rolling back. Once this release is back, tell
-the programs that sync by change to read again from an instant before the
-roll-back (`updatedSince`), and give an external id again to a post made
-meanwhile that needs one (`posts.setExternalId`).
+Nothing to check before rolling back. Once this release is back, before
+anyone syncs again, move every post's `updated_at` forward once, as the
+server writes it (a millisecond past what the row holds at least, never
+back), so every program that syncs by change reads each post once more,
+those the release before changed included, and none has to do anything:
+
+```sh
+sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+  "UPDATE publishing.posts SET updated_at = GREATEST(updated_at + interval '1 millisecond', date_trunc('milliseconds', clock_timestamp()))"
+```
+
+Then give an external id again to a post made meanwhile that needs one
+(`posts.setExternalId`), if a customer asks.

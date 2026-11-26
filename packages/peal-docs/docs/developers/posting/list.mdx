@@ -398,7 +398,8 @@ curl "https://api.example.com/api/v1/posts?sort=updatedAsc&updatedSince=2026-11-
 <Callout type="info" title="What a walk doesn't tell">
   A deleted draft is in no list any more, so a walk never shows it. After the
   upgrade that added `updatedAt`, every existing post has the same instant, so
-  the first walk reads them all once.
+  the first walk reads them all once. A sync may also see a post again,
+  unchanged, after an upgrade or a roll-back of Peal: treat it as the same.
 </Callout>
 
 <Callout type="info" title="A calendar can read a whole range in one request">

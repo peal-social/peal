@@ -727,7 +727,7 @@ Un identifiant externe est unique dans l’espace de travail parmi les publicati
 }
 ```
 
-Un programme qui renvoie une création, une heure ou un mois plus tard, ne fait donc jamais deux publications. Une `Idempotency-Key` est vérifiée d’abord : la même requête sous la même clé renvoie la publication qu’elle a créée. Une publication annulée et un brouillon supprimé libèrent leur identifiant. Quand un enregistrement donne plusieurs publications, donnez à chacune le sien, comme `crm-record-42:linkedin`.
+Un programme qui renvoie une création, une heure ou un mois plus tard, ne fait donc jamais deux publications. Une `Idempotency-Key` est vérifiée d’abord : la même requête sous la même clé renvoie la publication qu’elle a créée. Une publication dont le `status` est `cancelled` et un brouillon supprimé libèrent leur identifiant. Une publication annulée pendant sa mise en ligne finit `finished`, avec le résultat `cancelled`, et le garde : retirez-le avec `setExternalId`. Quand un enregistrement donne plusieurs publications, donnez à chacune le sien, comme `crm-record-42:linkedin`.
 
 | Requête                 | Ce qu’elle fait de l’identifiant                                                    |
 | ----------------------- | ----------------------------------------------------------------------------------- |

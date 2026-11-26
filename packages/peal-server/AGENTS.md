@@ -574,8 +574,10 @@ and no socket, for tests.
   reads neither column, makes posts without an id, refuses none, moves no
   `updated_at` when it changes a post (a sync by change misses what it
   changed) and sends a stored event's `data.externalId` no more: nothing
-  to check, and programs sync again from before the roll-back (the
-  runbook's "Past posts' own ids and updatedAt").
+  to check before, and once this release is back the operator moves every
+  post's `updated_at` forward with one statement, so every sync by change
+  reads each post once more and no customer acts (the runbook's "Past
+  posts' own ids and updatedAt").
 
 ### Product analytics
 
