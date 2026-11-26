@@ -866,9 +866,11 @@ stores what the release before cannot read:
   more than 20 files (`publishing.posts.text_overrides`,
   `follow_ups[].overrides`), which it fails to decode the same way, and an
   override's `body`, which it ignores, sending the plain text instead;
-- the webhook events and the notices that name a website, at their top
-  or among a post's targets, which it fails to decode where it reads them
-  (its delivery job included, for every endpoint);
+- a post's webhook events (`post.*`) that name a website, at their top
+  or among the post's targets, which it fails to decode where it reads
+  them (its delivery job included, for every endpoint); the articles'
+  events, a channel's on a website and the notices naming a website's
+  channel it decodes, as websites were channels already;
 - the usage ledger's count of posts published on a website
   (`billing.usage_days`, `meter` `publishedPosts`, `dimension` a
   website's), kept 400 days, which its usage pages fail to decode;
@@ -885,21 +887,21 @@ stores what the release before cannot read:
    sudo peal-compose exec postgres psql --username peal --dbname peal --command \
      "SELECT t.id, t.post_id FROM publishing.post_targets t WHERE t.options->>'platform' IN ('wordpress', 'wordpressCom', 'devto', 'hashnode')"
    sudo peal-compose exec postgres psql --username peal --dbname peal --command \
-     "SELECT id FROM publishing.posts WHERE jsonb_path_exists(text_overrides, '$[*].body') OR jsonb_path_exists(text_overrides, '$[*] ? (@.media.size() > 20)') OR jsonb_path_exists(follow_ups, '$[*].overrides[*] ? (@.media.size() > 20)') OR jsonb_path_exists(text_overrides, '$[*] ? (@.text == \"\")')"
+     "SELECT id FROM publishing.posts WHERE jsonb_path_exists(text_overrides, '\$[*].body') OR jsonb_path_exists(text_overrides, '\$[*] ? (@.media.size() > 20)') OR jsonb_path_exists(follow_ups, '\$[*].overrides[*] ? (@.media.size() > 20)') OR jsonb_path_exists(text_overrides, '\$[*] ? (@.text == \"\")')"
    ```
 
-2. **Events and notices that name a website:**
+2. **Post events that name a website:**
 
    ```sh
    sudo peal-compose exec postgres psql --username peal --dbname peal --command \
-     "SELECT 'event' AS kind, id FROM webhooks.events WHERE data->>'platform' IN ('wordpress', 'wordpressCom', 'devto', 'hashnode') OR EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'targets') = 'array' THEN data->'targets' ELSE '[]' END) t WHERE t->>'platform' IN ('wordpress', 'wordpressCom', 'devto', 'hashnode')) UNION ALL SELECT 'notice', id FROM notifications.notices WHERE event->'channel'->>'platform' IN ('wordpress', 'wordpressCom', 'devto', 'hashnode') OR event->'channel'->'value'->>'platform' IN ('wordpress', 'wordpressCom', 'devto', 'hashnode')"
+     "SELECT id FROM webhooks.events WHERE type LIKE 'post.%' AND (data->>'platform' IN ('wordpress', 'wordpressCom', 'devto', 'hashnode') OR EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(data->'targets') = 'array' THEN data->'targets' ELSE '[]' END) t WHERE t->>'platform' IN ('wordpress', 'wordpressCom', 'devto', 'hashnode')))"
    ```
 
 3. **Usage counted on a website, and websites analytics follows:**
 
    ```sh
    sudo peal-compose exec postgres psql --username peal --dbname peal --command \
-     "SELECT 'usage' AS kind, count(*) FROM billing.usage_days WHERE meter = 'publishedPosts' AND dimension IN ('wordpress', 'wordpressCom', 'devto', 'hashnode') UNION ALL SELECT 'tracked', count(*) FROM analytics.tracked_channels a JOIN channels.channels c ON c.id = a.channel_id WHERE c.platform IN ('wordpress', 'wordpressCom', 'devto', 'hashnode')"
+     "SELECT 'usage' AS kind, count(*) FROM billing.usage_days WHERE meter = 'publishedPosts' AND dimension IN ('wordpress', 'wordpressCom', 'devto', 'hashnode') UNION ALL SELECT 'tracked', count(*) FROM analytics.tracked_channels WHERE platform IN ('wordpress', 'wordpressCom', 'devto', 'hashnode')"
    ```
 
 4. **Any check lists a row, or a count above zero:** do not roll back

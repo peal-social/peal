@@ -546,7 +546,7 @@ and no socket, for tests.
   website's, an override with an empty text or more than 20 files (which
   the release before cannot decode where it reads the post, its job
   included), an override's `body`, which it ignores, sending the plain
-  text, and the events, notices and usage rows that name a website:
+  text, and the post events and usage rows that name a website:
   never roll back past it while any is stored (the runbook's "Past
   websites as post channels", which also checks that analytics follows
   no website's channel).
