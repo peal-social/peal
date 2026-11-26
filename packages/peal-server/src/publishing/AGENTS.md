@@ -613,7 +613,8 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   time from the media stream (`inParts` in `platforms/byte-parts.ts`:
   LinkedIn's video parts, X's 4 MiB appends, TikTok's and YouTube's
   chunks, Snapchat's 32 MiB parts, which hold a video of 32 MiB or less
-  whole, as Snap's sample splits only past that), and a file a platform takes in one request is streamed with
+  whole, as Snap's sample splits only past that, so its read takes an
+  upload slot from 4 MiB on, `open`'s `largeFrom`: `largeHeldUpload`), and a file a platform takes in one request is streamed with
   `streamedBody` (`#shared/infrastructure/platforms/public-http.ts`), in a
   form with `multipartBody` (Mastodon, Pinterest's videos; LinkedIn's
   documents go as they are), never `Stream.mkUint8Array` or
@@ -623,8 +624,10 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   sent chunked is refused by some servers. `limitedUploads`
   (`publishing/infrastructure/upload-slots.ts`) opens so many files above
   16 MiB at once (`PEAL_MAX_CONCURRENT_UPLOADS`, by default one per GiB of
-  memory, 2 to 8); the others wait inside their gate, where no timeout
-  runs before the upload begins. LinkedIn calls name `Linkedin-Version`
+  memory, 2 to 8), and Snapchat's above 4 MiB; the others wait inside
+  their gate, where no timeout runs before the upload begins. A slot holds
+  about 100 MiB at most (a Snapchat part, its ciphertext and Web Crypto's
+  copy), an upload without one about 16 MiB. LinkedIn calls name `Linkedin-Version`
   (`LINKEDIN_API_VERSION`, a default a test keeps within ten months, read
   from `#shared/infrastructure/platforms/linkedin-version.ts` by every
   context that calls LinkedIn), and

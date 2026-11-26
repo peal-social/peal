@@ -15,6 +15,7 @@ import { Base64 } from "effect/encoding";
 
 import type { OutgoingPost } from "#publishing/application/platform-client.ts";
 import { SnapchatOptions } from "#publishing/domain/snapchat-options.ts";
+import { largeHeldUpload } from "#publishing/infrastructure/upload-slots.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
 import {
   expiredToken,
@@ -55,6 +56,9 @@ const CipherTest = Cipher.layerWebCrypto.pipe(
 const onSnapchat = Effect.fn("test.onSnapchat")(function* onSnapchat(
   options: {
     readonly files?: readonly TestFile[];
+    readonly opened?: (
+      read: { readonly largeFrom?: number } | undefined
+    ) => void;
     readonly snapTokens?: readonly string[];
     readonly timeout?: number;
     readonly tokens?: readonly string[];
@@ -75,6 +79,7 @@ const onSnapchat = Effect.fn("test.onSnapchat")(function* onSnapchat(
     api: snapchat.url,
     credentials: Layer.succeedContext(credentials),
     files: options.files ?? [],
+    opened: options.opened,
     timeout: options.timeout ?? 10_000,
   });
 
@@ -307,6 +312,26 @@ describe("publishing on Snapchat", () => {
           );
           assert.deepStrictEqual(on.snapchat.calls(), ["createMedia"]);
         }
+      })
+  );
+
+  it.live(
+    "reads the video as a large upload from 4 MiB on, its parts holding it whole",
+    () =>
+      Effect.gen(function* slotted() {
+        const file = video();
+        const reads: (number | undefined)[] = [];
+
+        const on = yield* onSnapchat({
+          files: [file],
+          opened: (read) => {
+            reads.push(read?.largeFrom);
+          },
+        });
+
+        yield* on.client.publish(yield* post({ media: [attached(file)] }));
+
+        assert.deepStrictEqual(reads, [largeHeldUpload]);
       })
   );
 

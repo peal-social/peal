@@ -26,6 +26,7 @@ import {
   commitUnanswered,
   unanswered,
 } from "#publishing/infrastructure/platforms/platform-exchange.ts";
+import { largeHeldUpload } from "#publishing/infrastructure/upload-slots.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
@@ -475,17 +476,23 @@ export const snapchatClient = Effect.fn("SnapchatClient.make")(
         return yield* new PlatformUnavailable();
       }
 
-      yield* media.open(post.workspaceId, attachment.mediaId).pipe(
-        encryptedParts({
-          byteSize: described.byteSize,
-          iv,
-          key,
-          partSize: snapchatPartSize,
-        }),
-        Stream.provideService(Cipher.Cipher, cipher),
-        Stream.mapEffect(addPart(post, addUrl.value)),
-        Stream.runDrain
-      );
+      // Its 32 MiB parts hold a video of 32 MiB or less whole, so its read
+      // waits for an upload slot from 4 MiB on.
+      yield* media
+        .open(post.workspaceId, attachment.mediaId, {
+          largeFrom: largeHeldUpload,
+        })
+        .pipe(
+          encryptedParts({
+            byteSize: described.byteSize,
+            iv,
+            key,
+            partSize: snapchatPartSize,
+          }),
+          Stream.provideService(Cipher.Cipher, cipher),
+          Stream.mapEffect(addPart(post, addUrl.value)),
+          Stream.runDrain
+        );
 
       yield* finalize(post, finalizeUrl.value);
 

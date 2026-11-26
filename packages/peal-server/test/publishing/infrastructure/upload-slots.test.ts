@@ -17,6 +17,7 @@ import { MediaForPublishing } from "#publishing/application/media-for-publishing
 import type { PublishableMedia } from "#publishing/application/media-for-publishing.ts";
 import {
   defaultUploadSlots,
+  largeHeldUpload,
   largeUpload,
   limitedUploads,
   uploadsWaiting,
@@ -35,17 +36,20 @@ const mediaId = (index: number) =>
 
 const mebibyte = 1024 * 1024;
 
-// Ids below 100 are videos of 200 MiB; the others, small images.
+// Ids below 100 are videos of 200 MiB, ids from 900 videos of 5 MiB; the
+// others, small images.
 const described = (id: MediaAssetId): PublishableMedia => {
-  const large = Number(id.slice(-12)) < 100;
+  const index = Number(id.slice(-12));
+  const large = index < 100;
+  const video = large || index >= 900;
 
   return {
-    byteSize: large ? 200 * mebibyte : mebibyte,
-    contentType: large ? "video/mp4" : "image/png",
+    byteSize: large ? 200 * mebibyte : (index >= 900 ? 5 : 1) * mebibyte,
+    contentType: video ? "video/mp4" : "image/png",
     dimensions: Option.none(),
     duration: Option.none(),
-    fileName: large ? "clip.mp4" : "picture.png",
-    kind: large ? "video" : "image",
+    fileName: video ? "clip.mp4" : "picture.png",
+    kind: video ? "video" : "image",
     mediaId: id,
   };
 };
@@ -82,6 +86,19 @@ const store = Effect.gen(function* makeStore() {
 
 const settings = (env: Record<string, string>) =>
   ConfigProvider.layer(ConfigProvider.fromEnv({ env }));
+
+// A video of 5 MiB, read as Snapchat reads it (`largeFrom`) or as the
+// other platforms do.
+const fiveMiBVideo = (largeFrom?: number) =>
+  MediaForPublishing.use((media) =>
+    Stream.runDrain(
+      media.open(
+        workspaceId,
+        mediaId(900),
+        largeFrom === undefined ? undefined : { largeFrom }
+      )
+    )
+  );
 
 // Uploads `count` files at once, as so many posts due together, each
 // reading its file to the end.
@@ -247,6 +264,38 @@ describe("upload slots", () => {
       yield* Deferred.succeed(files.finish, true);
       yield* Fiber.join(uploads);
     })
+  );
+
+  it.effect(
+    "makes a small video held in large parts wait for a slot, as a large one does",
+    () =>
+      Effect.gen(function* heldWhole() {
+        const files = yield* store;
+
+        const uploads = yield* Effect.all(
+          [uploading(1, 1), fiveMiBVideo(largeHeldUpload), fiveMiBVideo()],
+          { concurrency: "unbounded" }
+        ).pipe(
+          Effect.provide(
+            limitedUploads.pipe(
+              Layer.provide(files.layer),
+              Layer.provide(settings({ PEAL_MAX_CONCURRENT_UPLOADS: "1" }))
+            )
+          ),
+          Effect.forkChild
+        );
+
+        yield* TestClock.adjust(Duration.seconds(1));
+
+        assert.isBelow(4 * mebibyte, largeHeldUpload);
+        assert.isAbove(5 * mebibyte, largeHeldUpload);
+        assert.isBelow(5 * mebibyte, largeUpload);
+        // The large video and the plain read are open; Snapchat's waits.
+        assert.strictEqual(yield* files.open, 2);
+
+        yield* Deferred.succeed(files.finish, true);
+        yield* Fiber.join(uploads);
+      })
   );
 
   it.effect("frees its slot when an upload is given up", () =>

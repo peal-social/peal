@@ -834,6 +834,29 @@ export const pinterestClientWith = Effect.fn("test.pinterestClient")(
   }
 );
 
+// The media given, telling `opened` what each read asks.
+const openings = (
+  media: Layer.Layer<MediaForPublishing>,
+  opened:
+    | ((options: { readonly largeFrom?: number } | undefined) => void)
+    | undefined
+) =>
+  Layer.effect(
+    MediaForPublishing,
+    MediaForPublishing.use((files) =>
+      Effect.succeed(
+        MediaForPublishing.of({
+          ...files,
+          open: (workspace, mediaId, read) => {
+            opened?.(read);
+
+            return files.open(workspace, mediaId, read);
+          },
+        })
+      )
+    )
+  ).pipe(Layer.provide(media));
+
 /**
  * The Snapchat client, with the fake as Snap's Business API, its calls
  * given up after `timeout` when one is set.
@@ -843,6 +866,10 @@ export const snapchatClientWith = Effect.fn("test.snapchatClient")(
     readonly api: string;
     readonly credentials: Layer.Layer<CredentialLog | PlatformCredentials>;
     readonly files?: readonly TestFile[];
+    /** Hears what each read of a file asks of the upload slots. */
+    readonly opened?:
+      | ((options: { readonly largeFrom?: number } | undefined) => void)
+      | undefined;
     readonly timeout?: Duration.Input;
   }) {
     const api =
@@ -860,7 +887,7 @@ export const snapchatClientWith = Effect.fn("test.snapchatClient")(
       Effect.provide(
         Layer.mergeAll(
           options.credentials,
-          mediaOf(options.files ?? []),
+          openings(mediaOf(options.files ?? []), options.opened),
           Cipher.layerWebCrypto.pipe(
             Layer.provideMerge(SecureRandom.layerWebCrypto)
           ),
