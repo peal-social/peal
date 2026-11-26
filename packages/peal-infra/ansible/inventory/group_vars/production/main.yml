@@ -195,6 +195,11 @@ peal_settings:
   # Meta's App Review granted the app the Human Agent feature, apart from
   # the messaging permissions, and facebook or instagram is named above.
   # PEAL_META_HUMAN_AGENT: "true"
+  # MCP clients register themselves before they sign in, as the app's
+  # Quickstart tells people (Claude, ChatGPT, Cursor: "no key to paste").
+  # Anyone may then register a client under any name; the consent page
+  # says Peal hasn't checked it (the docs' self-hosting page, "MCP").
+  MCP_DYNAMIC_REGISTRATION: "true"
   # Refuses the staff console to staff whose own account does not have
   # two-step verification on: set once every staff account has it on.
   # PEAL_STAFF_TWO_STEP: "true"
