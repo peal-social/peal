@@ -2,6 +2,7 @@ import { Match, Option } from "effect";
 import type {
   Article as ArticleView,
   ArticleState as StateView,
+  ArticleSummary as SummaryView,
 } from "peal-contract";
 
 import type { Article, ArticleState } from "#articles/domain/article.ts";
@@ -48,10 +49,9 @@ const stateView = (state: ArticleState): StateView =>
     }),
   });
 
-/** An article as the API answers it. */
-export const articleView = (article: Article): ArticleView => ({
+/** An article as a list answers it: all but its body. */
+export const articleSummaryView = (article: Article): SummaryView => ({
   authorId: Option.getOrNull(article.authorId),
-  body: article.content.body,
   categories: article.content.categories,
   channelId: article.channelId,
   coverMediaId: Option.getOrNull(article.content.coverMediaId),
@@ -63,4 +63,10 @@ export const articleView = (article: Article): ArticleView => ({
   tags: article.content.tags,
   title: article.content.title,
   updatedAt: article.updatedAt,
+});
+
+/** An article as the API answers it. */
+export const articleView = (article: Article): ArticleView => ({
+  ...articleSummaryView(article),
+  body: article.content.body,
 });

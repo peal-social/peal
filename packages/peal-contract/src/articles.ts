@@ -14,6 +14,7 @@ import { ArticleStateNameSchema } from "./article-state-name.ts";
 import { Authentication } from "./authentication.ts";
 import { ChannelNotFound } from "./channel-not-found.ts";
 import { Forbidden } from "./forbidden.ts";
+import { InvalidTimeRange } from "./invalid-time-range.ts";
 import { InvalidTimeZone } from "./invalid-time-zone.ts";
 import { PlanLimitReached } from "./plan-limit-reached.ts";
 import { PlatformUnreachable } from "./platform-unreachable.ts";
@@ -170,11 +171,10 @@ export const ArticleStateSchema = Schema.Union([
 
 export type ArticleState = typeof ArticleStateSchema.Type;
 
-/** An article of the workspace. */
-export const ArticleSchema = Schema.Struct({
+/** An article of the workspace as a list gives it: all but its body. */
+export const ArticleSummarySchema = Schema.Struct({
   // The member who wrote it; null for an API key.
   authorId: Schema.NullOr(Schema.String),
-  body: ArticleBodySchema,
   categories: Schema.Array(Schema.String),
   channelId: Schema.String,
   coverMediaId: Schema.NullOr(Schema.String),
@@ -186,13 +186,21 @@ export const ArticleSchema = Schema.Struct({
   tags: Schema.Array(Schema.String),
   title: Schema.String,
   updatedAt: Schema.DateTimeUtc,
+}).annotate({ identifier: "ArticleSummary" });
+
+export type ArticleSummary = typeof ArticleSummarySchema.Type;
+
+/** An article of the workspace. */
+export const ArticleSchema = Schema.Struct({
+  ...ArticleSummarySchema.fields,
+  body: ArticleBodySchema,
 }).annotate({ identifier: "Article" });
 
 export type Article = typeof ArticleSchema.Type;
 
-/** A page of articles, newest first. */
+/** A page of articles, newest first, without their bodies. */
 export const ArticlePageSchema = Schema.Struct({
-  items: Schema.Array(ArticleSchema),
+  items: Schema.Array(ArticleSummarySchema),
   // Pass as `cursor` for the next page; null on the last.
   nextCursor: Schema.NullOr(Schema.String),
 }).annotate({ identifier: "ArticlePage" });
@@ -227,22 +235,24 @@ const siteErrors = [
 export class ArticlesApi extends HttpApiGroup.make("articles")
   .add(
     HttpApiEndpoint.get("list", "/", {
-      error: [Forbidden, HttpApiError.BadRequest],
+      error: [Forbidden, InvalidTimeRange, HttpApiError.BadRequest],
       headers: workspaceHeaders,
 
       query: {
         cursor: Schema.optionalKey(Schema.String),
+        from: Schema.optionalKey(Schema.DateTimeUtc),
         limit: Schema.optionalKey(
           Schema.Int.check(
             Schema.isBetween({ maximum: maxArticlePageSize, minimum: 1 })
           )
         ),
         status: Schema.optionalKey(ArticleStateNameSchema),
+        to: Schema.optionalKey(Schema.DateTimeUtc),
       },
       success: ArticlePageSchema,
     }).annotateMerge(
       OpenApi.annotations({
-        description: `Lists the workspace's articles, newest first, ${defaultArticlePageSize} a page unless \`limit\` (at most ${maxArticlePageSize}) says otherwise, those in one \`status\` when it is given. Pass the page's \`nextCursor\` as \`cursor\` for the next. Needs post:read.`,
+        description: `Lists the workspace's articles, newest first, ${defaultArticlePageSize} a page unless \`limit\` (at most ${maxArticlePageSize}) says otherwise, those in one \`status\` when it is given, and those scheduled from \`from\` (included) to \`to\` (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's \`nextCursor\` as \`cursor\`, with the same filters, for the next. Needs post:read.`,
         summary: "List articles",
       })
     ),

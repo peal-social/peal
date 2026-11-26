@@ -107,8 +107,10 @@ export class ArticleRecords extends Context.Service<
             for (;;) {
               const page = yield* store.page({
                 before,
+                from: Option.none(),
                 limit: 100,
                 status: Option.none(),
+                to: Option.none(),
                 workspaceId,
               });
 

@@ -2665,6 +2665,7 @@ export {
   ArticleSchema,
   ArticleSiteStatusSchema,
   ArticleStateSchema,
+  ArticleSummarySchema,
   ArticleTimeSchema,
   defaultArticlePageSize,
   maxArticleExcerptLength,
@@ -2682,6 +2683,7 @@ export type {
   ArticlePage,
   ArticleSiteStatus,
   ArticleState,
+  ArticleSummary,
   ArticleTime,
   NewArticle,
 } from "./articles.ts";

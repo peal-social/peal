@@ -1,5 +1,5 @@
 import { Context } from "effect";
-import type { Effect, Option } from "effect";
+import type { DateTime, Effect, Option } from "effect";
 
 import type { ArticleId } from "#articles/domain/article-id.ts";
 import type { Article } from "#articles/domain/article.ts";
@@ -16,8 +16,12 @@ import type {
 export interface ArticlePageRequest {
   /** The last article of the page before, if this is not the first. */
   readonly before: Option.Option<ArticleId>;
+  /** Scheduled from this instant, included, when given. */
+  readonly from: Option.Option<DateTime.Utc>;
   readonly limit: number;
   readonly status: Option.Option<ArticleStateName>;
+  /** Scheduled before this instant, excluded, when given. */
+  readonly to: Option.Option<DateTime.Utc>;
   readonly workspaceId: WorkspaceId;
 }
 

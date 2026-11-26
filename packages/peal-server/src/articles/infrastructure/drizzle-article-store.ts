@@ -3,6 +3,7 @@ import {
   asc,
   desc,
   eq,
+  gte,
   inArray,
   isNotNull,
   isNull,
@@ -203,6 +204,14 @@ export const DrizzleArticleStore = Layer.effect(
               ),
               request.before.pipe(
                 Option.map((before) => lt(articles.id, before)),
+                Option.getOrUndefined
+              ),
+              request.from.pipe(
+                Option.map((from) => gte(articles.scheduledAt, date(from))),
+                Option.getOrUndefined
+              ),
+              request.to.pipe(
+                Option.map((to) => lt(articles.scheduledAt, date(to))),
                 Option.getOrUndefined
               )
             )

@@ -105,8 +105,10 @@ describe("an article stored failed for a reason of posts", () => {
 
           const page = yield* articles.page(actor, {
             before: Option.none(),
+            from: Option.none(),
             limit: 10,
             status: Option.none(),
+            to: Option.none(),
           });
 
           assert.deepStrictEqual(

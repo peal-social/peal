@@ -6,7 +6,7 @@ import {
   ArticleStateNameSchema,
   maxArticlePageSize,
 } from "peal-contract";
-import type { Article } from "peal-contract";
+import type { ArticleSummary } from "peal-contract";
 
 import { confirmed, neverAsksInJson, yesFlagName } from "#confirm.ts";
 import { explain } from "#explain.ts";
@@ -22,7 +22,7 @@ const articleArgument = Argument.String("article-id").pipe(
 );
 
 // Where the article stands, in a few words.
-const standingOf = (article: Article): string => {
+const standingOf = (article: ArticleSummary): string => {
   const { state } = article;
 
   switch (state._tag) {
@@ -58,7 +58,7 @@ const standingOf = (article: Article): string => {
   }
 };
 
-const linesOf = (articles: readonly Article[]) =>
+const linesOf = (articles: readonly ArticleSummary[]) =>
   columns(
     articles.map((article) => [
       `  ${article.id}`,

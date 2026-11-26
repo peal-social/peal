@@ -1,4 +1,4 @@
-import { Effect, Match, Option, Schema } from "effect";
+import { DateTime, Effect, Match, Option, Schema } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/http-api";
 import {
   Api,
@@ -9,6 +9,7 @@ import {
   ChannelNotFound,
   CurrentMember,
   defaultArticlePageSize,
+  InvalidTimeRange,
   InvalidTimeZone,
   PlatformUnreachable,
   UnknownMedia,
@@ -38,7 +39,7 @@ import type { LimitRefusal } from "#shared/api/limit-reached.ts";
 import { ChannelIdSchema, MediaAssetIdSchema } from "#shared/domain/ids.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
-import { articleView } from "./article-view.ts";
+import { articleSummaryView, articleView } from "./article-view.ts";
 
 const decodeNested = Schema.decodeUnknownEffect(NestedWithinSchema);
 
@@ -217,11 +218,22 @@ export const ArticlesHandlers = HttpApiBuilder.group(
             return yield* new HttpApiError.BadRequest();
           }
 
+          // As the posts' list: a range must end after it starts.
+          if (
+            query.from !== undefined &&
+            query.to !== undefined &&
+            !DateTime.isLessThan(query.from, query.to)
+          ) {
+            return yield* new InvalidTimeRange();
+          }
+
           const page = yield* articles
             .page(actorOf(yield* CurrentMember), {
               before,
+              from: Option.fromUndefinedOr(query.from),
               limit: query.limit ?? defaultArticlePageSize,
               status: Option.fromUndefinedOr(query.status),
+              to: Option.fromUndefinedOr(query.to),
             })
             .pipe(
               Effect.catchTags({
@@ -231,7 +243,7 @@ export const ArticlesHandlers = HttpApiBuilder.group(
             );
 
           return {
-            items: page.items.map(articleView),
+            items: page.items.map(articleSummaryView),
             nextCursor: Option.getOrNull(page.next),
           };
         }),
