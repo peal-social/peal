@@ -134,7 +134,7 @@ Peal renews each account's access by itself before it runs out. Here's how it wo
 | Bluesky                                                         | Refreshes the session a month before it would lapse.                                                                                                                                                                                                                            |
 | Threads, and Instagram accounts connected with Instagram        | The access lasts 60 days. Peal renews it a week before.                                                                                                                                                                                                                         |
 | Pinterest                                                       | The access lasts 30 days. Peal renews it a week before. Pinterest lets it keep renewing for as long as each renewal comes within 60 days of the last.                                                                                                                           |
-| Snapchat                                                        | The access lasts an hour. Peal renews it when it posts, and reconnects only if Snapchat refuses the renewal.                                                                                                                                                                    |
+| Snapchat | The access lasts an hour. Peal renews it whenever it posts, and at least once a week for an account it does nothing with. The channel asks to be reconnected only if Snapchat refuses the renewal. |
 | X                                                               | The access lasts two hours. Peal renews it whenever it posts or reads the posts' counts, and at least once a month for an account it does nothing with, so the platform never drops it.                                                                                         |
 | TikTok                                                          | The access lasts a day or less, and is renewed like X's. TikTok lets Peal renew it for 180 days after you connected the account. After that, the channel asks to be reconnected.                                                                                                |
 | YouTube                                                         | The access lasts an hour, and is renewed like X's. Google ends it when the owner removes Peal from their Google account, or six months after Peal last used it. On a self-hosted server whose Google project is in testing, it ends seven days after the channel was connected. |
@@ -232,9 +232,9 @@ Pinterest gives Peal no way to tell a Pin it already made from one it didn't. Wh
 </AccordionItem>
 <AccordionItem title="Snapchat">
 
-Peal posts a Spotlight on the account's Public Profile. The Spotlight's description is the post's text, and its language and country come from the post's [platform options](/guides/posts#options), `en_US` when you set none.
+Peal posts a Spotlight for the account's Public Profile. The Spotlight's description is the post's text, and its language and country come from the post's [platform options](/guides/posts#options), `en_US` when you set none.
 
-Peal encrypts the video as Snapchat asks and sends it in parts, then makes the Spotlight. Snapchat gives Peal no way to find a Spotlight it already made: when its answer is lost, the post shows **To check**, and Peal never sends it twice.
+Peal encrypts the video as Snapchat asks and sends it in parts, then makes the Spotlight. Peal doesn't look the Spotlight up on Snapchat: when the answer is lost, the post shows **To check**, and Peal never sends it twice.
 
 </AccordionItem>
 </Accordion>
@@ -292,7 +292,7 @@ Click **Disconnect** next to the channel and confirm. Peal deletes the tokens it
   apps. Google ends access to every YouTube channel and Business Profile
   location of the same Google account at once, so Peal leaves it in place. On
   Google and the other platforms, revoke Peal's access in the account's settings
-  there.
+  there. Snap doesn't say where a Snapchat account ends an app's access.
 </Callout>
 
 ## When connecting fails [#errors]

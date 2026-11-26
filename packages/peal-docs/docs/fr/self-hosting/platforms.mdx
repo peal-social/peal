@@ -66,7 +66,7 @@ Pour chaque plateforme, le serveur appelle ces hôtes et envoie les médias ains
 | Google Business Profile | `oauth2.googleapis.com`, `mybusinessaccountmanagement.googleapis.com`, `mybusinessbusinessinformation.googleapis.com` et `mybusiness.googleapis.com` | Photos que Google va chercher dans le stockage des médias                                                                                     |
 | Google Ads              | `oauth2.googleapis.com` et `googleads.googleapis.com`, quand `PEAL_ADS_NETWORKS` nomme `google`                                                      | Aucun, car il ne fait que lire                                                                                                                |
 | Slack                   | `slack.com`, et `files.slack.com`, où Slack fait envoyer chaque image                                                                                | Images envoyées à mesure qu’elles sont lues, jamais gardées entières                                                                          |
-| Snapchat                | `accounts.snapchat.com` et `businessapi.snapchat.com`                                                                                                | Vidéos chiffrées et envoyées en parties de 4 Mio (plus grandes pour une vidéo de plus de 140 Mio, jusqu’à 29 Mo), une partie gardée à la fois |
+| Snapchat | `accounts.snapchat.com` et `businessapi.snapchat.com` | Vidéos chiffrées et envoyées en parties de 32 Mio, comme l’exemple de Snap les découpe ; une partie et sa copie chiffrée gardées à la fois, si bien qu’une vidéo de 32 Mio ou moins est gardée entière |
 | WordPress.com           | `public-api.wordpress.com`, dont l’API sert les routes de base de chaque site                                                                        | Images lues entières                                                                                                                          |
 | DEV                     | `dev.to`                                                                                                                                             | Images lues entières                                                                                                                          |
 | Hashnode                | `gql-beta.hashnode.com`, et l’adresse d’envoi que Hashnode donne pour chaque image                                                                   | Images envoyées à mesure qu’elles sont lues                                                                                                   |
@@ -636,29 +636,34 @@ Ces réglages n’ont rien à voir avec `SLACK_ALERTS_WEBHOOK_URL`, où la surve
 
 ## Snapchat [#snapchat]
 
-Pour connecter des profils publics Snapchat, créez une application OAuth dans le Business Manager de Snap, puis demandez à Snap de l’autoriser pour son API Public Profile.
+Pour connecter des profils publics Snapchat, créez une application OAuth dans le Business Manager de Snap, demandez à Snap de l’autoriser pour son API Public Profile, et définissez ses identifiants une fois qu’il l’a fait.
 
 <Steps>
 <Step title="Créer un compte professionnel">
 
-Dans l’Ads Manager de Snap, créez un compte professionnel (une organisation) pour votre service. Il peut faire du compte Snapchat avec lequel vous vous connectez le profil public de l’entreprise, qui vous sert à essayer votre serveur.
+Dans l’Ads Manager de Snap, créez un compte professionnel (une organisation) pour votre service. L’Ads Manager propose de faire du compte Snapchat avec lequel vous vous connectez le profil public de l’entreprise (**Create Public Profile**). Pour essayer votre serveur, il vous faut un compte Snapchat qui a un profil public.
 
 </Step>
 <Step title="Créer l’application OAuth">
 
 Dans le Business Manager, sous **Business Details**, ouvrez **OAuth Apps** et cliquez sur **+ OAuth App**. Seul un Organization Admin le voit, et la première fois Snap vous demande d’accepter les Snap Developer Terms et les Snap Business Tools Terms pour l’organisation. Ne créez pas l’application dans le Developer Portal de Snap : l’API Public Profile refuse ses identifiants client.
 
-Donnez-lui un nom et, sous **Snap Redirect URIs**, l’adresse qu’affiche [la commande](#platform-addresses), `PUBLIC_URL/connect/snapchat/callback`, par exemple `https://peal.example.com/connect/snapchat/callback`. Le champ prend une adresse par ligne, jusqu’à 10, si bien qu’une application peut servir plusieurs serveurs. Vérifiez-les d’abord : Snap ne permet plus de changer le nom ni les adresses de redirection une fois l’application créée.
+Donnez-lui un nom et, sous **Snap Redirect URIs**, l’adresse qu’affiche [la commande](#platform-addresses), `PUBLIC_URL/connect/snapchat/callback`, par exemple `https://peal.example.com/connect/snapchat/callback`. Le champ prend une adresse par ligne, jusqu’à 10, si bien qu’une application peut servir plusieurs serveurs. Vérifiez-les d’abord : Snap prévient que le nom et les adresses de redirection ne peuvent plus changer une fois l’application créée.
 
 </Step>
-<Step title="Renseigner les identifiants">
+<Step title="Garder les identifiants">
 
-Snap affiche l’identifiant client et le secret client une fois l’application créée, et le secret seulement à ce moment-là : gardez-le. Mettez l’identifiant dans `SNAPCHAT_CLIENT_ID` et le secret dans `SNAPCHAT_CLIENT_SECRET`.
+Snap affiche l’identifiant client et le secret client une fois l’application créée, et le secret seulement à ce moment-là : gardez-les en lieu sûr. Ne les définissez pas encore sur le serveur.
 
 </Step>
 <Step title="Demander à Snap d’autoriser l’application">
 
-L’API Public Profile n’accepte que les identifiants client que Snap a autorisés. Envoyez à votre contact chez Snap l’identifiant client et ce que votre service fait de l’API, jamais le secret. Tant que Snap ne l’a pas autorisé, les connexions échouent, et le journal du serveur dit que Snap a refusé le client.
+L’API Public Profile n’accepte que les identifiants client que Snap a autorisés. Envoyez à votre contact chez Snap l’identifiant client et ce que votre service fait de l’API, jamais le secret.
+
+</Step>
+<Step title="Renseigner les identifiants">
+
+Une fois que Snap dit avoir autorisé l’identifiant, mettez-le dans `SNAPCHAT_CLIENT_ID` et le secret dans `SNAPCHAT_CLIENT_SECRET`. Le serveur propose Snapchat dès que les deux sont définis, alors définissez-les seulement à ce moment-là : avant, chaque connexion échoue, et le journal du serveur dit que Snap a refusé le client.
 
 </Step>
 </Steps>

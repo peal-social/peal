@@ -135,7 +135,7 @@ Peal renouvelle de lui-même l’accès de chaque compte avant qu’il n’expir
 | Bluesky                                                     | Il rafraîchit la session un mois avant qu’elle ne tombe.                                                                                                                                                                                                                                             |
 | Threads, et comptes Instagram connectés avec Instagram      | L’accès dure 60 jours. Peal le renouvelle une semaine avant.                                                                                                                                                                                                                                         |
 | Pinterest                                                   | L’accès dure 30 jours. Peal le renouvelle une semaine avant. Pinterest le laisse continuer aussi longtemps que chaque renouvellement arrive dans les 60 jours du précédent.                                                                                                                          |
-| Snapchat                                                    | L’accès dure une heure. Peal le renouvelle quand il publie, et ne demande à reconnecter que si Snapchat refuse le renouvellement.                                                                                                                                                                    |
+| Snapchat | L’accès dure une heure. Peal le renouvelle chaque fois qu’il publie, et au moins une fois par semaine pour un compte dont il ne fait rien. Le canal ne demande à être reconnecté que si Snapchat refuse le renouvellement. |
 | X                                                           | L’accès dure deux heures. Peal le renouvelle chaque fois qu’il publie ou lit les chiffres des publications, et au moins une fois par mois pour un compte dont il ne fait rien, pour que la plateforme ne le perde jamais.                                                                            |
 | TikTok                                                      | L’accès dure un jour ou moins, et se renouvelle comme celui de X. TikTok laisse Peal le renouveler pendant 180 jours après la connexion du compte. Ensuite, le canal demande à être reconnecté.                                                                                                      |
 | YouTube                                                     | L’accès dure une heure, et se renouvelle comme celui de X. Google y met fin quand le titulaire retire Peal de son compte Google, ou six mois après le dernier usage de Peal. Sur un serveur auto-hébergé dont le projet Google est en test, il prend fin sept jours après la connexion de la chaîne. |
@@ -233,9 +233,9 @@ Pinterest ne donne à Peal aucun moyen de distinguer une épingle déjà créée
 </AccordionItem>
 <AccordionItem title="Snapchat">
 
-Peal publie un Spotlight sur le profil public du compte. La description du Spotlight est le texte de la publication, et sa langue et son pays viennent des [options de la plateforme](/guides/posts#options) de la publication, `en_US` si vous n’en réglez aucun.
+Peal publie un Spotlight pour le profil public du compte. La description du Spotlight est le texte de la publication, et sa langue et son pays viennent des [options de la plateforme](/guides/posts#options) de la publication, `en_US` si vous n’en réglez aucun.
 
-Peal chiffre la vidéo comme Snapchat le demande et l’envoie en plusieurs parties, puis crée le Spotlight. Snapchat ne donne à Peal aucun moyen de retrouver un Spotlight déjà créé : quand sa réponse se perd, la publication indique **À vérifier**, et Peal ne l’envoie jamais deux fois.
+Peal chiffre la vidéo comme Snapchat le demande et l’envoie en plusieurs parties, puis crée le Spotlight. Peal ne recherche pas le Spotlight sur Snapchat : quand la réponse se perd, la publication indique **À vérifier**, et Peal ne l’envoie jamais deux fois.
 
 </AccordionItem>
 </Accordion>
@@ -297,7 +297,8 @@ Cliquez sur **Déconnecter** à côté du canal et confirmez. Peal supprime les 
   applications connectées du compte. Google retire l’accès à toutes les chaînes
   YouTube et à tous les établissements Business Profile d’un même compte Google
   à la fois, donc Peal le laisse en place. Sur Google et les autres plateformes,
-  révoquez l’accès de Peal dans les réglages du compte.
+  révoquez l’accès de Peal dans les réglages du compte. Snap ne dit pas où un
+  compte Snapchat retire l’accès d’une application.
 </Callout>
 
 ## Quand la connexion échoue [#errors]

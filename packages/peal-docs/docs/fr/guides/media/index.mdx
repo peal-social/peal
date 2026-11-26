@@ -622,7 +622,7 @@ Voici ce qu’accepte un Spotlight Snapchat :
 | -------------------------------- | -------------------------------------------------------------------------------- |
 | Images et vidéos par publication | Une vidéo, obligatoire                                                           |
 | Images                           | Non acceptées                                                                    |
-| Vidéos                           | MP4, jusqu’à 1 Go (1 000 000 000 octets), de 5 secondes à 5 minutes, toute forme |
+| Vidéos                           | MP4, jusqu’à 999 999 984 octets (1 Go une fois chiffrée), de 5 secondes à 5 minutes, toute forme |
 | Texte alternatif                 | Pas envoyé : le texte de la publication la décrit                                |
 
 ### Google Business Profile [#platforms-google-business]
@@ -719,9 +719,10 @@ Chaque plateforme reçoit les fichiers à sa façon :
     en quelques secondes.
   </AccordionItem>
   <AccordionItem title="Snapchat">
-    Peal chiffre la vidéo comme Snapchat le demande et l’envoie en plusieurs
-    parties, lues une à une dans le stockage des médias, puis termine l’envoi et
-    crée le Spotlight.
+    Peal chiffre la vidéo comme Snapchat le demande et l’envoie en parties de
+    32 Mio, comme l’exemple de Snapchat la découpe, lues une à une dans le
+    stockage des médias, puis termine l’envoi et crée le Spotlight. Une vidéo
+    de 32 Mio ou moins part en une seule partie.
   </AccordionItem>
   <AccordionItem title="Google Business Profile">
     Peal donne à Google un lien vers chaque photo dans le stockage des médias,
