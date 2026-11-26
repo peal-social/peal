@@ -11,6 +11,7 @@ import type {
   Readiness,
   StepTiming,
 } from "#publishing/application/publication-steps.ts";
+import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { ChannelIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
@@ -122,6 +123,7 @@ const stepsWith = Effect.fn("test.stepsWith")(function* stepsWith(
 
 const postStarted = (startedAt: DateTime.Utc): OutgoingPost => ({
   accountId: "synthetic@mastodon.test",
+  body: Option.none(),
   channelId: ChannelIdSchema.make("01900000-0000-7000-8000-0000000000d1"),
   idempotencyKey: "4c9a82ce3e1a3b5b0a1f3bd3c1a7e0a2",
   media: [],
@@ -129,7 +131,9 @@ const postStarted = (startedAt: DateTime.Utc): OutgoingPost => ({
   part: 0,
   poll: Option.none(),
   replyTo: Option.none(),
+  round: 1,
   startedAt,
+  targetId: PostTargetIdSchema.make("01900000-0000-7000-8000-0000000000b1"),
   text: "A synthetic post for tests.",
   workspaceId: WorkspaceIdSchema.make("6a1c2d3e-4f50-4617-8829-3a4b5c6d7e8f"),
 });

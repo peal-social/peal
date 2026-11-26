@@ -1,5 +1,4 @@
-import { Effect, Layer } from "effect";
-import { FetchHttpClient } from "effect/http";
+import { Layer } from "effect";
 
 import { ArticleRecords } from "#articles/application/article-records.ts";
 import { Articles } from "#articles/application/articles.ts";
@@ -11,46 +10,25 @@ import {
 } from "#articles/infrastructure/drizzle-article-store.ts";
 import { LibraryArticleMedia } from "#articles/infrastructure/library-article-media.ts";
 import { ListedSiteChannels } from "#articles/infrastructure/listed-site-channels.ts";
-import { devtoSiteAdapter } from "#articles/infrastructure/platforms/devto/devto-articles.ts";
-import { hashnodeSiteAdapter } from "#articles/infrastructure/platforms/hashnode/hashnode-articles.ts";
-import { wordpressSiteAdapter } from "#articles/infrastructure/platforms/wordpress/wordpress-articles.ts";
 import { PostingArticleGates } from "#articles/infrastructure/posting-article-gates.ts";
-import { routedSitePublisher } from "#articles/infrastructure/routed-site-publisher.ts";
+import { RoutedSitePublisher } from "#articles/infrastructure/routed-site-publisher.ts";
 import { SqlArticleSendTurns } from "#articles/infrastructure/sql-article-send-turns.ts";
 import { WebhookArticleEvents } from "#articles/infrastructure/webhook-article-events.ts";
 import { WorkflowArticleJobs } from "#articles/infrastructure/workflow-article-jobs.ts";
 import { PublishArticleV1Live } from "#articles/infrastructure/workflows/publish-article.ts";
-import { devtoHosts } from "#shared/infrastructure/platforms/devto-api.ts";
-import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts";
-import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
-import { wordpressComHosts } from "#shared/infrastructure/platforms/wordpress-api.ts";
 
 // The websites articles go to: WordPress sites, on WordPress.com too,
-// DEV and Hashnode, with the tokens the channels context hands out, over
-// the guarded public client. The files come as publishing gives them to
-// platforms (MediaForPublishing), on the server's one limiter of large
-// uploads, which the composition root brings.
-const SitePublisherLive = routedSitePublisher(
-  Effect.gen(function* siteAdapters() {
-    const wordpress = yield* wordpressSiteAdapter(wordpressComHosts);
-
-    return {
-      devto: yield* devtoSiteAdapter(devtoHosts),
-      hashnode: yield* hashnodeSiteAdapter(hashnodeHosts),
-      wordpress,
-      wordpressCom: wordpress,
-    };
-  })
-).pipe(
+// DEV and Hashnode, with the tokens the channels context hands out,
+// through publishing's site calls (SiteCalls), which the composition root
+// brings with what posts go out under (`PostingServicesLive`).
+const SitePublisherLive = RoutedSitePublisher.pipe(
   Layer.provide(
     Layer.mergeAll(
       ChannelAccessSiteCredentials,
       DrizzleArticleStore,
       DrizzleArticleJournal
     )
-  ),
-  Layer.provide(OutboundGuard.layer),
-  Layer.provide(FetchHttpClient.layer)
+  )
 );
 
 /**

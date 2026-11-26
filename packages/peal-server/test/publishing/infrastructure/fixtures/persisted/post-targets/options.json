@@ -117,5 +117,17 @@
     "platform": "facebook",
     "videoTitle": "A synthetic reel title"
   },
-  { "format": "feed", "platform": "facebook" }
+  { "format": "feed", "platform": "facebook" },
+  {
+    "categories": ["News"],
+    "coverMediaId": "00000000-0000-7000-8000-0000000000b2",
+    "excerpt": "A synthetic summary",
+    "platform": "wordpress",
+    "siteStatus": "publish",
+    "tags": ["Launch"],
+    "title": "A synthetic article"
+  },
+  { "platform": "wordpressCom", "siteStatus": "draft", "title": "On WordPress.com" },
+  { "platform": "devto", "tags": ["launch"], "title": "On DEV" },
+  { "platform": "hashnode", "title": "On Hashnode" }
 ]

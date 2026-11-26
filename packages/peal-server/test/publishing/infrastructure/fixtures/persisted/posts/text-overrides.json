@@ -17,5 +17,30 @@
       "media": [],
       "text": "No picture here"
     }
+  ],
+  [
+    {
+      "body": {
+        "content": [
+          { "content": [{ "text": "A synthetic article", "type": "text" }], "type": "paragraph" },
+          {
+            "attrs": {
+              "alt": "A synthetic picture",
+              "mediaId": "0190f3a0-0000-7000-8000-0000000000c3"
+            },
+            "type": "image"
+          }
+        ],
+        "type": "doc"
+      },
+      "channelId": "0190f3a0-0000-7000-8000-0000000000d3",
+      "media": [
+        {
+          "altText": "A synthetic picture",
+          "mediaId": "0190f3a0-0000-7000-8000-0000000000c3"
+        }
+      ],
+      "text": "A synthetic article"
+    }
   ]
 ]

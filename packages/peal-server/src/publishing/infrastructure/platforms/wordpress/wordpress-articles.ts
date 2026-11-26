@@ -2,8 +2,8 @@ import { DateTime, Duration, Effect, Option, Schema } from "effect";
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import type { HttpClient, HttpClientError } from "effect/http";
 
-import type { SiteAdapter } from "#articles/infrastructure/platforms/site-adapter.ts";
 import { MediaForPublishing } from "#publishing/application/media-for-publishing.ts";
+import type { SiteAdapter } from "#publishing/application/site-calls.ts";
 import type {
   SiteCallJournal,
   SiteCallRequest,
@@ -131,7 +131,23 @@ const sameTerm = (stored: string, wanted: string) =>
 
 const MeSchema = Schema.Struct({ id: Schema.Number });
 
-const codeOf = (code: string) => storableLine(code, maxCodeLength);
+// The codes Peal writes of its own (a disconnected channel, a library's
+// file gone, the plan): a site's code that is one of them is kept with
+// the platform before it (`wordpress:channelDisconnected`), so no site
+// ever reads as Peal's own reason, for an article or a post.
+const reservedCodes: ReadonlySet<string> = new Set([
+  "channelDisabled",
+  "mediaUnavailable",
+  "planLimit",
+  siteRefusalCodes.channelDisconnected,
+  siteRefusalCodes.sitePlanRequired,
+]);
+
+const codeOf = (code: string) => {
+  const line = storableLine(code, maxCodeLength);
+
+  return reservedCodes.has(line) ? `wordpress:${line}` : line;
+};
 
 /**
  * How WordPress refused a request, from its status and its own error:

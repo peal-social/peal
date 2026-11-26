@@ -356,6 +356,27 @@ export const livePostChanges = publishing.table(
 );
 
 /**
+ * The files a website's target sent to its site: the site's id and address
+ * for each of the library's files, so a later attempt, round or change of
+ * the post sends none twice (`SiteFiles`). Rows go with their target.
+ */
+export const siteFiles = publishing.table(
+  "site_files",
+  {
+    // The site dropped it as the post's featured image, even sent again:
+    // it is not offered as one any more.
+    featuredRefused: boolean("featured_refused").notNull().default(false),
+    mediaId: uuid("media_id").notNull(),
+    siteMediaId: bigint("site_media_id", { mode: "number" }).notNull(),
+    sourceUrl: text("source_url").notNull(),
+    targetId: uuid("target_id")
+      .notNull()
+      .references(() => postTargets.id, { onDelete: "cascade" }),
+  },
+  (table) => [primaryKey({ columns: [table.targetId, table.mediaId] })]
+);
+
+/**
  * A resumable upload a platform keeps for one publishing call (YouTube's
  * videos.insert), journaled before any byte is sent, so a run found in
  * flight asks the platform where the upload stands instead of sending it

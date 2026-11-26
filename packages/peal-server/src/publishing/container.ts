@@ -78,6 +78,7 @@ import { DrizzlePublishedTargets } from "#publishing/infrastructure/drizzle-publ
 import { DrizzleQueueStore } from "#publishing/infrastructure/drizzle-queue-store.ts";
 import { DrizzleRecordedPosts } from "#publishing/infrastructure/drizzle-recorded-posts.ts";
 import { DrizzleSignatureStore } from "#publishing/infrastructure/drizzle-signature-store.ts";
+import { DrizzleSiteFiles } from "#publishing/infrastructure/drizzle-site-files.ts";
 import { DrizzleTagStore } from "#publishing/infrastructure/drizzle-tag-store.ts";
 import { DrizzleUploadSessions } from "#publishing/infrastructure/drizzle-upload-sessions.ts";
 import { DrizzleWorkspacePostStore } from "#publishing/infrastructure/drizzle-workspace-post-store.ts";
@@ -109,6 +110,11 @@ import { PlanPostAllowanceLive } from "#publishing/infrastructure/plan-post-allo
 import { LivePostClientsLive } from "#publishing/infrastructure/platforms/live-post-clients-live.ts";
 import { PlatformClientsLive } from "#publishing/infrastructure/platforms/platform-clients-live.ts";
 import { PlatformLookupsLive } from "#publishing/infrastructure/platforms/platform-lookups-live.ts";
+import {
+  siteCallsWith,
+  siteHosts,
+} from "#publishing/infrastructure/platforms/sites/site-calls-live.ts";
+import { withSiteClients } from "#publishing/infrastructure/platforms/sites/site-client.ts";
 import { TikTokCreatorsLive } from "#publishing/infrastructure/platforms/tiktok/tiktok-creators.ts";
 import { DrizzleRecyclingStore } from "#publishing/infrastructure/recycling/drizzle-recycling-store.ts";
 import { NotifiedRecyclingNotices } from "#publishing/infrastructure/recycling/notified-recycling-notices.ts";
@@ -579,18 +585,30 @@ const UploadsLive = limitedUploads.pipe(
   Layer.provide(LibraryMediaForPublishing)
 );
 
+// The websites' calls, over the guarded public client, the files as
+// sites get them on the server's one limiter of large uploads: what
+// publishing's site client makes for posts, and the articles' publisher
+// for articles.
+const SiteCallsLive = siteCallsWith(siteHosts).pipe(
+  Layer.provide(UploadsLive),
+  Layer.provide(OutboundGuard.layer),
+  Layer.provide(FetchHttpClient.layer)
+);
+
 /**
  * What articles go out under, from publishing: the library's ready files
  * (AttachableMedia), the plan's room (PostAllowance), and the files as
  * sites get them, on the server's one limiter of large uploads
- * (MediaForPublishing, `UploadsLive`, the one this file provides). Needs
+ * (MediaForPublishing, `UploadsLive`, the one this file provides), and
+ * the websites' calls (SiteCalls), which the articles' job makes. Needs
  * what those need: MediaLibrary, MediaForPlatforms and the billing
  * context's entitlements.
  */
 export const PostingServicesLive = Layer.mergeAll(
   LibraryAttachableMedia,
   PlanPostAllowanceLive,
-  UploadsLive
+  UploadsLive,
+  SiteCallsLive
 );
 
 /**
@@ -610,15 +628,20 @@ export const PlatformsLive = RoutedPlatformPublisher.pipe(
   // X's posts, claimed on the billing account's meter at X's rates.
   Layer.provide(MeteredXPostsLive),
   Layer.provide(ShortLinksLinkShortener),
-  Layer.provide(PlatformClientsLive),
+  // A website's targets go out through the site client, the others
+  // through their platform's.
+  Layer.provide(withSiteClients(PlatformClientsLive)),
   Layer.provide(
     Layer.mergeAll(
       ChannelAccessCredentials,
       UploadsLive,
       DrizzlePublicationProgress,
+      DrizzlePublicationJournal,
+      DrizzleSiteFiles,
       DrizzleUploadSessions,
       DrizzlePlatformQuota,
-      DrizzleRecordedPosts
+      DrizzleRecordedPosts,
+      SiteCallsLive
     )
   ),
   Layer.provide(OutboundGuard.layer),
@@ -667,7 +690,9 @@ export const FollowUpPlatformsLive = RoutedFollowUpPublisher.pipe(
  * they edit, with the channels' tokens and the edits' texts.
  */
 export const LivePostPlatformsLive = LivePostClientsLive.pipe(
-  Layer.provide(Layer.merge(ChannelAccessCredentials, LivePostEdits.layer))
+  Layer.provide(
+    Layer.mergeAll(ChannelAccessCredentials, LivePostEdits.layer, SiteCallsLive)
+  )
 );
 
 /**

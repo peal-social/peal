@@ -94,6 +94,10 @@ layer(StorageTest)("a target's stored options", (it) => {
           "facebook",
           "facebook",
           "facebook",
+          "wordpress",
+          "wordpressCom",
+          "devto",
+          "hashnode",
         ]
       );
     })
