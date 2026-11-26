@@ -3922,6 +3922,11 @@ export const studioGroupsLive = (studio: Studio) =>
             });
             yield* record(studio, `edit:${target.id}:${String(part)}`);
 
+            // A website's body as Markdown, as the command line sent it.
+            if (payload.bodyMarkdown !== undefined) {
+              yield* record(studio, `markdown:${payload.bodyMarkdown}`);
+            }
+
             return { ...doneChange(post.id, target), kind: "edit" as const };
           }),
         enqueue: ({ params, payload }) =>

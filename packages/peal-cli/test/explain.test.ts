@@ -11,7 +11,7 @@ import {
   WebhookHeaderValuesRequired,
 } from "peal-contract";
 
-import { explain } from "#explain.ts";
+import { explain, violationOf } from "#explain.ts";
 
 const url = "http://localhost:3000";
 
@@ -289,5 +289,29 @@ describe("a meter's refusal, explained", () => {
     expect(xRefusal("paymentFailed")).not.toContain("adds one");
     expect(xRefusal("planAllowance")).toContain("to per-account pricing");
     expect(xRefusal("planAllowance")).not.toContain("used 0 of the 0");
+  });
+});
+
+describe("a website's body refused, explained", () => {
+  it("words each problem of its Markdown with its line and column", () => {
+    const words = violationOf({
+      _tag: "bodyInvalid",
+      channelId: "0190f3a0-0000-7000-8000-00000000c001",
+      problems: [
+        { column: 1, line: 3, problem: "headingLevel" },
+        { problem: "tooLarge" },
+      ],
+    });
+
+    expect(words).toContain(
+      "a heading of level 1, 5 or 6: headings go from ## to ####, and the title is the channel's title option (line 3, column 1)"
+    );
+    expect(words).toContain("; more than a body holds");
+    expect(
+      violationOf({
+        _tag: "bodyInvalid",
+        channelId: "0190f3a0-0000-7000-8000-00000000c001",
+      })
+    ).toContain("its rich text holds a node or a mark Peal does not take");
   });
 });

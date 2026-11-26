@@ -11,6 +11,12 @@ import type { Post, PostDraft } from "peal-contract";
 import { explain } from "#explain.ts";
 import { jsonFlag, printJson, printNothing } from "#json.ts";
 import {
+  bodiesOf,
+  markdownFlag,
+  markdownOverrides,
+  storedBodies,
+} from "#markdown-files.ts";
+import {
   followUpsOf,
   pollChoiceFlag,
   pollMinutesFlag,
@@ -137,6 +143,9 @@ const save = Command.make(
       "Put each channel's default signature under its text, as peal signatures list shows them: the workspace's under the post's text, a platform's or a channel's own under the text that channel has instead. A text that already ends with its signature is left as it is."
     ),
     json: jsonFlag,
+    markdown: markdownFlag(
+      "A website's body, its text there, from a Markdown file, as peal post takes it: headings from ## to ####, no table, footnote, raw HTML or front matter, images by a path (from the file's folder) or an https address, stored first, or as ![alt](media:<media-id>). Repeat it for several websites. A draft you change keeps its other channels' texts. The file is read before anything is sent, and never printed."
+    ),
     options: Flag.String("options").pipe(
       Flag.withMetavar("<channel-id>=<json>"),
       Flag.withDescription(
@@ -180,6 +189,8 @@ const save = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("drafts.save")(function* save(input) {
+    // Each website's body, read before any request.
+    const bodies = yield* bodiesOf(input.markdown, false);
     const session = yield* inWorkspace(input.workspace);
     const { client, url, workspace } = session;
     const given = yield* Effect.all(input.options.map(optionsOf));
@@ -212,6 +223,13 @@ const save = Command.make(
 
     const presets = yield* presetsOf(session, input);
 
+    // A body's images, stored once the rest is known to hold.
+    const written = markdownOverrides(
+      yield* storedBodies({ client, url }, bodies)
+    );
+
+    const rewritten = new Set(written.map(({ channelId }) => channelId));
+
     const saved: Post = yield* Option.match(input.postId, {
       onNone: () =>
         checkDraft({
@@ -219,7 +237,7 @@ const save = Command.make(
           content: {
             followUps,
             media: [],
-            overrides: [],
+            overrides: written,
             ...asking,
             text: Option.getOrElse(input.text, () => ""),
           },
@@ -258,6 +276,14 @@ const save = Command.make(
                     ? followUps
                     : (draft.content.followUps ?? []),
                 ...asking,
+                // The channels a file was given for take its body; the
+                // others keep theirs.
+                overrides: [
+                  ...draft.content.overrides.filter(
+                    ({ channelId }) => !rewritten.has(channelId)
+                  ),
+                  ...written,
+                ],
                 text: Option.getOrElse(input.text, () => draft.content.text),
               },
               options: withOptions(channelIds, given, kept),

@@ -13,12 +13,19 @@ import type {
   NewPost,
   PostTiming,
   Queue,
+  TextOverride,
 } from "peal-contract";
 import { maxMediaPerPost } from "peal-contract/post-text";
 
 import { outcomeLines } from "#commands/posts.ts";
 import { explain, explainingPublishing } from "#explain.ts";
 import { jsonFlag, printJson } from "#json.ts";
+import {
+  bodiesOf,
+  markdownFlag,
+  markdownOverrides,
+  storedBodies,
+} from "#markdown-files.ts";
 import {
   importAddress,
   isAddress,
@@ -334,7 +341,7 @@ export const post = Command.make(
     ),
     dryRun: Flag.Boolean("dry-run").pipe(
       Flag.withDescription(
-        "Check the post and make nothing: it prints what each channel would receive, with its text counted against the platform's limits, and everything that would refuse it, all at once, then ends as a refusal unless the post would go through. A post that would go through now can still be refused later. With it, --media takes media ids only."
+        "Check the post and make nothing: it prints what each channel would receive, with its text counted against the platform's limits, and everything that would refuse it, all at once, then ends as a refusal unless the post would go through. A post that would go through now can still be refused later. With it, --media takes media ids only, and a --markdown file names its images by media id only."
       ),
       Flag.withDefault(false)
     ),
@@ -346,6 +353,9 @@ export const post = Command.make(
       Flag.optional
     ),
     json: jsonFlag,
+    markdown: markdownFlag(
+      "A website's body, its text there, from a Markdown file: CommonMark with GitHub's extensions, headings from ## to #### (its title is the title option, in --options), no table, footnote, raw HTML or front matter. An image the file names by a path (from the file's folder) or an https address is stored first, as --media stores one; one written ![alt](media:<media-id>) is the workspace's already. Repeat it for several websites. The file is read before anything is sent, and never printed."
+    ),
     media: Flag.String("media").pipe(
       Flag.withMetavar("<file|url|media-id>"),
       Flag.withDescription(
@@ -416,20 +426,25 @@ export const post = Command.make(
       multiple: input.pollMultiple,
     });
 
+    // Each website's body, read before any request; with --dry-run, it
+    // names no image to store.
+    const bodies = yield* bodiesOf(input.markdown, input.dryRun);
+
     const withMedia = (
       media: readonly MediaAttachment[],
       tagIds: readonly string[] = [],
       presets: Presets = {},
-      when: PostTiming = asked
+      when: PostTiming = asked,
+      overrides: readonly TextOverride[] = markdownOverrides(bodies)
     ) => {
       const written: NewPost = {
         channelIds,
         content: Option.match(poll, {
-          onNone: () => ({ followUps, media, overrides: [], text: input.text }),
+          onNone: () => ({ followUps, media, overrides, text: input.text }),
           onSome: (question) => ({
             followUps,
             media,
-            overrides: [],
+            overrides,
             poll: question,
             text: input.text,
           }),
@@ -500,6 +515,11 @@ export const post = Command.make(
       return;
     }
 
+    // A body's images, stored once the rest is known to hold.
+    const overrides = markdownOverrides(
+      yield* storedBodies(destination, bodies)
+    );
+
     const sent = yield* client.posts
       .create({
         headers: Option.match(input.idempotencyKey, {
@@ -507,7 +527,7 @@ export const post = Command.make(
           onSome: (key) => ({ "idempotency-key": key }),
         }),
 
-        payload: yield* withMedia(media, tagIds, presets, when),
+        payload: yield* withMedia(media, tagIds, presets, when, overrides),
         query: Option.match(input.wait, {
           onNone: () => ({}),
           onSome: (wait) => ({ wait }),

@@ -176,7 +176,7 @@ describe("peal posts edit", () => {
 
         assert.include(
           yield* session.refused(editArgs("--channel", mastodonId)),
-          "Give --text, --body or --options"
+          "Give --text, --body, --markdown-file or --options"
         );
         assert.include(
           yield* session.refused(

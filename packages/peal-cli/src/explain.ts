@@ -19,6 +19,8 @@ import {
 import type {
   AdAccountUnusable,
   AudioProviderFailed,
+  BodyProblem,
+  BodyProblemKind,
   BoostViolation,
   CommentInvalid,
   ContentViolation,
@@ -236,13 +238,39 @@ const notRecyclable: Readonly<Record<NotRecyclableReason, string>> = {
     "The post goes to websites only, and no rule repeats a post on a website.",
 };
 
+// What a website's body sent as Markdown holds that Peal does not take,
+// as the author fixes it.
+const bodyProblemWords: Readonly<Record<BodyProblemKind, string>> = {
+  footnote: "a footnote",
+  frontMatter:
+    "front matter, the --- block at the top: give the title and the tags in the channel's options (--options)",
+  headingLevel:
+    "a heading of level 1, 5 or 6: headings go from ## to ####, and the title is the channel's title option",
+  html: "raw HTML, of which only a comment and <br> are taken",
+  image:
+    "an image that is no file of the workspace, or one inside a heading or a link: write it ![alt](media:<media-id>), or name a file or an https address and the command line stores it first",
+  link: "a link that is not an http, https or mailto address",
+  notTaken: "something a website's body does not hold",
+  table: "a table",
+  tooLarge:
+    "more than a body holds: 200,000 characters, 8 levels of lists and quotes, 100 files",
+};
+
+/** A problem of a body sent as Markdown, with its line and column. */
+export const bodyProblemOf = ({ column, line, problem }: BodyProblem) =>
+  line === undefined
+    ? bodyProblemWords[problem]
+    : `${bodyProblemWords[problem]} (line ${String(line)}${column === undefined ? "" : `, column ${String(column)}`})`;
+
 // What breaks a platform's rule, as the author fixes it.
 const brokenRule = (violation: ContentViolation): string =>
   Match.valueTags(violation, {
     altTextTooLong: ({ length, maximum }) =>
       `its description has ${String(length)} characters, and the platform keeps ${String(maximum)}`,
-    bodyInvalid: () =>
-      "its rich text holds a node or a mark Peal does not take, or more than Peal keeps",
+    bodyInvalid: ({ problems }) =>
+      problems === undefined
+        ? "its rich text holds a node or a mark Peal does not take, or more than Peal keeps"
+        : `its Markdown holds what a website's body does not take: ${problems.map(bodyProblemOf).join("; ")}`,
     bodyNotTaken: () =>
       "only a website takes a rich text, and only on the post's first part",
     optionsNotTaken: () =>

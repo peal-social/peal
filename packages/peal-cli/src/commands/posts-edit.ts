@@ -12,6 +12,8 @@ import type { Channel, LivePostEdit } from "peal-contract";
 import { changeLine, targetsOn } from "#commands/posts-unpublish.ts";
 import { explain, explainingPublishing } from "#explain.ts";
 import { jsonFlag, printJson } from "#json.ts";
+import { readMarkdownFile, withImagesStored } from "#markdown-files.ts";
+import type { MarkdownFile } from "#markdown-files.ts";
 import { channelName } from "#print.ts";
 import { Refused } from "#refused.ts";
 import { inWorkspace, named, workspaceFlag } from "#workspace.ts";
@@ -25,23 +27,33 @@ const decodeBody = Schema.decodeUnknownEffect(
 );
 
 /**
- * What the flags ask of the edit: its part, and its text, its rich text or
- * its options, one at least, the JSON read here.
+ * What the flags ask of the edit: its part, and its text, its rich text
+ * (as JSON, or a Markdown file) or its options, one at least, the JSON and
+ * the file read here, before any request.
  */
 const editOf = Effect.fn("posts.edit.payload")(function* editOf(input: {
   readonly body: Option.Option<string>;
+  readonly markdownFile: Option.Option<string>;
   readonly options: Option.Option<string>;
   readonly part: number;
   readonly text: Option.Option<string>;
 }) {
   if (
     Option.isNone(input.body) &&
+    Option.isNone(input.markdownFile) &&
     Option.isNone(input.options) &&
     Option.isNone(input.text)
   ) {
     return yield* new Refused({
       reason:
-        "Give --text, --body or --options, one at least: nothing was edited.",
+        "Give --text, --body, --markdown-file or --options, one at least: nothing was edited.",
+    });
+  }
+
+  if (Option.isSome(input.body) && Option.isSome(input.markdownFile)) {
+    return yield* new Refused({
+      reason:
+        "Give --body or --markdown-file, not both: each is the whole rich text. Nothing was edited.",
     });
   }
 
@@ -75,7 +87,13 @@ const editOf = Effect.fn("posts.edit.payload")(function* editOf(input: {
 
   const asked: LivePostEdit = payload;
 
-  return asked;
+  const markdown: Option.Option<MarkdownFile> = Option.isSome(
+    input.markdownFile
+  )
+    ? Option.some(yield* readMarkdownFile(input.markdownFile.value))
+    : Option.none();
+
+  return { asked, markdown };
 });
 
 // Arguments are read in the order of their keys.
@@ -89,6 +107,13 @@ export const edit = Command.make(
       )
     ),
     json: jsonFlag,
+    markdownFile: Flag.String("markdown-file").pipe(
+      Flag.withMetavar("<file>"),
+      Flag.withDescription(
+        "On a website only: the post's new rich text there, from a Markdown file, as peal post --markdown takes one: headings from ## to ####, images by a path (from the file's folder) or an https address, stored first, or as ![alt](media:<media-id>). It replaces its text. The file is read before anything is sent, and never printed."
+      ),
+      Flag.optional
+    ),
     part: Flag.Int("part").pipe(
       Flag.withMetavar("<n>"),
       Flag.withDescription(
@@ -118,7 +143,7 @@ export const edit = Command.make(
     text: Flag.String("text").pipe(
       Flag.withMetavar("<text>"),
       Flag.withDescription(
-        "The new text of that part on that channel. On a website it replaces a rich text with plain paragraphs: give --body to keep its formatting. It is checked as the channel's text is when a post is scheduled. One of --text, --body and --options is needed."
+        "The new text of that part on that channel. On a website it replaces a rich text with plain paragraphs: give --body or --markdown-file to keep its formatting. It is checked as the channel's text is when a post is scheduled. One of --text, --body, --markdown-file and --options is needed."
       ),
       Flag.optional
     ),
@@ -138,7 +163,7 @@ export const edit = Command.make(
       });
     }
 
-    const payload = yield* editOf(input);
+    const { asked, markdown } = yield* editOf(input);
 
     const { client, url } = yield* inWorkspace(input.workspace);
 
@@ -176,6 +201,17 @@ export const edit = Command.make(
       });
     }
 
+    // The file's images, stored once the target is known.
+    const payload: LivePostEdit = Option.isSome(markdown)
+      ? {
+          ...asked,
+          bodyMarkdown: yield* withImagesStored(
+            { client, url },
+            markdown.value
+          ),
+        }
+      : asked;
+
     const change = yield* client.posts
       .editTarget({
         headers: {},
@@ -201,6 +237,6 @@ export const edit = Command.make(
   })
 ).pipe(
   Command.withDescription(
-    "Edit a published post on one channel, where peal channels capabilities says Peal edits: on a social network or a chat only its text changes; on a website its text (or a rich text, --body) and its options (--options) replace what the site shows, and the site keeps its status and its date. The change is public at once. Once done, it is that part's text on that channel in Peal too."
+    "Edit a published post on one channel, where peal channels capabilities says Peal edits: on a social network or a chat only its text changes; on a website its text (or a rich text, --body or --markdown-file) and its options (--options) replace what the site shows, and the site keeps its status and its date. The change is public at once. Once done, it is that part's text on that channel in Peal too."
   )
 );
