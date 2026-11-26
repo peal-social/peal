@@ -83,6 +83,14 @@ export const recordPartRun = Effect.fn("Publishing.recordPart")(
 
     return yield* transaction(
       Effect.gen(function* recordInTransaction() {
+        const unlocked = yield* posts.findTarget(targetId);
+
+        // The post first, then the target, as every use case locks them:
+        // recording a part moves the post's `updated_at`.
+        if (Option.isSome(unlocked)) {
+          yield* posts.lock(unlocked.value.postId);
+        }
+
         const locked = yield* posts.lockTarget(targetId);
         const now = yield* DateTime.now;
 

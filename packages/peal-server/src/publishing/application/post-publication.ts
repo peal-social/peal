@@ -259,10 +259,18 @@ export const claimTargetRun = Effect.fn("Publishing.claimTarget")(
 
     return yield* transaction(
       Effect.gen(function* claimInTransaction() {
+        const unlocked = yield* posts.findTarget(targetId);
+
+        // The post first, then the target, as every use case locks them:
+        // starting the target moves the post's `updated_at`.
+        if (Option.isSome(unlocked)) {
+          yield* posts.lock(unlocked.value.postId);
+        }
+
         const locked = yield* posts.lockTarget(targetId);
 
         // Its draft was discarded, or left its channel, since.
-        if (Option.isNone(locked)) {
+        if (Option.isNone(unlocked) || Option.isNone(locked)) {
           const claim: TargetClaim = { _tag: "superseded" };
 
           return claim;
