@@ -5,6 +5,7 @@ import { Effect, Schema } from "effect";
 import {
   empty,
   formPartsOf,
+  plainText,
   headerOf,
   json,
   jsonBodyOf,
@@ -94,8 +95,18 @@ export const snapRefusal = (
     headers
   );
 
-/** The one refused token Snap documents: an expired one. */
-export const expiredToken: PlatformAnswer = empty(401, {
+/**
+ * A refused token as Snap's gateway answered one on 2026-11-26 (a bad
+ * token, and none at all): a bare 401 in plain text, `unauthorized`, with
+ * no `WWW-Authenticate` and no envelope.
+ */
+export const refusedToken: PlatformAnswer = plainText("unauthorized", 401, {
+  server: "API Gateway",
+  via: "1.1 google",
+});
+
+/** An expired token as Snap's authentication page documents it. */
+export const documentedExpiredToken: PlatformAnswer = empty(401, {
   "content-type": "text/html",
   "www-authenticate":
     'Bearer error="invalid_token", error_description="The access token expired"',
@@ -138,7 +149,7 @@ const text = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
  * Snap's Business API for the Public Profile API's posting calls on one
  * synthetic profile: create media (answering paths under `/us/v1/…`), the
  * multipart ADD and FINALIZE, and Post Spotlight. Calls carry one of
- * `tokens`, else an expired token's 401. `script` replaces a route's next
+ * `tokens`, else the gateway's bare 401 (`refusedToken`). `script` replaces a route's next
  * answers. FINALIZE takes only the shape Snap's page shows (`split -b
  * 32m` of the encrypted file): one part of 32 MiB at most, or parts of
  * exactly 32 MiB and a last one of what is left. Every create request's
@@ -294,7 +305,7 @@ export const fakeSnapchatApi = Effect.fnUntraced(function* fakeSnapchatApi(
 
     // A refused token comes before anything: it uses no scripted answer.
     if (!tokens.has(bearerOf(request))) {
-      return expiredToken;
+      return refusedToken;
     }
 
     const next = script.next(route);

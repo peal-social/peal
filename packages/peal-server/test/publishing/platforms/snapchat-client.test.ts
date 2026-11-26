@@ -18,7 +18,8 @@ import { SnapchatOptions } from "#publishing/domain/snapchat-options.ts";
 import { largeHeldUpload } from "#publishing/infrastructure/upload-slots.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
 import {
-  expiredToken,
+  documentedExpiredToken,
+  refusedToken,
   fakeSnapchatApi,
   snapchatProfileId,
   snapPartSize,
@@ -262,7 +263,7 @@ describe("publishing on Snapchat", () => {
         const file = testFile("video", 32 * mebibyte + 3000);
         const on = yield* onSnapchat({ files: [file] });
 
-        on.snapchat.script.push("add", [{ _tag: "own" }, expiredToken]);
+        on.snapchat.script.push("add", [{ _tag: "own" }, refusedToken]);
 
         const result = yield* on.client.publish(
           yield* post({ media: [attached(file)] })
@@ -405,21 +406,23 @@ describe("publishing on Snapchat", () => {
   );
 
   it.live(
-    "renews a token Snap refused once, and posts the Spotlight once",
+    "renews a token Snap refused once, as its gateway or its page refuses one, and posts the Spotlight once",
     () =>
       Effect.gen(function* renews() {
-        const file = video();
-        const on = yield* onSnapchat({ files: [file] });
+        for (const refusal of [refusedToken, documentedExpiredToken]) {
+          const file = video();
+          const on = yield* onSnapchat({ files: [file] });
 
-        on.snapchat.script.push("spotlight", [expiredToken]);
+          on.snapchat.script.push("spotlight", [refusal]);
 
-        const result = yield* on.client.publish(
-          yield* post({ media: [attached(file)] })
-        );
+          const result = yield* on.client.publish(
+            yield* post({ media: [attached(file)] })
+          );
 
-        assert.strictEqual(result._tag, "published");
-        assert.lengthOf(on.snapchat.spotlights(), 1);
-        assert.strictEqual(yield* on.log.renewals, 1);
+          assert.strictEqual(result._tag, "published");
+          assert.lengthOf(on.snapchat.spotlights(), 1);
+          assert.strictEqual(yield* on.log.renewals, 1);
+        }
       })
   );
 
@@ -449,7 +452,8 @@ describe("publishing on Snapchat", () => {
           "BadRequest",
           "snapchat:AUTHORIZATION_PERMISSION_DENIED",
         ],
-        [empty(401), "PlatformUnavailable", undefined],
+        // Snap's answer to an app it has not allowlisted yet.
+        [empty(403), "PlatformUnavailable", undefined],
         [
           empty(403, { "content-type": "text/html" }),
           "PlatformUnavailable",

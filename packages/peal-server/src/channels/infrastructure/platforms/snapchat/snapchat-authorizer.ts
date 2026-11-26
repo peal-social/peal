@@ -93,7 +93,8 @@ const tokensOf = (
   stored: Option.Option<Redacted.Redacted>
 ): IssuedTokens => {
   // The answer's refresh token replaces the one sent; an answer without one
-  // keeps it, as Snap does not say whether a refresh replaces it.
+  // keeps it. Snap does not say whether a refresh replaces it; on
+  // 2026-11-26 one answered the same refresh token.
   const refreshToken = Option.fromUndefinedOr(answer.refresh_token).pipe(
     Option.map((token) => Redacted.make(token)),
     Option.orElse(() => stored)
@@ -264,8 +265,10 @@ const notUnderstood = (
  * and the member by ConnectChannel, guards the callback.
  *
  * The app is made in Business Manager (Business Details), and Snap
- * allowlists its client id for the Public Profile API: until it has, the
- * profile is refused (403), which the log tells the operator.
+ * allowlists its client id for the Public Profile API. Until it has, the
+ * consent page and the token exchange still work (Peal's own app,
+ * 2026-11-26), and `my_profile` answers a 403 with an empty body: the
+ * sign-in fails, and the log tells the operator.
  *
  * The profile is the one `my_profile` answers, the signed-in account's own;
  * an account without one connects nothing. Access tokens last an hour and

@@ -180,7 +180,9 @@ export const tokenPolicies = {
   // Marketing API, Authentication, read 2026-11-26). Every refresh answer
   // holds a refresh token, and nothing says the one sent still works after
   // it: read as rotating, so a refresh runs alone on its channel and its
-  // answer is saved first. Access is renewed when a post needs it; an idle
+  // answer is saved first. On 2026-11-26 one refresh answered a new access
+  // token and the same refresh token, which reading it as rotating costs
+  // nothing. Access is renewed when a post needs it; an idle
   // channel is renewed after seven days, where the other short tokens wait
   // thirty, as Snap gives the refresh token no lifetime and one refresh a
   // week costs nothing.

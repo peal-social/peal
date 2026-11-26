@@ -597,10 +597,13 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   and `MEDIA_POSTING_ALREADY_IN_PROGRESS` are unconfirmed, and a resumed
   run, the upload's included, `interrupted`. `snapchat-refusal.ts` reads
   the status, `WWW-Authenticate` and whether the body is Snap's envelope,
-  never its messages: only a 401 naming `invalid_token` is
-  `TokenRejected`; Snap's own 401 or 403 fails the post
-  (`snapchat:<code>`), a bare one is `PlatformUnavailable`; a `MEDIA_`
-  code, or any code on a part or the finish, is the media's refusal.
+  never its messages: a 401 naming `invalid_token`, or any 401 that is
+  not Snap's envelope (its gateway answered a bad token a bare
+  `unauthorized` in plain text on 2026-11-26), is `TokenRejected`, renewed
+  once, then asking to reconnect; a 401 or a 403 in Snap's envelope fails
+  the post (`snapchat:<code>`), a bare 403 is `PlatformUnavailable`; a
+  `MEDIA_` code, or any code on a part or the finish, is the media's
+  refusal.
 - A confirmation that searches the platform (Pinterest's board, a LinkedIn
   page's newest posts, a location's local posts) adopts a post only through
   `attemptAmong` (`platforms/attempt-match.ts`): the one match the channel

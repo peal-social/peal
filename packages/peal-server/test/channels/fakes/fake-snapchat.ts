@@ -79,7 +79,10 @@ interface PendingCode {
  * codes for the authorization page (`approve` plays the member), exchanges
  * them with the client's id and secret in the form and the exact
  * `redirect_uri`, issues one-hour access tokens, and refreshes with refresh
- * tokens, each answer bringing a new one (or none, `refreshWithoutToken`).
+ * tokens, each answer bringing a new access token and the same refresh
+ * token, as Snap's did on 2026-11-26 (or none, `refreshWithoutToken`); its
+ * answers carry the keys Snap's carried beyond its docs (`id_token`,
+ * `issued_token_type`, `token_responses`).
  * `failNext` makes the next answers to a route failures; `profile` replaces
  * the profile answered.
  */
@@ -93,26 +96,32 @@ export const fakeSnapchat = Effect.fnUntraced(function* fakeSnapchat() {
   let newRefreshTokens = true;
   let profile: JsonValue = snapchatProfile;
 
-  const issue = (withRefresh: boolean) => {
+  // A new access token, with `refresh` as the refresh token (none for
+  // `undefined`).
+  const issue = (refresh: string | undefined) => {
     issued += 1;
 
     const access = `synthetic-snapchat-access-${issued}`;
-    const refresh = `synthetic-snapchat-refresh-${issued}`;
 
     accessTokens.add(access);
-
-    if (withRefresh) {
-      refreshTokens.add(refresh);
-    }
 
     const answer = {
       access_token: access,
       expires_in: 3600,
+      id_token: `synthetic-snapchat-id-token-${issued}`,
+      issued_token_type: "urn:ietf:params:oauth:token-type:access_token",
       scope: "snapchat-profile-api",
+      token_responses: [],
       token_type: "Bearer",
     };
 
-    return json(withRefresh ? { ...answer, refresh_token: refresh } : answer);
+    if (refresh === undefined) {
+      return json(answer);
+    }
+
+    refreshTokens.add(refresh);
+
+    return json({ ...answer, refresh_token: refresh });
   };
 
   const exchange = (request: FakeRequest): FakeResponse => {
@@ -128,7 +137,7 @@ export const fakeSnapchat = Effect.fnUntraced(function* fakeSnapchat() {
       usedRefreshTokens.push(token);
 
       return refreshTokens.has(token)
-        ? issue(newRefreshTokens)
+        ? issue(newRefreshTokens ? token : undefined)
         : snapOAuthError("invalid_grant");
     }
 
@@ -144,17 +153,16 @@ export const fakeSnapchat = Effect.fnUntraced(function* fakeSnapchat() {
 
     codes.delete(form.get("code") ?? "");
 
-    return issue(true);
+    return issue(`synthetic-snapchat-refresh-${issued + 1}`);
   };
 
   const myProfile = (request: FakeRequest): FakeResponse => {
+    // As Snap's gateway answered a bad token on 2026-11-26: a bare 401,
+    // `unauthorized` in plain text (the fake writes it as a JSON string).
     if (!accessTokens.has(bearerOf(request))) {
       return {
-        headers: {
-          "content-type": "text/html",
-          "www-authenticate":
-            'Bearer error="invalid_token", error_description="The access token expired"',
-        },
+        body: "unauthorized",
+        headers: { "content-type": "text/plain", server: "API Gateway" },
         status: 401,
       };
     }

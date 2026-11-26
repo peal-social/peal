@@ -1047,7 +1047,6 @@ layer(
         Redacted.value(tokens.accessToken),
         ...Option.toArray(tokens.refreshToken).map(Redacted.value),
         "synthetic-snapchat-access-2",
-        "synthetic-snapchat-refresh-2",
       ]) {
         assert.notInclude(written(), secret);
       }

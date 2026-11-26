@@ -246,11 +246,15 @@
   UUID (`isProfileId`, `#shared/infrastructure/platforms/snapchat-api.ts`);
   a 404, an envelope that does not say `SUCCESS` or a success without a
   profile is the empty choice (`NoAccountsToConnect`), a 403 the
-  operator's allowlist (logged as an error, the sign-in failed), and any
+  operator's allowlist (logged as an error, the sign-in failed: on
+  2026-11-26 Snap let an app it had not allowlisted through its consent
+  page and token exchange, then answered `my_profile` a 403 with an empty
+  body), and any
   other answer nobody understood a failed sign-in, never "no profile".
   Access lasts an hour (`tokenPolicies.snapchat`: rotating, kept alive
   after seven days unused, as Snap gives the refresh token no lifetime); a
-  refresh answer without a refresh token keeps the stored one. Only a 400
+  refresh answer without a refresh token keeps the stored one (Snap's
+  answered the same refresh token on 2026-11-26). Only a 400
   or 401 naming an OAuth `error` other than the client's asks to
   reconnect: the client's is the operator's (`PlatformUnavailable`, logged),
   and any other refusal, or a 200 that cannot be read, leaves the tokens

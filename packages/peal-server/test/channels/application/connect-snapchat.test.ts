@@ -412,6 +412,15 @@ layer(AdaptersTest)("connecting a Snapchat Public Profile", (it) => {
         const on = yield* onSnapchat();
         const workspaceId = yield* freshWorkspace;
 
+        // As Snap answered an app it had not allowlisted yet, on 2026-11-26:
+        // a 403 with an empty body, after a sign-in that went through.
+        on.snapchat.failNext(profileRoute, [{ status: 403 }]);
+
+        const emptyRefusal = yield* signedIn(on, workspaceId).pipe(Effect.flip);
+
+        assert.strictEqual(emptyRefusal._tag, "AuthorizationFailed");
+        assert.include(JSON.stringify(emptyRefusal), "not allowlisted");
+
         on.snapchat.failNext(profileRoute, [
           snapError("AUTHORIZATION_PERMISSION_DENIED", 403),
         ]);
@@ -467,7 +476,7 @@ layer(AdaptersTest)("connecting a Snapchat Public Profile", (it) => {
   );
 
   it.effect(
-    "renews an expired token through ChannelAccess and saves the new refresh token",
+    "renews an expired token through ChannelAccess, keeping the refresh token Snap answers again",
     () =>
       Effect.gen(function* renews() {
         const on = yield* onSnapchat();
@@ -492,9 +501,10 @@ layer(AdaptersTest)("connecting a Snapchat Public Profile", (it) => {
           "synthetic-snapchat-access-1",
           "synthetic-snapchat-access-2",
         ]);
+        // Snap answered a refresh with the refresh token it was sent.
         assert.deepStrictEqual(yield* storedTokens(channel), {
           access: "synthetic-snapchat-access-2",
-          refresh: Option.some("synthetic-snapchat-refresh-2"),
+          refresh: Option.some("synthetic-snapchat-refresh-1"),
         });
 
         const sent = new URLSearchParams(
