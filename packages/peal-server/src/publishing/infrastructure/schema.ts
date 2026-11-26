@@ -68,6 +68,18 @@ const instant = (name: string) => timestamp(name, { withTimezone: true });
  * (`recycling_rules`) made the post, and its place among the rule's posts,
  * from 2; null on any other post. Their unique index is what makes an
  * occurrence once, whoever runs the rule.
+ *
+ * `external_id` is the caller's own id for the post (a record of another
+ * system), null when it gave none: unique in the workspace among posts that
+ * are not cancelled, and written apart from what the post says
+ * (`PostRepository.setExternalId`), as tags are.
+ *
+ * `updated_at` is when what the post's answer shows last changed: its own
+ * columns or its targets'. Every statement that writes such a column moves
+ * it forward, never back (`post-updates.ts`); its default, the instant of
+ * the insert in whole milliseconds, covers rows from before it was kept and
+ * a release before it that inserts a post. It is the one instant here not
+ * written from the Clock alone: `GREATEST` keeps it moving forward.
  */
 export const posts = publishing.table(
   "posts",
@@ -76,6 +88,7 @@ export const posts = publishing.table(
     cancelledAt: instant("cancelled_at"),
     createdVia: jsonb("created_via"),
     executionId: text("execution_id"),
+    externalId: text("external_id"),
     finishedAt: instant("finished_at"),
     followUps: jsonb("follow_ups").notNull().default([]),
     id: uuid("id").primaryKey(),
@@ -100,6 +113,9 @@ export const posts = publishing.table(
       .default(sql`'{}'::uuid[]`),
     text: text("text").notNull().default(""),
     textOverrides: jsonb("text_overrides").notNull().default([]),
+    updatedAt: instant("updated_at")
+      .notNull()
+      .default(sql`date_trunc('milliseconds', now())`),
     workspaceId: uuid("workspace_id").notNull(),
   },
   (table) => [
@@ -137,6 +153,19 @@ export const posts = publishing.table(
     index("posts_queue_scheduled_at")
       .on(table.queueId, table.scheduledAt)
       .where(sql`${table.queueId} is not null`),
+    // The caller's own id for a post, once in a workspace among the posts
+    // that are not cancelled: a creation sent twice makes one post.
+    uniqueIndex("posts_workspace_external_id")
+      .on(table.workspaceId, table.externalId)
+      .where(
+        sql`${table.externalId} IS NOT NULL AND ${table.status} <> 'cancelled'`
+      ),
+    // A workspace's posts by when they last changed: what a sync walks.
+    index("posts_workspace_updated").on(
+      table.workspaceId,
+      table.updatedAt,
+      table.id
+    ),
     // A rule's posts, each occurrence once.
     uniqueIndex("posts_recycling_occurrence").on(
       table.recyclingId,
