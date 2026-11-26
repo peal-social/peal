@@ -9,9 +9,9 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   `isSitePlatform`), and how it lands there (`siteStatus`: `publish`,
   `draft`, or `future`, which the site publishes itself at the article's
   time, Peal sending it at once: `sendAt`). Its body is the composer's
-  editor document kept to an allow-list (`domain/article-body.ts`: what
+  editor document kept to an allow-list (`#shared/domain/rich-text/rich-body.ts`: what
   does not decode is refused, `bodyInvalid` in the contract), and its
-  HTML is written by `domain/article-html.ts` alone, every text and
+  HTML is written by `rich-body-html.ts` alone, every text and
   attribute escaped. It takes the posts' permissions (`post:create`,
   `post:update`, `post:delete`, `post:schedule`, `post:publish` for a
   change on the site, `post:read`) and counts in no month's posts. Articles
@@ -108,10 +108,20 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   `link` is kept as the permalink.
 - `SitePublisher` is `routedSitePublisher`: it reads the article and
   the channel's credential once, then calls the `SiteAdapter` of the
-  channel's platform. WordPress's adapter serves `wordpress` and
+  channel's platform with the article as its site gets it
+  (`OutgoingArticle`: the content, and `publishAt` for `future` once
+  scheduled) and the article's journal as the call needs it
+  (`SiteCallJournal` for a publish: `committing`, the files sent from
+  `ArticleJournal`, and `ArticleStore.recordedOn`; a search, a resume or
+  an update gets the files and the records alone, `SiteFileJournal`),
+  both in the shared kernel. The adapters import nothing of this
+  context: their token (`SiteToken`), their search (`SiteSearch`) and the
+  two refusal codes they write (`siteRefusalCodes`, which
+  `articleRefusalCodes` takes its two from) are the kernel's too, so
+  publishing can call them with its own journal. WordPress's adapter serves `wordpress` and
   `wordpressCom` (`siteRouteUrl`, `withSiteToken`: WordPress.com's
   `/wp/v2/sites/{id}/` with a bearer token). DEV's (`devto/`, Forem's API
-  v1) and Hashnode's (`hashnode/`, GraphQL, refusals in `errors` with a 200) take Markdown written by `domain/article-markdown.ts` alone, where
+  v1) and Hashnode's (`hashnode/`, GraphQL, refusals in `errors` with a 200) take Markdown written by `rich-body-markdown.ts` alone, where
   a member's text stays text: ASCII punctuation escaped, `& < >` as
   entities, `[` escaped (no link or embed). Hashnode reads CommonMark
   (`{ }` as entities too); DEV Forem's dialect (`"forem"`): Redcarpet,
@@ -136,8 +146,8 @@ contract, are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   come from a cache, so `find` waits a minute past the earlier call; a
   commit answered with an undocumented code is looked for; it cannot
   publish at a time (`siteStatusNotTaken`) and refuses all without its
-  Pro plan (`articleRefusalCodes.sitePlanRequired`). A search that finds several posts the call may have made ends to check as `severalOnSite`, which tells the member to look and rename or remove the other. What each site takes is
-  `domain/site-rules.ts`, checked by `articleViolations` with the
+  Pro plan (`siteRefusalCodes.sitePlanRequired`). A search that finds several posts the call may have made ends to check as `severalOnSite`, which tells the member to look and rename or remove the other. What each site takes is
+  `#shared/domain/rich-text/site-rules.ts`, checked by `articleViolations` with the
   channel's rules. Tests set the fakes' addresses on
   `testDevToHosts`, `testHashnodeHosts`, `testWordPressComHosts`.
 - Erasing a workspace erases its articles (`ArticleRecords`, refused

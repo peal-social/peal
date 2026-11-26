@@ -1564,7 +1564,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   what the server's allow-list takes (headings 2 to 4, no underline,
   links on http, https or mailto) and `ArticleImage`, a library file by
   `mediaId` shown through the media API's address, never one kept in the
-  article: add a node or a mark to the server's `article-body.ts` first.
+  article: add a node or a mark to the server's `rich-body.ts`
+  (`src/shared/domain/rich-text/`) first.
   Slack connects with a sign-in button, as Pinterest does
   (`buttonPlatforms`), the channel picked on Slack's page.
   A chat connects with `ChatFields` (`connect-chat.tsx`), offered from

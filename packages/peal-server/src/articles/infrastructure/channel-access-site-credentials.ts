@@ -1,15 +1,13 @@
 import { Effect, Layer, Schema } from "effect";
 
 import { SiteCredentials } from "#articles/application/site-credentials.ts";
-import type {
-  SiteCredentialFailure,
-  SiteToken,
-} from "#articles/application/site-credentials.ts";
+import type { SiteCredentialFailure } from "#articles/application/site-credentials.ts";
 import { articleRefusalCodes } from "#articles/domain/article-refusals.ts";
 import { ChannelAccess } from "#channels/application/channel-access.ts";
 import type { AccessFailure } from "#channels/application/channel-access.ts";
 import { ChannelUnusable } from "#channels/application/channel-unusable.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
+import type { SiteToken } from "#shared/application/site-token.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";

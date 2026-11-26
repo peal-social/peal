@@ -116,7 +116,15 @@ and no socket, for tests.
   in UTC and the zone it was chosen in), how a platform call can end
   (`PublishResult`, `PublishFailure`, and `TokenRejected` for a token the
   platform refused before doing anything), and how an attempt ended
-  (`AttemptOutcome`: a `PublishResult` or a `PublishFailure`).
+  (`AttemptOutcome`: a `PublishResult` or a `PublishFailure`). While
+  articles and posts both send to websites, it also holds what the site
+  adapters need: the rich text (`domain/rich-text/`: the allow-listed
+  body, its HTML and Markdown writers, each site's rules, the adapters'
+  own refusal codes), the article as a site gets it (`OutgoingArticle`,
+  `SiteArticleContent`), and what a site's call needs
+  (`application/site-call-journal.ts`, `site-search.ts`, `site-token.ts`).
+  It moves to `publishing/domain` and `publishing/application` at the
+  cutover, when the articles context goes.
 - Take ids from the `Ids` port: `yield* newId(PostIdSchema)`. Tests provide
   `Ids.layerTest`, which issues `00000000-0000-7000-8000-000000000001`, then
   `…002`, from each build of the layer.

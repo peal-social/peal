@@ -1,3 +1,5 @@
+import { siteRefusalCodes } from "#shared/domain/rich-text/site-refusal-codes.ts";
+
 /**
  * The codes of the refusals of an article that its failure reason reads as
  * Peal's own, rather than the site's: Peal could not use the website's
@@ -10,8 +12,8 @@ export const articleRefusalCodes = {
   // A BadRequest: the channel is turned off.
   channelDisabled: "channelDisabled",
   // A BadRequest: the channel is no longer connected to the workspace, or
-  // the article is gone from Peal.
-  channelDisconnected: "channelDisconnected",
+  // the article is gone from Peal. The site adapters' own.
+  channelDisconnected: siteRefusalCodes.channelDisconnected,
   // A MediaRejected: the file was deleted, or is no longer ready. The
   // library's adapter (`LibraryMediaForPublishing`) writes it, for posts
   // and articles alike: it must stay the posts' own code.
@@ -22,6 +24,7 @@ export const articleRefusalCodes = {
   // A BadRequest: the site's API refuses the account until its plan is
   // paid for (Hashnode: every request needs its Pro plan on the
   // publication). Nothing was sent; the article fails as `contentRejected`
-  // with this code, which tells the member what to do.
-  sitePlanRequired: "sitePlanRequired",
+  // with this code, which tells the member what to do. The site adapters'
+  // own.
+  sitePlanRequired: siteRefusalCodes.sitePlanRequired,
 } as const;

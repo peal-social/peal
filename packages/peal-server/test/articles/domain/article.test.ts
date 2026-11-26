@@ -1,7 +1,6 @@
 import { assert, describe, it } from "@effect/vitest";
 import { DateTime, Duration, Option, Result } from "effect";
 
-import { emptyBody } from "#articles/domain/article-body.ts";
 import { ArticleContent } from "#articles/domain/article-content.ts";
 import { ArticleIdSchema } from "#articles/domain/article-id.ts";
 import {
@@ -25,6 +24,7 @@ import {
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
+import { emptyBody } from "#shared/domain/rich-text/rich-body.ts";
 import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 

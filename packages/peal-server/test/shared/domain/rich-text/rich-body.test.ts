@@ -1,16 +1,16 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Option, Schema } from "effect";
 
+import { MediaAssetIdSchema } from "#shared/domain/ids.ts";
+import { articleHtml } from "#shared/domain/rich-text/rich-body-html.ts";
 import {
   ArticleBodySchema,
   bodyMediaOf,
   bodyWithout,
   bodyTextLength,
   NestedWithinSchema,
-} from "#articles/domain/article-body.ts";
-import type { ArticleBody } from "#articles/domain/article-body.ts";
-import { articleHtml } from "#articles/domain/article-html.ts";
-import { MediaAssetIdSchema } from "#shared/domain/ids.ts";
+} from "#shared/domain/rich-text/rich-body.ts";
+import type { ArticleBody } from "#shared/domain/rich-text/rich-body.ts";
 
 const decode = Schema.decodeUnknownOption(ArticleBodySchema);
 
