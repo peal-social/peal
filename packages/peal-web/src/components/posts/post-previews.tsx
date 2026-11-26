@@ -2,6 +2,8 @@
 
 import { useAtomSet } from "@effect/atom-react";
 import { Exit, Option } from "effect";
+import { PanelRightIcon, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { forWorkspace } from "peal-contract";
 import type {
   SocialChannel,
@@ -9,7 +11,7 @@ import type {
   PostDraft,
   PostValidation,
 } from "peal-contract";
-import type { ReactNode } from "react";
+import { Button } from "peal-ui/components/button";
 import { useEffect, useEffectEvent, useReducer, useRef, useState } from "react";
 
 import { validatePost } from "#posts/api.ts";
@@ -112,35 +114,36 @@ const usePostPreview = (
 };
 
 /**
- * The previews beside the composer's text: what each selected channel will
- * receive, from the same request a save sends (`draft`), asked while the
- * post can be written, goes to a channel and holds no option the API would
- * refuse.
+ * The composer's Preview, docked in its column (no backdrop: the post
+ * stays in reach beside it), while **Preview**
+ * in the page's header is pressed: what each selected channel will
+ * receive, from the same request a save sends (`draft`), asked while it
+ * shows, the post can be written, goes to a channel and holds no option
+ * the API would refuse.
  */
 export const PostPreviews = ({
   channels,
-  children,
   draft,
   media,
+  onClose,
   optionsTaken,
   parts,
   workspaceId,
-  writable,
 }: {
   readonly channels: readonly SocialChannel[];
-  /** The composer's text, which the previews sit beside. */
-  readonly children: ReactNode;
   /** What a save of the post sends now. */
   readonly draft: PostDraft;
   readonly media: readonly MediaAttachment[];
+  /** Takes the panel away, as Preview in the header does. */
+  readonly onClose: () => void;
   /** Whether the API takes the options as filled in. */
   readonly optionsTaken: boolean;
   readonly parts: readonly PartDraft[];
   readonly workspaceId: string;
-  readonly writable: boolean;
 }) => {
-  const asked =
-    writable && optionsTaken && draft.channelIds.length > 0 ? draft : undefined;
+  const t = useTranslations("Posts.Preview");
+
+  const asked = optionsTaken && draft.channelIds.length > 0 ? draft : undefined;
 
   const { retry, state } = usePostPreview(workspaceId, asked);
 
@@ -160,17 +163,24 @@ export const PostPreviews = ({
     return attached.slice(from, from + part.media.length);
   });
 
-  // A post that can no longer be written is shown as it is elsewhere: its
-  // text takes the whole width.
-  if (!writable) {
-    return <div className="flex flex-col">{children}</div>;
-  }
-
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      {children}
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-muted-foreground px-2 text-xs font-medium">
+          {t("title")}
+        </h2>
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          aria-label={t("close")}
+          onClick={onClose}
+        >
+          <XIcon aria-hidden />
+        </Button>
+      </div>
       <PostPreviewsView
         channels={channels}
+        headed={false}
         media={attached.slice(0, media.length)}
         parts={partMedia}
         selected={draft.channelIds.length}
@@ -181,4 +191,35 @@ export const PostPreviews = ({
       />
     </div>
   );
+};
+
+/**
+ * **Preview**, in the composer's header: a toggle that shows the
+ * previews in place of the post's properties, and takes them away.
+ */
+export const PreviewToggle = ({
+  onPressedChange,
+  pressed,
+  writable,
+}: {
+  readonly onPressedChange: (pressed: boolean) => void;
+  readonly pressed: boolean;
+  /** The post can still be written; otherwise nothing shows. */
+  readonly writable: boolean;
+}) => {
+  const t = useTranslations("Posts.Preview");
+
+  return writable ? (
+    <Button
+      variant="ghost"
+      size="sm"
+      aria-pressed={pressed}
+      onClick={() => {
+        onPressedChange(!pressed);
+      }}
+    >
+      <PanelRightIcon data-icon="inline-start" aria-hidden />
+      {t("open")}
+    </Button>
+  ) : null;
 };

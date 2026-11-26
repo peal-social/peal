@@ -1,10 +1,12 @@
 "use client";
 
 import { DateTime, Option } from "effect";
+import { CopyIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { PostContentInvalid } from "peal-contract";
 import type {
   ApprovalPolicy,
+  ChannelSet,
   SocialChannel,
   MediaAttachment,
   Permission,
@@ -14,26 +16,26 @@ import type {
   PostSchedule,
   PostStatus,
 } from "peal-contract";
-import { Badge } from "peal-ui/components/badge";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "peal-ui/components/card";
-import { Separator } from "peal-ui/components/separator";
+import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
 import { useMemo, useRef, useState, useTransition } from "react";
 
 import { canGenerateImages } from "#assistant/permissions.ts";
+import { appliedSet } from "#channel-sets/selection.ts";
 import { OfferUpgrade } from "#components/billing/offer-upgrade.tsx";
 import type { MediaUploaderHandle } from "#components/media/media-uploader.tsx";
+import { AddToPost } from "#components/posts/add-to-post.tsx";
 import { AiLabelsNotice } from "#components/posts/ai-labels-notice.tsx";
 import { AssistantMenu } from "#components/posts/assistant-menu.tsx";
+import { ChannelCustomizations } from "#components/posts/channel-customizations.tsx";
+import type { ChannelEntry } from "#components/posts/channel-customizations.tsx";
 import { ChannelMediaField } from "#components/posts/channel-media-field.tsx";
-import { ChannelPicker } from "#components/posts/channel-picker.tsx";
-import { ChannelSetPicker } from "#components/posts/channel-set-picker.tsx";
-import { CharacterCounters } from "#components/posts/character-counters.tsx";
+import { ChannelsProperty } from "#components/posts/channel-picker.tsx";
+import {
+  SaveSelectionDialog,
+  useChannelSets,
+} from "#components/posts/channel-set-picker.tsx";
+import { ChannelTextField } from "#components/posts/channel-text-field.tsx";
 import { ComposerActions } from "#components/posts/composer-actions.tsx";
 import type { ComposerAction } from "#components/posts/composer-actions.tsx";
 import { ComposerErrors } from "#components/posts/composer-errors.tsx";
@@ -46,18 +48,18 @@ import { EmojiMenu, useEmojiTarget } from "#components/posts/emoji-menu.tsx";
 import { FollowUpParts } from "#components/posts/follow-up-parts.tsx";
 import { LinkWarnings } from "#components/posts/link-warnings.tsx";
 import { MediaAttachments } from "#components/posts/media-attachments.tsx";
-import { PostOrigins } from "#components/posts/post-origins.tsx";
+import { PlainTextEditor } from "#components/posts/plain-text-editor.tsx";
 import { PostPoll } from "#components/posts/post-poll.tsx";
-import { PostPreviews } from "#components/posts/post-previews.tsx";
-import { PostTagsField } from "#components/posts/post-tags-field.tsx";
 import {
-  PostQueueLine,
-  useChosenQueue,
-} from "#components/posts/queue-choice.tsx";
+  PostPreviews,
+  PreviewToggle,
+} from "#components/posts/post-previews.tsx";
+import { PostStateLine } from "#components/posts/post-state-line.tsx";
+import { PostTagsField } from "#components/posts/post-tags-field.tsx";
+import { useChosenQueue } from "#components/posts/queue-choice.tsx";
 import type { Placement } from "#components/posts/queue-choice.tsx";
 import { instantOfChoice } from "#components/posts/schedule-fields.tsx";
 import type { ScheduleChoice } from "#components/posts/schedule-fields.tsx";
-import { SchedulePlacementFields } from "#components/posts/schedule-placement.tsx";
 import {
   savableWith,
   ShortenLinks,
@@ -66,11 +68,14 @@ import {
 } from "#components/posts/shorten-links.tsx";
 import { SignatureMenu } from "#components/posts/signature-menu.tsx";
 import { SignaturePause } from "#components/posts/signature-pause.tsx";
-import { TargetOptionsSection } from "#components/posts/target-options-panel.tsx";
+import {
+  TargetOptionsPanel,
+  takesOptions,
+} from "#components/posts/target-options-panel.tsx";
 import { TargetStatuses } from "#components/posts/target-statuses.tsx";
-import { TextTabs } from "#components/posts/text-tabs.tsx";
 import { useAiLabels } from "#components/posts/use-ai-labels.ts";
-import { PageTitle } from "#components/shell/frame-view.tsx";
+import { WhenProperty } from "#components/posts/when-property.tsx";
+import { PageActions, PageTitle } from "#components/shell/frame-view.tsx";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { useTimeOptions } from "#i18n/hour-cycle.ts";
 import { getPathname, useRouter } from "#i18n/navigation.ts";
@@ -78,6 +83,7 @@ import { useAttachedMedia } from "#posts/attached-media.ts";
 import {
   channelMediaOf,
   channelTextsOf,
+  isUnwritten,
   mediaWaitingForText,
   overridesFrom,
   withChannelMedia,
@@ -87,12 +93,25 @@ import { connectedTargets } from "#posts/channel-selection.ts";
 import { fitOn, fits } from "#posts/character-count.ts";
 import { capabilitiesOf } from "#posts/composer-capabilities.ts";
 import { composerTitleOf } from "#posts/composer-title.ts";
-import { mediaFitOn, mediaFits, showsAltText } from "#posts/media-fit.ts";
+import {
+  mediaFitOn,
+  mediaFits,
+  showsAltText,
+  showsPhotosOnly,
+} from "#posts/media-fit.ts";
 import type { AttachedMedia } from "#posts/media-fit.ts";
 import { oneAtATime } from "#posts/one-at-a-time.ts";
-import { followUpsOf, partsFitOn, partsOf } from "#posts/parts.ts";
+import {
+  chosenOptionsCount,
+  copiedOptions,
+  copiesOptions,
+  missingRequired,
+  refusedChannelsOf,
+  violationsOf,
+} from "#posts/option-rows.ts";
+import { addPart, followUpsOf, partsFitOn, partsOf } from "#posts/parts.ts";
 import type { PartDraft } from "#posts/parts.ts";
-import { pollContentOf, pollFitsOn, pollOf } from "#posts/poll.ts";
+import { newPoll, pollContentOf, pollFitsOn, pollOf } from "#posts/poll.ts";
 import type { PollDraft } from "#posts/poll.ts";
 import { postViewPath } from "#posts/post-list-filter.ts";
 import { publishNowOf, whereItGoes } from "#posts/publish-now.ts";
@@ -144,6 +163,14 @@ const choiceOf = (schedule: PostSchedule | null): ScheduleChoice =>
           timeZone: schedule.timeZone,
         }),
       });
+
+// Saves the channels chosen as a set, for a member who may change posts
+// while the post is written; none otherwise.
+const savesSet = (
+  writable: boolean,
+  permissions: readonly Permission[],
+  open: () => void
+) => (writable && permissions.includes("post:update") ? open : undefined);
 
 // The overrides with the channel's own text, or without it.
 const withOverride = (
@@ -239,7 +266,7 @@ const calendarOf = (
   href: (workspaceId: string, rest?: string) => string,
   workspaceId: string,
   date: ScheduleChoice["date"]
-) => href(workspaceId, `/calendar?date=${dateKey(date)}`);
+) => href(workspaceId, `/posts?layout=calendar&date=${dateKey(date)}`);
 
 // What the composer starts with: the post's, or nothing for a new one.
 const startOf = (post: Post | undefined) => ({
@@ -283,6 +310,8 @@ export const Composer = ({
   const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Posts.Composer");
   const tPosts = useTranslations("Posts");
+  const tOptions = useTranslations("Posts.Options");
+  const tSets = useTranslations("ChannelSets");
   const format = useFormatter();
   const timeOptions = useTimeOptions();
   const router = useRouter();
@@ -335,6 +364,10 @@ export const Composer = ({
 
   // A time chosen, or a queue's next free slot.
   const [placement, setPlacement] = useState<Placement>({ _tag: "time" });
+  // Whether the column shows the previews instead of the properties.
+  const [previewing, setPreviewing] = useState(false);
+  // Whether the dialog that saves the channels as a set is open.
+  const [savingSet, setSavingSet] = useState(false);
   const queueId = useChosenQueue(workspaceId, placement);
 
   const [choice, setChoice] = useState<ScheduleChoice>(() =>
@@ -366,6 +399,7 @@ export const Composer = ({
   });
 
   const busy = isPending ? action : null;
+  const channelSets = useChannelSets(workspaceId, canWrite);
   const locked = !canWrite || busy !== null;
   const signing = useDefaultSigning(workspaceId, postId === undefined);
   const linking = useShortLinking(workspaceId, post);
@@ -404,6 +438,9 @@ export const Composer = ({
 
   // Files pasted into the post's texts are uploaded and attached to it.
   const uploader = useRef<MediaUploaderHandle>(null);
+  // Names the parts the text's toolbar adds, apart from those
+  // `FollowUpParts` adds (`added-…`) and the post's own.
+  const partsAdded = useRef(0);
   const emoji = useEmojiTarget();
 
   // The kinds of the attached media, which some options follow; unknown,
@@ -526,7 +563,7 @@ export const Composer = ({
 
     router.push(
       week === undefined
-        ? workspaceHref(workspaceId, "/calendar")
+        ? workspaceHref(workspaceId, "/posts?layout=calendar")
         : calendarOf(workspaceHref, workspaceId, week)
     );
   };
@@ -829,187 +866,157 @@ export const Composer = ({
     partsFit &&
     optionsTaken;
 
-  return (
-    <Card>
-      <PageTitle>{t(composerTitleOf(post, postId !== undefined))}</PageTitle>
-      {post === undefined ? null : (
-        <CardHeader>
-          <div className="flex gap-2">
-            <Badge variant="outline">{tPosts("status", { status })}</Badge>
-            {post.outcome === null ? null : (
-              <Badge variant="secondary">
-                {tPosts("outcome", { outcome: post.outcome })}
-              </Badge>
-            )}
-          </div>
-          <PostQueueLine queueId={post.queueId} workspaceId={workspaceId} />
-          <PostOrigins post={post} viewerId={userId} />
-        </CardHeader>
-      )}
-      <CardContent>
-        <div className="flex flex-col gap-6">
-          {notice === null ? null : (
-            <p className="text-muted-foreground text-sm">{notice}</p>
-          )}
-          <fieldset className="flex flex-col gap-3">
-            <legend className="mb-3 text-sm font-medium">
-              {t("channelsLegend")}
-            </legend>
-            <ChannelSetPicker
-              channelIds={channelIds}
-              channels={channels}
-              disabled={locked}
-              editable={canWrite}
-              options={options}
-              optionsTaken={optionsTaken}
-              permissions={permissions}
-              workspaceId={workspaceId}
-              onApply={(applied) => {
-                setChannelIds(applied.channelIds);
-                setOptionValues((current) => ({
-                  ...current,
-                  ...applied.values,
-                }));
-              }}
-            />
-            <ChannelPicker
-              channels={channels}
-              connectHref={
-                permissions.includes("channel:connect")
-                  ? workspaceHref(workspaceId, "/channels/new")
-                  : null
-              }
-              selected={channelIds}
-              disabled={locked}
-              onChange={setChannelIds}
-            />
-          </fieldset>
-          <Separator />
-          <PostPreviews
-            channels={channels}
-            draft={draft}
-            media={media}
-            optionsTaken={optionsTaken}
-            parts={parts}
-            workspaceId={workspaceId}
-            writable={canWrite}
-          >
-            <fieldset className="flex min-w-0 flex-col gap-3">
-              <legend className="mb-3 text-sm font-medium">
-                {t("textLegend")}
-              </legend>
-              <AssistantMenu
-                disabled={locked}
-                permissions={permissions}
-                platforms={selected.map(({ platform }) => platform)}
-                showsMedia={media.length > 0}
-                text={text}
-                workspaceId={workspaceId}
-                onAccept={(suggested) => {
-                  setText(suggested);
-                  setAccepted((count) => count + 1);
-                }}
-              />
-              <EmojiMenu disabled={locked} target={emoji.target} />
-              <SignatureMenu
-                channels={selected}
-                disabled={locked}
-                workspaceId={workspaceId}
-                onInsert={(channelId, signature) => {
-                  // A post of several parts is signed under its last.
-                  const signed = withSignatureUnderLastPart(
-                    { overrides, parts, text },
-                    channelId,
-                    signature
-                  );
+  // The channels whose options the last request refused: their rows open.
+  const refused = refusedChannelsOf(requests.failure);
+  const violations = violationsOf(requests.failure);
 
-                  setText(signed.text);
-                  setOverrides(signed.overrides);
-                  setParts(signed.parts);
-                  setAccepted((count) => count + 1);
-                }}
-              />
-              <TextTabs
-                key={accepted}
-                renderChannelMedia={(channel) => (
-                  <ChannelMediaField
-                    canBrowse={permissions.includes("media:read")}
-                    canGenerate={canGenerateImages(permissions)}
-                    canUpload={permissions.includes("media:upload")}
-                    channel={channel}
-                    disabled={locked}
-                    editable={canWrite}
-                    own={ownAttachedOn(channel.id)}
-                    platforms={
-                      showsAltText(
-                        channel.platform,
-                        optionsOfChannel(channel.id)
-                      )
-                        ? [channel.platform]
-                        : []
-                    }
-                    postMedia={media}
-                    waitingForText={waitingForText.includes(channel.id)}
-                    workspaceId={workspaceId}
-                    onChange={(update) => {
-                      setChannelMedia((current) =>
-                        withChannelMedia(
-                          current,
-                          channel.id,
-                          update(current[channel.id] ?? [])
-                        )
-                      );
-                    }}
-                  />
-                )}
-                selected={selected}
-                text={text}
-                overrides={overrides}
-                readOnly={locked}
-                onEditorFocus={emoji.handleFocus}
-                onMainEditor={emoji.handleMain}
-                onPasteFiles={(files) => uploader.current?.add(files) ?? false}
-                onText={setText}
-                onOverride={(channelId, own) => {
-                  setOverrides((current) =>
-                    withOverride(current, channelId, own)
-                  );
-                }}
-              />
-              <LinkWarnings
-                texts={[text, ...content.overrides.map((own) => own.text)]}
-              />
-              <DefaultSignatures disabled={locked} signing={signing} />
-              <ShortenLinks
-                disabled={locked}
-                linking={linking}
-                platforms={selected.map(({ platform }) => platform)}
-                texts={textsOf(content)}
-              />
-            </fieldset>
-          </PostPreviews>
-          <section
-            aria-labelledby="counters-title"
-            className="flex flex-col gap-3"
-          >
-            <h2 id="counters-title" className="text-sm font-medium">
-              {t("countersLegend")}
-            </h2>
-            <CharacterCounters fits={channelFits} />
-          </section>
-          <TargetOptionsSection
-            channels={selected}
+  const entries: readonly ChannelEntry[] = channelFits.map(
+    ({ channel, fit, media: mediaFit }) => {
+      const values = optionValues[channel.id];
+
+      return {
+        attention:
+          refused.includes(channel.id) ||
+          waitingForText.includes(channel.id) ||
+          optionProblems.some(({ channelId }) => channelId === channel.id),
+        channel,
+        fit,
+        media: mediaFit,
+        missing: missingRequired(channel.platform, values, mediaKinds),
+        optionsChosen: chosenOptionsCount(channel.platform, values),
+        ownMedia: channelMedia[channel.id] !== undefined,
+        ownText: (overrides[channel.id] ?? "").trim() !== "",
+      };
+    }
+  );
+
+  // Gives a channel's options to the other channels of its platform the
+  // post goes to, but what each account holds of its own.
+  const shareOptions = (channel: SocialChannel) => {
+    const others = selected.filter(
+      ({ id, platform }) => platform === channel.platform && id !== channel.id
+    );
+
+    const from = valuesOn(channel);
+
+    for (const other of others) {
+      const values = copiedOptions(
+        channel.platform,
+        from,
+        optionValues[other.id]
+      );
+
+      aiLabels.changed(other.id, values);
+      setOptionValues((current) => ({ ...current, [other.id]: values }));
+    }
+
+    toast.success(
+      t("optionsCopied", {
+        count: others.length,
+        platform: tPosts("platform", { platform: channel.platform }),
+      })
+    );
+  };
+
+  // Starts the post from a channel set: its connected channels, and the
+  // options it keeps for them; a channel no longer connected is told.
+  const applySet = (set: ChannelSet) => {
+    const applied = appliedSet(set, channels);
+
+    setChannelIds(applied.channelIds);
+    setOptionValues((current) => ({ ...current, ...applied.values }));
+
+    if (applied.dropped > 0) {
+      toast.warning(
+        tSets("pickerDropped", { count: applied.dropped, name: set.name })
+      );
+    }
+  };
+
+  // The first part after the post, from the text's toolbar.
+  const addFirstPart = () => {
+    partsAdded.current += 1;
+
+    const key = `first-${String(partsAdded.current)}`;
+
+    setParts((current) => addPart(current, key));
+  };
+
+  const insertSignature = (
+    channelId: string | undefined,
+    signature: string
+  ) => {
+    // A post of several parts is signed under its last.
+    const signed = withSignatureUnderLastPart(
+      { overrides, parts, text },
+      channelId,
+      signature
+    );
+
+    setText(signed.text);
+    setOverrides(signed.overrides);
+    setParts(signed.parts);
+    setAccepted((count) => count + 1);
+  };
+
+  // What a channel's row holds once open, as a property list: its text,
+  // its images and videos, then its platform's options.
+  const channelBody = (channel: SocialChannel) => {
+    const platform = tPosts("platform", { platform: channel.platform });
+
+    const sharing = selected.filter(
+      ({ platform: on }) => on === channel.platform
+    ).length;
+
+    return (
+      <div className="flex flex-col gap-3">
+        <ChannelTextField
+          key={`${channel.id}/${String(accepted)}`}
+          channel={channel}
+          readOnly={locked}
+          value={overrides[channel.id] ?? ""}
+          onEditorFocus={emoji.handleFocus}
+          onPasteFiles={(files) => uploader.current?.add(files) ?? false}
+          onOverride={(channelId, own) => {
+            setOverrides((current) => withOverride(current, channelId, own));
+          }}
+        />
+        <ChannelMediaField
+          canBrowse={permissions.includes("media:read")}
+          canGenerate={canGenerateImages(permissions)}
+          canUpload={permissions.includes("media:upload")}
+          channel={channel}
+          disabled={locked}
+          editable={canWrite}
+          own={ownAttachedOn(channel.id)}
+          platforms={
+            showsAltText(channel.platform, optionsOfChannel(channel.id))
+              ? [channel.platform]
+              : []
+          }
+          postMedia={media}
+          waitingForText={waitingForText.includes(channel.id)}
+          workspaceId={workspaceId}
+          onChange={(update) => {
+            setChannelMedia((current) =>
+              withChannelMedia(
+                current,
+                channel.id,
+                update(current[channel.id] ?? [])
+              )
+            );
+          }}
+        />
+        {takesOptions([channel], mediaKinds) ? (
+          <TargetOptionsPanel
+            bare
+            channels={[channel]}
             disabled={locked}
             media={mediaKinds}
-            photos={
-              attached.length > 0 &&
-              attached.every(({ media: found }) =>
-                Option.exists(found, ({ kind }) => kind === "image")
-              )
-            }
+            photos={showsPhotosOnly(attached)}
             workspaceId={workspaceId}
-            failure={requests.failure}
             valuesOf={valuesOn}
+            violations={violations}
             onChange={(channelId, values) => {
               aiLabels.changed(channelId, values);
               setOptionValues((current) => ({
@@ -1018,11 +1025,133 @@ export const Composer = ({
               }));
             }}
           />
-          <Separator />
-          <fieldset className="flex flex-col gap-3">
-            <legend className="mb-3 text-sm font-medium">
-              {t("mediaLegend")}
-            </legend>
+        ) : null}
+        {takesOptions([channel], mediaKinds) &&
+        canWrite &&
+        sharing > 1 &&
+        copiesOptions(channel.platform) ? (
+          <div>
+            <Button
+              variant="ghost"
+              size="xs"
+              disabled={locked}
+              focusableWhenDisabled
+              onClick={() => {
+                shareOptions(channel);
+              }}
+            >
+              <CopyIcon data-icon="inline-start" aria-hidden />
+              {t("useForEvery", { count: sharing - 1, platform })}
+            </Button>
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col">
+      <PageTitle>{t(composerTitleOf(post, postId !== undefined))}</PageTitle>
+      <PageActions>
+        <PreviewToggle
+          pressed={previewing}
+          writable={canWrite}
+          onPressedChange={setPreviewing}
+        />
+      </PageActions>
+      <div className="grid gap-y-8 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-x-10">
+        <aside
+          aria-label={t("propertiesLabel")}
+          className="flex min-w-0 flex-col gap-4 lg:col-start-2 lg:row-start-1"
+        >
+          {previewing ? (
+            <PostPreviews
+              channels={channels}
+              draft={draft}
+              media={media}
+              optionsTaken={optionsTaken}
+              parts={parts}
+              workspaceId={workspaceId}
+              onClose={() => {
+                setPreviewing(false);
+              }}
+            />
+          ) : (
+            <>
+              <ChannelsProperty
+                channels={channels}
+                connectHref={
+                  permissions.includes("channel:connect")
+                    ? workspaceHref(workspaceId, "/channels/new")
+                    : null
+                }
+                disabled={locked}
+                selected={channelIds}
+                sets={channelSets}
+                onApplySet={applySet}
+                onChange={setChannelIds}
+                saveSetBlocked={!optionsTaken}
+                onSaveSet={savesSet(canWrite, permissions, () => {
+                  setSavingSet(true);
+                })}
+              />
+              <WhenProperty
+                choice={choice}
+                placement={placement}
+                workspaceId={workspaceId}
+                disabled={!(canSchedule || canReschedule) || busy !== null}
+                onChoice={setChoice}
+                onPlacement={setPlacement}
+              />
+              <PostTagsField
+                property
+                disabled={busy !== null}
+                permissions={permissions}
+                savedOn={canWrite ? undefined : postId}
+                tagIds={tagIds}
+                workspaceId={workspaceId}
+                onChange={setTagIds}
+              />
+              {post === undefined || status === "draft" ? null : (
+                <TargetStatuses channels={channels} post={post} />
+              )}
+            </>
+          )}
+        </aside>
+        <div className="flex min-w-0 flex-col gap-8 lg:col-start-1 lg:row-start-1">
+          <PostStateLine
+            post={post}
+            status={status}
+            viewerId={userId}
+            workspaceId={workspaceId}
+          />
+          {notice === null ? null : (
+            <p className="text-muted-foreground text-sm">{notice}</p>
+          )}
+          <section aria-labelledby="text-title" className="flex flex-col gap-2">
+            <h2 id="text-title" className="sr-only">
+              {t("textLegend")}
+            </h2>
+            <span id="text-label" className="sr-only">
+              {t("textLabel")}
+            </span>
+            <PlainTextEditor
+              key={accepted}
+              bare
+              id="post-text"
+              labelledBy="text-label"
+              describedBy="text-hint"
+              placeholder={t("textPlaceholder")}
+              readOnly={locked}
+              value={text}
+              onChange={setText}
+              onEditorFocus={emoji.handleFocus}
+              onEditorReady={emoji.handleMain}
+              onPasteFiles={(files) => uploader.current?.add(files) ?? false}
+            />
+            <p id="text-hint" className="sr-only">
+              {t("textHint")}
+            </p>
             <MediaAttachments
               attached={attached}
               canBrowse={permissions.includes("media:read")}
@@ -1033,59 +1162,115 @@ export const Composer = ({
               platforms={selected.flatMap(({ id, platform }) =>
                 showsAltText(platform, optionsOfChannel(id)) ? [platform] : []
               )}
+              toolbar={{
+                // After the media's buttons, the text's tools, then the
+                // assistant at the toolbar's end.
+                end: (
+                  <>
+                    <EmojiMenu disabled={locked} target={emoji.target} />
+                    <AddToPost
+                      disabled={locked}
+                      hasParts={parts.length > 0}
+                      hasPoll={poll !== undefined}
+                      writable={canWrite}
+                      onPart={addFirstPart}
+                      onPoll={() => {
+                        setPoll(newPoll());
+                      }}
+                    />
+                    <SignatureMenu
+                      channels={selected}
+                      disabled={locked}
+                      workspaceId={workspaceId}
+                      onInsert={insertSignature}
+                    />
+                    <span className="flex-1" />
+                    <AssistantMenu
+                      disabled={locked}
+                      permissions={permissions}
+                      platforms={selected.map(({ platform }) => platform)}
+                      showsMedia={media.length > 0}
+                      text={text}
+                      workspaceId={workspaceId}
+                      onAccept={(suggested) => {
+                        setText(suggested);
+                        setAccepted((count) => count + 1);
+                      }}
+                    />
+                  </>
+                ),
+              }}
               uploader={uploader}
               workspaceId={workspaceId}
               onChange={setMedia}
             />
             <AiLabelsNotice labels={aiLabels} />
-          </fieldset>
-          <Separator />
-          <PostPoll
-            disabled={locked}
-            editable={canWrite}
-            mediaOn={(id) => attachedOn(id).length}
-            optionsOn={optionsOfChannel}
-            poll={poll}
-            selected={selected}
-            onChange={setPoll}
-          />
-          <Separator />
-          <FollowUpParts
-            disabled={locked}
-            editable={canWrite}
-            offered={partsOffered}
-            options={options}
-            parts={parts}
-            permissions={permissions}
-            selected={selected}
-            workspaceId={workspaceId}
-            onChange={setParts}
-            onEditorFocus={emoji.handleFocus}
-          />
-          <Separator />
-          <fieldset className="flex flex-col gap-3">
-            <legend className="mb-3 text-sm font-medium">
-              {t("scheduleLegend")}
-            </legend>
-            <SchedulePlacementFields
-              choice={choice}
-              placement={placement}
-              workspaceId={workspaceId}
-              disabled={!(canSchedule || canReschedule) || busy !== null}
-              onChoice={setChoice}
-              onPlacement={setPlacement}
+            <LinkWarnings
+              texts={[text, ...content.overrides.map((own) => own.text)]}
             />
-          </fieldset>
-          <PostTagsField
-            disabled={busy !== null}
-            permissions={permissions}
-            savedOn={canWrite ? undefined : postId}
-            tagIds={tagIds}
-            workspaceId={workspaceId}
-            onChange={setTagIds}
-          />
-          {post === undefined || status === "draft" ? null : (
-            <TargetStatuses channels={channels} post={post} />
+            <DefaultSignatures disabled={locked} signing={signing} />
+            <ShortenLinks
+              disabled={locked}
+              linking={linking}
+              platforms={selected.map(({ platform }) => platform)}
+              texts={textsOf(content)}
+            />
+          </section>
+          {/* Offered from the text's toolbar: each shows once it is used. */}
+          {poll === undefined ? null : (
+            <PostPoll
+              disabled={locked}
+              editable={canWrite}
+              mediaOn={(id) => attachedOn(id).length}
+              optionsOn={optionsOfChannel}
+              poll={poll}
+              selected={selected}
+              onChange={setPoll}
+            />
+          )}
+          {parts.length === 0 ? null : (
+            <FollowUpParts
+              disabled={locked}
+              editable={canWrite}
+              offered={partsOffered}
+              options={options}
+              parts={parts}
+              permissions={permissions}
+              selected={selected}
+              workspaceId={workspaceId}
+              onChange={setParts}
+              onEditorFocus={emoji.handleFocus}
+            />
+          )}
+          {/* There once the post goes somewhere. */}
+          {entries.length === 0 ? null : (
+            <section
+              aria-labelledby="each-channel-title"
+              className="flex flex-col gap-2"
+            >
+              <h2
+                id="each-channel-title"
+                className="text-muted-foreground text-xs font-medium"
+              >
+                {t("eachChannelTitle")}
+              </h2>
+              {optionProblems.length > 0 ? (
+                <output className="text-destructive-text text-xs">
+                  {tOptions("fixToSend")}
+                </output>
+              ) : null}
+              <ChannelCustomizations
+                bodyOf={channelBody}
+                entries={entries}
+                opens={[
+                  ...new Set([
+                    ...refused,
+                    ...optionProblems.map(({ channelId }) => channelId),
+                  ]),
+                ]}
+                unwritten={isUnwritten(composed, media)}
+              />
+            </section>
           )}
           <SignaturePause shown={signedPause} willWait={willWait} />
           <ComposerErrors
@@ -1095,8 +1280,15 @@ export const Composer = ({
           />
           <OfferUpgrade failure={requests.failure} />
         </div>
-      </CardContent>
-      <CardFooter>
+      </div>
+      <SaveSelectionDialog
+        channelIds={channelIds}
+        open={savingSet}
+        options={options}
+        workspaceId={workspaceId}
+        onOpenChange={setSavingSet}
+      />
+      <div className="bg-card sticky bottom-0 z-10 mt-8 border-t py-3">
         <ComposerActions
           busy={busy}
           canSave={canWrite}
@@ -1130,7 +1322,7 @@ export const Composer = ({
             />
           }
         />
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 };

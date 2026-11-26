@@ -53,7 +53,9 @@
   `.gitattributes`. `generate.ts` copies `LICENSE` and `NOTICE` in after it.
 - `sdk:generate` depends on `peal-sdk:spec` through the tag `sdk-spec`, never
   the name: Nx resolves a name in `dependsOn` to the npm package of that name
-  first, and the Node SDK's package is `peal-sdk`. `.nxignore` keeps the
+  first, so a package named like a project takes its place (the Node SDK's
+  was `peal-sdk` until 0.3, and is `@peal-social/sdk`), and the tag holds
+  whatever the packages are called. `.nxignore` keeps the
   SDKs' builds out of the project graph (`cargo package` unpacks a copy of
   the Rust SDK, `project.json` included). `generate.ts` refuses to run
   without `openapi.json`, which only Nx writes before it. The Node SDK's
@@ -153,7 +155,10 @@
   true before and after the release it ships in. `sdk-release.yml` builds it from
   that commit and publishes it in the `sdk-release` environment: trusted
   publishing (OIDC) for npm, PyPI, RubyGems, NuGet and crates.io, no token
-  stored; Maven Central's portal token and signing key from secrets (the
+  stored, but for a new npm package's first release, which npm takes no
+  trusted publisher for: a short-lived token in the environment's
+  `NPM_TOKEN`, deleted once the package's trusted publisher is set (the
+  README's "Release day"); Maven Central's portal token and signing key from secrets (the
   `release` profile of the pom `finish.ts` writes: BouncyCastle signing and
   Sonatype's plugin); a tag `packages/peal-sdk/go/v<version>` for Go; a
   tag `v<version>` on `peal-social/peal-php` for Packagist. That repository

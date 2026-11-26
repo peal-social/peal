@@ -103,16 +103,22 @@ describe("a member's queue", { serial: true }, () => {
     await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
-    await screen.getByRole("checkbox", handle).check();
+    await screen.getByRole("button", /^Channels /u).tap();
+    await screen.getByRole("option", handle).tap();
+    await screen.getByRole("combobox", "Search channels").press("Escape");
     await screen.getByRole("textbox", "Text for all channels").fill(first);
+    await screen.getByRole("button", /^When /u).tap();
     await screen.getByRole("tab", "Add to queue").tap();
     await expect(screen.getByText(/^Next free slot: /u)).toBeVisible();
+    await screen.getByRole("tab", "Add to queue").press("Escape");
     await screen.getByRole("button", "Schedule").tap();
 
     await expect(
       screen.getByText(/Added to the queue: it goes out .*11:57/u)
     ).toBeVisible();
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
+    await expect(
+      screen.getByRole("navigation", "Calendar views")
+    ).toBeVisible();
     await expect(screen.getByRole("link", postNamed(first))).toBeVisible();
   });
 
@@ -123,9 +129,13 @@ describe("a member's queue", { serial: true }, () => {
     await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
-    await screen.getByRole("checkbox", handle).check();
+    await screen.getByRole("button", /^Channels /u).tap();
+    await screen.getByRole("option", handle).tap();
+    await screen.getByRole("combobox", "Search channels").press("Escape");
     await screen.getByRole("textbox", "Text for all channels").fill(second);
+    await screen.getByRole("button", /^When /u).tap();
     await screen.getByRole("tab", "Add to queue").tap();
+    await screen.getByRole("tab", "Add to queue").press("Escape");
     await screen.getByRole("button", "Schedule").tap();
 
     await expect(
@@ -170,8 +180,10 @@ describe("a member's queue", { serial: true }, () => {
       screen.getByText("2 posts moved, 0 unchanged, 0 remaining.")
     ).toBeVisible();
 
-    await app.open(`/${slug}/calendar?date=${date}`);
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
+    await app.open(`/${slug}/posts?layout=calendar&date=${date}`);
+    await expect(
+      screen.getByRole("navigation", "Calendar views")
+    ).toBeVisible();
   });
 
   // Nothing goes out: both posts are cancelled.
@@ -188,7 +200,9 @@ describe("a member's queue", { serial: true }, () => {
     await expect(
       screen.getByRole("region", "Notifications").getByText("Post cancelled.")
     ).toBeVisible();
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
+    await expect(
+      screen.getByRole("navigation", "Calendar views")
+    ).toBeVisible();
     await expect(
       screen.getByRole("region", "Notifications").getByText("Post cancelled.")
     ).toBeHidden({
@@ -207,7 +221,9 @@ describe("a member's queue", { serial: true }, () => {
     await expect(
       screen.getByRole("region", "Notifications").getByText("Post cancelled.")
     ).toBeVisible();
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
+    await expect(
+      screen.getByRole("navigation", "Calendar views")
+    ).toBeVisible();
     await expect(
       screen.getByRole("region", "Notifications").getByText("Post cancelled.")
     ).toBeHidden({

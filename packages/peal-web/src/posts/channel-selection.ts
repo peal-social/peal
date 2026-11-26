@@ -31,11 +31,3 @@ export const everyChannel = (
   channels.flatMap(({ id, status }) =>
     status._tag === "active" || selected.includes(id) ? [id] : []
   );
-
-// From how many channels the picker offers to select them all.
-const everyChannelFrom = 3;
-
-/** Whether the picker offers "Select all" and "Clear". */
-export const offersEveryChannel = (
-  channels: readonly SocialChannel[]
-): boolean => channels.length >= everyChannelFrom;

@@ -211,7 +211,44 @@ const DisplayRow = ({ className, ...props }: React.ComponentProps<"div">) => (
   />
 );
 
+/**
+ * The Display panel's layouts, where a screen has several (the posts as
+ * a list or a calendar): a tile each, side by side, first in the panel.
+ * Its `legend` names the choice for a screen reader.
+ */
+const DisplayLayouts = ({
+  className,
+  ...props
+}: React.ComponentProps<"fieldset">) => (
+  <fieldset
+    data-slot="display-layouts"
+    className={cn("grid auto-cols-fr grid-flow-col gap-2", className)}
+    {...props}
+  />
+);
+
+/**
+ * One layout's tile: its icon over its name, pressed (`aria-pressed`)
+ * while the screen shows it, then lifted to `accent`.
+ */
+const DisplayLayout = ({
+  className,
+  ...props
+}: Omit<React.ComponentProps<"button">, "type">) => (
+  <button
+    data-slot="display-layout"
+    type="button"
+    className={cn(
+      "text-muted-foreground hover:bg-accent hover:text-foreground aria-pressed:bg-accent aria-pressed:text-foreground focus-visible:ring-ring/50 flex h-14 flex-col items-center justify-center gap-1 rounded-md border text-xs font-medium transition-colors outline-none focus-visible:ring-3 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+      className
+    )}
+    {...props}
+  />
+);
+
 export {
+  DisplayLayout,
+  DisplayLayouts,
   DisplayMenuContent,
   DisplayRow,
   FilterChip,

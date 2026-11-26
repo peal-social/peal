@@ -18,6 +18,11 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "peal-ui/components/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "peal-ui/components/tooltip";
 
 import { useChannelLabel } from "#components/channels/channel-label.ts";
 import { workspaceSignatures } from "#signatures/atoms.ts";
@@ -61,21 +66,28 @@ export const SignatureMenuView = ({
     ));
 
   return (
-    <div className="flex justify-end">
+    <div className="flex">
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={disabled}
-              focusableWhenDisabled
-            />
-          }
-        >
-          <SignatureIcon data-icon="inline-start" aria-hidden />
-          {t("menuTrigger")}
-        </DropdownMenuTrigger>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={t("menuTrigger")}
+                    disabled={disabled}
+                    focusableWhenDisabled
+                  />
+                }
+              />
+            }
+          >
+            <SignatureIcon aria-hidden />
+          </TooltipTrigger>
+          <TooltipContent>{t("menuTrigger")}</TooltipContent>
+        </Tooltip>
         <DropdownMenuContent align="end" className="w-60">
           <DropdownMenuGroup>
             <DropdownMenuLabel>{t("menuAll")}</DropdownMenuLabel>

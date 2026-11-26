@@ -2,8 +2,10 @@ import { Option, Schema } from "effect";
 
 import { MediaAssetIdSchema } from "#shared/domain/ids.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
-
-import { ArticleBodySchema, bodyWithout } from "./article-body.ts";
+import {
+  ArticleBodySchema,
+  bodyWithout,
+} from "#shared/domain/rich-text/rich-body.ts";
 
 /**
  * What the site makes of the article when Peal sends it: a post `publish`ed

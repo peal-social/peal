@@ -13,7 +13,7 @@ Chaque SDK est publié sur le registre de son langage. Chaque commande installe 
 
 | Langage               | Registre                                                                          | Installation                                                            |
 | --------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| TypeScript/JavaScript | [npm](https://www.npmjs.com/package/peal-sdk)                                     | `npm install --save-exact peal-sdk@0.4.0-beta.1`                        |
+| TypeScript/JavaScript | [npm](https://www.npmjs.com/package/@peal-social/sdk)                             | `npm install --save-exact @peal-social/sdk@0.4.0-beta.1`                |
 | Python                | [PyPI](https://pypi.org/project/peal-sdk/)                                        | `pip install peal-sdk==0.4.0b1` (importé sous `peal`)                   |
 | Go                    | [Go modules](https://pkg.go.dev/github.com/peal-social/peal/packages/peal-sdk/go) | `go get github.com/peal-social/peal/packages/peal-sdk/go@v0.4.0-beta.1` |
 | Ruby                  | [RubyGems](https://rubygems.org/gems/peal)                                        | `gem install peal --version 0.4.0.beta.1`                               |
@@ -27,7 +27,7 @@ Chaque SDK est publié sur le registre de son langage. Chaque commande installe 
   peut modifier une méthode ou un type : chaque commande installe donc une
   version exacte, que votre projet garde jusqu’à ce que vous la changiez. Les
   versions 0.1 à 0.3 appellent l’API telle qu’elle était avant `/api/v1`, et non
-  celle que décrit cette page.
+  celle que décrit cette page. Sur npm, ce sont celles du paquet `peal-sdk`.
 </Callout>
 
 Le README de chaque paquet montre comment s’en servir, et son `reference.md` liste chaque méthode. Vous trouverez les deux dans [le dépôt](https://github.com/peal-social/peal/tree/main/packages/peal-sdk).
@@ -141,7 +141,7 @@ Créez le client à partir de votre clé, puis demandez qui elle est :
 <CodeGroup>
 
 ```ts Node.js
-import { PealClient } from "peal-sdk";
+import { PealClient } from "@peal-social/sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 
@@ -276,7 +276,7 @@ Ce programme suit les étapes de l’[API de publication](/developers/posting). 
 ```ts Node.js
 import { randomUUID } from "node:crypto";
 
-import { PealClient } from "peal-sdk";
+import { PealClient } from "@peal-social/sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 

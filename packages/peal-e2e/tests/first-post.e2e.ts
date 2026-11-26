@@ -139,7 +139,9 @@ describe("a new member's first post", { serial: true }, () => {
     await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
-    await screen.getByRole("checkbox", handle).check();
+    await screen.getByRole("button", /^Channels /u).tap();
+    await screen.getByRole("option", handle).tap();
+    await screen.getByRole("combobox", "Search channels").press("Escape");
     await screen.getByRole("textbox", "Text for all channels").fill(text);
     await screen.getByRole("button", "Save as draft").tap();
 
@@ -227,13 +229,34 @@ describe("a new member's first post", { serial: true }, () => {
   }) => {
     // Late in the day, so the time is ahead whenever the test runs: a new
     // post starts at the next full hour, which can be a minute away.
+    await screen.getByRole("button", /^When /u).tap();
     await screen.getByRole("textbox", "Time").fill("23:59");
+    await screen.getByRole("textbox", "Time").press("Escape");
     await screen.getByRole("button", "Schedule").tap();
 
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
+    await expect(
+      screen.getByRole("navigation", "Calendar views")
+    ).toBeVisible();
     await expect(browser).toHaveURL(
-      new RegExp(`/${slug}/calendar\\?date=`, "u")
+      new RegExp(`/${slug}/posts\\?layout=calendar&date=`, "u")
     );
+    await expect(screen.getByRole("link", scheduledPost)).toBeVisible();
+  });
+
+  test("switches the posts between the calendar and the list", async ({
+    browser,
+    screen,
+  }) => {
+    await screen.getByRole("button", "Display").tap();
+    await screen.getByRole("button", "List").tap();
+
+    await expect(browser).toHaveURL(`/${slug}/posts`);
+    await expect(screen.getByRole("navigation", "Views")).toBeVisible();
+
+    await screen.getByRole("button", "Display").tap();
+    await screen.getByRole("button", "Calendar").tap();
+
+    await expect(browser).toHaveURL(`/${slug}/posts?layout=calendar`);
     await expect(screen.getByRole("link", scheduledPost)).toBeVisible();
   });
 
@@ -252,7 +275,9 @@ describe("a new member's first post", { serial: true }, () => {
     await screen.getByRole("textbox", "Text for all channels").fill(edited);
     await screen.getByRole("button", "Schedule").tap();
 
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
+    await expect(
+      screen.getByRole("navigation", "Calendar views")
+    ).toBeVisible();
     await expect(screen.getByRole("link", scheduledAs(edited))).toBeVisible();
     await expect(screen.getByRole("link", scheduledPost)).toBeHidden();
   });
@@ -269,7 +294,9 @@ describe("a new member's first post", { serial: true }, () => {
     await expect(
       screen.getByRole("region", "Notifications").getByText("Post cancelled.")
     ).toBeVisible();
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
+    await expect(
+      screen.getByRole("navigation", "Calendar views")
+    ).toBeVisible();
   });
 
   test("asks a YouTube video for its options, and keeps them", async ({
@@ -282,7 +309,9 @@ describe("a new member's first post", { serial: true }, () => {
     await app.open(`/${slug}/posts/new`);
 
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
-    await screen.getByRole("checkbox", videos).check();
+    await screen.getByRole("button", /^Channels /u).tap();
+    await screen.getByRole("option", videos).tap();
+    await screen.getByRole("combobox", "Search channels").press("Escape");
     await screen.getByRole("textbox", "Text for all channels").fill(video);
 
     // YouTube takes a video, and nothing else.
@@ -293,11 +322,14 @@ describe("a new member's first post", { serial: true }, () => {
     await picker.getByRole("button", /^Video added on/u).tap();
     await picker.getByRole("button", "Attach 1 item").tap();
     await expect(picker).toBeHidden();
+    await screen.getByRole("button", /^When /u).tap();
     await screen.getByRole("textbox", "Time").fill("23:59");
+    await screen.getByRole("textbox", "Time").press("Escape");
     await screen.getByRole("button", "Schedule").tap();
 
     // Saved as a draft, then refused: YouTube needs a title and to know
-    // whether the video is made for kids.
+    // whether the video is made for kids, which its row said already, and
+    // opens to ask for.
     await expect(
       screen.getByText(`${videos} on YouTube: Title is required.`)
     ).toBeVisible();
@@ -314,6 +346,15 @@ describe("a new member's first post", { serial: true }, () => {
     await browser.reload();
 
     await expect(screen.getByRole("heading", "Edit the draft")).toBeVisible();
+
+    // The channel's row sums up what it holds, and opens to show it.
+    const row = screen.getByRole(
+      "button",
+      new RegExp(`^${RegExp.escape(videos)} .*options? set`, "u")
+    );
+
+    await row.tap();
+    await expect(row).toHaveAttribute("aria-expanded", "true");
     await expect(screen.getByRole("textbox", "Title (required)")).toHaveValue(
       videoTitle
     );
@@ -401,12 +442,19 @@ describe("a new member's first post", { serial: true }, () => {
   }) => {
     // Signed in, the account's language wins over the address's: a link
     // to a French page opens the same page in English, its query kept.
+    // The calendar's old address opens the posts in their calendar layout.
     await app.open(`/fr/${slug}/calendar?view=month`);
 
-    await expect(browser).toHaveURL(`/${slug}/calendar?view=month`);
-    await expect(screen.getByRole("heading", "Calendar")).toBeVisible();
+    await expect(browser).toHaveURL(
+      `/${slug}/posts?layout=calendar&view=month`
+    );
     await expect(
-      screen.getByRole("navigation", "Views").getByRole("link", "Month")
+      screen.getByRole("navigation", "Calendar views")
+    ).toBeVisible();
+    await expect(
+      screen
+        .getByRole("navigation", "Calendar views")
+        .getByRole("link", "Month")
     ).toHaveAttribute("aria-current", "page");
   });
 
@@ -437,10 +485,12 @@ describe("a new member's first post", { serial: true }, () => {
     await expect(screen.getByRole("combobox", "Langue")).toBeVisible();
 
     // An English address opens in French now.
-    await app.open(`/${slug}/calendar`);
+    await app.open(`/${slug}/posts?layout=calendar`);
 
-    await expect(browser).toHaveURL(`/fr/${slug}/calendar`);
-    await expect(screen.getByRole("heading", "Calendrier")).toBeVisible();
+    await expect(browser).toHaveURL(`/fr/${slug}/posts?layout=calendar`);
+    await expect(
+      screen.getByRole("navigation", "Vues du calendrier")
+    ).toBeVisible();
   });
 
   test("signs out", async ({ app, browser, screen }) => {

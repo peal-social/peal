@@ -105,3 +105,16 @@ export const withChannelMedia = (
     media === undefined ? others : [...others, [channelId, media]]
   );
 };
+
+/**
+ * Whether nothing is written yet, anywhere: no text, for all channels or
+ * of a channel's own, and no image or video, the post's or a channel's.
+ */
+export const isUnwritten = (
+  { channelMedia, overrides, text }: ByChannel,
+  media: readonly MediaAttachment[]
+): boolean =>
+  text.trim() === "" &&
+  media.length === 0 &&
+  Object.values(overrides).every((own) => own.trim() === "") &&
+  Object.keys(channelMedia).length === 0;

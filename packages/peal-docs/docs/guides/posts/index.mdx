@@ -30,9 +30,9 @@ To start, click **Posts** in a workspace's sidebar, then **New post**.
 <Steps>
 <Step title="Pick the channels">
 
-Under **Channels**, tick the accounts the post goes to. The list holds the workspace's [channels](/guides/channels).
+Click **Channels**, beside the text, and tick the accounts the post goes to. The list holds the workspace's [channels](/guides/channels), grouped by platform, and you can type to search it by a name, a handle or a platform.
 
-From three channels up, **Select all** ticks every channel that publishes, leaving out any that's turned off or needs reconnecting. **Clear** unticks them all.
+**All channels** ticks every channel that publishes, leaving out any that's turned off or needs reconnecting, and unticks them all once they're all ticked. A platform's line ticks all of its channels that publish (those your search shows). A channel set ticks its channels.
 
 </Step>
 <Step title="Write the text">
@@ -42,7 +42,7 @@ Type in **Text for all channels**. Mentions, hashtags and links stand out as you
 </Step>
 <Step title="Change the text on one channel, if you like">
 
-Open the channel's tab and write its own text there. If you leave it empty, the channel uses the text for all channels.
+Under **Each channel**, open the channel's row, click **Write its own** and write its text there. If you leave it empty, the channel uses the text for all channels.
 
 </Step>
 <Step title="Add images and videos">
@@ -52,14 +52,16 @@ Under **Images and videos**, attach images or videos from the media library, or 
 </Step>
 <Step title="Give one channel other images and videos, if you like">
 
-In the channel's tab, tick **Images and videos of its own**. The channel starts from the post's images and videos, and you can add, remove, reorder and describe them there.
+In the channel's row, beside **Images and videos**, tick **Its own, instead of the post's**. The channel starts from the post's images and videos, and you can add, remove, reorder and describe them there.
 
 The channel is then checked, counted and sent with those, while the other channels keep the post's. Untick the box to show the post's again. A channel needs a text to go out with images and videos of its own, either its own or the text for all channels.
 
 </Step>
 <Step title="Fill in the platform options">
 
-When a channel's platform asks for more, such as a YouTube video's title, fill in its fields under **Platform options**. See [Platform options](#options).
+When a channel's platform asks for more, such as a YouTube video's title, the channel's row says which fields it still needs. Open the row and fill them in. See [Platform options](#options).
+
+When the post goes to several channels on one platform, a channel's row has a button that gives the others the same choices, such as **Use these options on the 2 other Instagram channels**. Each keeps what its account holds of its own, such as a Pinterest board. TikTok's options are set channel by channel.
 
 </Step>
 <Step title="Save the draft">
@@ -75,7 +77,7 @@ Click **Save as draft** to keep the post without a time. It joins the workspace'
 Writing and pasting work like this:
 
 - Each line takes the direction of its first letter, so a text in Arabic or Hebrew reads right to left.
-- The smiley button next to the assistant opens an emoji picker in your language. The emoji goes in where your cursor was, in the text you last wrote in (the text for all channels, a channel's own text or a part), and undo takes it back. The picker's data comes from Peal itself, never from another site.
+- The smiley button in the toolbar under the text opens an emoji picker in your language. The emoji goes in where your cursor was, in the text you last wrote in (the text for all channels, a channel's own text or a part), and undo takes it back. The picker's data comes from Peal itself, never from another site.
 - An image or a video pasted alone into a text is uploaded and attached as if you'd dropped it there (to its part, when you paste it into a part), with the same limits.
 - A paste that also holds text, such as cells copied from a spreadsheet, which come with a picture of them, pastes the text only.
 
@@ -85,7 +87,7 @@ Writing and pasting work like this:
 
 ### Check the length on each channel [#length]
 
-Under **Length on each channel**, you'll see how much room each channel's platform leaves, and anything else it would refuse, images and videos included. Platforms count differently, so the same text can fit on one and not on another:
+Under **Each channel**, each channel's row shows how much room its platform leaves, and anything else it would refuse, images and videos included. Platforms count differently, so the same text can fit on one and not on another:
 
 | Platform                | Text limit                                                                                                                                                      | Images and videos       |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
@@ -122,19 +124,19 @@ Some platforms count in their own way:
 
 ### Preview it [#previews]
 
-Next to the text (below it on a narrow screen), **Previews** shows what each channel the post goes to will receive:
+**Preview**, at the top of the composer, shows **Previews** beside the text, in place of the post's details, until you click it again. It shows what each channel the post goes to will receive:
 
 - its name and platform
 - the text it gets, as plain text, counted the way its platform counts it
 - its images and videos, and the parts that follow
 
-Peal asks for the previews a second after you stop typing, through the same check as the API's `posts.validate`. Each preview is the post as it would be saved, signatures and options included. It doesn't imitate the platform, which lays the post out its own way.
+While they show, Peal asks for the previews a second after you stop typing, through the same check as the API's `posts.validate`. Each preview is the post as it would be saved, signatures and options included. It doesn't imitate the platform, which lays the post out its own way.
 
-A channel that would refuse the post is marked, and what to fix is shown below, with the lengths and the options. If short links are on, links show as you wrote them, because they're shortened only when the post goes out.
+A channel that would refuse the post is marked, and its row under **Each channel** says what to fix. If short links are on, links show as you wrote them, because they're shortened only when the post goes out.
 
 ## Write a thread [#threads]
 
-A post can have parts that follow it. To add one, click **Add a part** under **Thread and first comment**. Each part has its own text, its own images and videos and a counter for every channel. It can also wait after the part before it, from a minute to a day. Use a part's buttons to move it up or down, or to remove it. A post has at most 24 parts after its first.
+A post can have parts that follow it. To add the first, click **Add a part** in the toolbar under the text. **Thread and first comment** then shows below, with **Add a part** for the next ones. Each part has its own text, its own images and videos and a counter for every channel. It can also wait after the part before it, from a minute to a day. Use a part's buttons to move it up or down, or to remove it. A post has at most 24 parts after its first.
 
 On the platforms with threads, each part goes out as a reply to the part before it:
 
@@ -222,7 +224,7 @@ None of these platforms keeps a key that would tell a comment sent twice apart. 
 
 ## Add a poll [#polls]
 
-A post can ask a poll, and its text is the question. Under **Poll**, click **Add a poll**, then write two to four choices. Choose how long the poll stays open and whether readers can pick several choices.
+A post can ask a poll, and its text is the question. Click **Add a poll** in the toolbar under the text, then write two to four choices under **Poll**. Choose how long the poll stays open and whether readers can pick several choices.
 
 Three platforms take polls from Peal:
 
@@ -240,7 +242,7 @@ An approval covers the poll: its choices, how long it's open, and several picks.
 
 ## Platform options [#options]
 
-Some platforms ask each post for more than its text and media. When the post goes to a channel on one of them, **Platform options** shows that channel's fields. A draft keeps them as they are, unfinished. To schedule, you need the ones marked required, and each field shows what its platform would refuse.
+Some platforms ask each post for more than its text and media. When the post goes to a channel on one of them, that channel's row under **Each channel** shows its fields, and names the required ones still empty. A draft keeps them as they are, unfinished. To schedule, you need the ones marked required, and each field shows what its platform would refuse.
 
 Here are the options for each platform:
 

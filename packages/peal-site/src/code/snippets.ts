@@ -91,7 +91,7 @@ peal post "${postText}" \\
   --now --wait ${wait} \\
   --idempotency-key ${idempotencyKey}`;
 
-const typescript = `import { PealClient } from "peal-sdk";
+const typescript = `import { PealClient } from "@peal-social/sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 

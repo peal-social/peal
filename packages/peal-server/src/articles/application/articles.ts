@@ -20,7 +20,6 @@ import {
 } from "#articles/domain/article.ts";
 import type { Article, ArticleViolation } from "#articles/domain/article.ts";
 import type { InvalidArticleTransition } from "#articles/domain/invalid-article-transition.ts";
-import { siteRules } from "#articles/domain/site-rules.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { Ids, newId } from "#shared/application/ids.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
@@ -30,6 +29,7 @@ import type { ChannelId, UserId } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 import type { PlanLimitReached } from "#shared/domain/plan-limit-reached.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
+import { siteRules } from "#shared/domain/rich-text/site-rules.ts";
 import { Schedule } from "#shared/domain/schedule.ts";
 import type { TimeZoneId } from "#shared/domain/time-zone.ts";
 

@@ -83,21 +83,17 @@ describe("the composer's comforts", { serial: true }, () => {
     await app.open(`/${slug}/posts/new`);
     await expect(screen.getByRole("heading", "New post")).toBeVisible();
 
-    await screen.getByRole("button", "Select all").tap();
+    // The Channels property opens its menu, whose "All channels" ticks
+    // every channel, and ticks none once they all are.
+    const property = screen.getByRole("button", /^Channels /u);
 
-    await Promise.all(
-      handles.map(async (handle) => {
-        await expect(screen.getByRole("checkbox", handle)).toBeChecked();
-      })
-    );
+    await property.tap();
+    await screen.getByRole("option", /^All channels/u).tap();
+    await expect(property).toHaveText(/3 channels/u);
 
-    await screen.getByRole("button", "Clear").tap();
-
-    await Promise.all(
-      handles.map(async (handle) => {
-        await expect(screen.getByRole("checkbox", handle)).not.toBeChecked();
-      })
-    );
+    await screen.getByRole("option", /^All channels/u).tap();
+    await expect(property).toHaveText(/Add channels/u);
+    await screen.getByRole("combobox", "Search channels").press("Escape");
   });
 
   test("ticks a channel by pointer and by key without moving the frame", async ({
@@ -125,15 +121,20 @@ describe("the composer's comforts", { serial: true }, () => {
       expect({ height, scrolled }).toEqual({ height: window, scrolled: 0 });
     };
 
-    const channel = screen.getByRole("checkbox", handles[2]);
+    const property = screen.getByRole("button", /^Channels /u);
+    const channel = screen.getByRole("option", handles[2]);
 
     await stays();
+    await property.tap();
     await channel.tap();
-    await expect(channel).toBeChecked();
+    await expect(property).toHaveText(
+      new RegExp(RegExp.escape(handles[2]), "u")
+    );
     await stays();
 
-    await channel.press("Space");
-    await expect(channel).not.toBeChecked();
+    await channel.press("Enter");
+    await expect(property).toHaveText(/Add channels/u);
+    await screen.getByRole("combobox", "Search channels").press("Escape");
     await stays();
 
     // More than the panel can scroll: once the wheel has carried it to its
@@ -158,17 +159,29 @@ describe("the composer's comforts", { serial: true }, () => {
   });
 
   test("previews what each channel will receive", async ({ screen }) => {
-    await screen.getByRole("button", "Select all").tap();
+    await screen.getByRole("button", /^Channels /u).tap();
+    await screen.getByRole("option", /^All channels/u).tap();
+    await screen.getByRole("combobox", "Search channels").press("Escape");
+
+    // Preview, in the header, docks the previews in the column, beside
+    // the post, until it is pressed again.
+    const toggle = screen.getByRole("button", "Preview");
+
+    await toggle.tap();
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
 
     const previews = screen.getByRole("region", "Previews");
 
-    // Asked a second after the last change, from the server's own check.
+    // Asked a second after they show, from the server's own check.
     await expect(previews.getByText(`${text}🚀`)).toHaveCount(handles.length);
     await expect(
       previews.getByText("Each platform lays the post out its own way.", {
         exact: false,
       })
     ).toBeVisible();
+
+    await toggle.tap();
+    await expect(previews).toBeHidden();
   });
 
   test("asks before publishing now, naming the channels", async ({

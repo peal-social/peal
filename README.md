@@ -26,7 +26,7 @@
   <a href="https://github.com/peal-social/peal/actions/workflows/ci.yml"><img src="https://github.com/peal-social/peal/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI" /></a>
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-FSL--1.1--ALv2-blue" alt="Licence: FSL-1.1-ALv2" /></a>
   <a href="packages/peal-sdk"><img src="https://img.shields.io/badge/SDKs-Apache--2.0-green" alt="SDKs: Apache-2.0" /></a>
-  <a href="https://www.npmjs.com/package/peal-sdk"><img src="https://img.shields.io/npm/v/peal-sdk?label=peal-sdk" alt="peal-sdk on npm" /></a>
+  <a href="https://www.npmjs.com/package/@peal-social/sdk"><img src="https://img.shields.io/npm/v/@peal-social/sdk?label=@peal-social/sdk" alt="@peal-social/sdk on npm" /></a>
 </p>
 
 > [!WARNING]
@@ -215,7 +215,7 @@ language's registry. They're under Apache-2.0, unlike the rest of the
 repository. Pick yours:
 
 <p align="center">
-  <a href="packages/peal-sdk/node"><img src="https://img.shields.io/badge/TypeScript-peal--sdk-3178C6?style=for-the-badge&logo=typescript&logoColor=white" height="32" alt="TypeScript / JavaScript" /></a>
+  <a href="packages/peal-sdk/node"><img src="https://img.shields.io/badge/TypeScript-%40peal--social%2Fsdk-3178C6?style=for-the-badge&logo=typescript&logoColor=white" height="32" alt="TypeScript / JavaScript" /></a>
   <a href="packages/peal-sdk/python"><img src="https://img.shields.io/badge/Python-peal--sdk-3776AB?style=for-the-badge&logo=python&logoColor=white" height="32" alt="Python" /></a>
   <a href="packages/peal-sdk/go"><img src="https://img.shields.io/badge/Go-peal--sdk-00ADD8?style=for-the-badge&logo=go&logoColor=white" height="32" alt="Go" /></a>
   <a href="packages/peal-sdk/ruby"><img src="https://img.shields.io/badge/Ruby-peal-CC342D?style=for-the-badge&logo=ruby&logoColor=white" height="32" alt="Ruby" /></a>
@@ -228,7 +228,7 @@ repository. Pick yours:
 Here's the Node.js client asking the API who your key belongs to:
 
 ```ts
-import { PealClient } from "peal-sdk";
+import { PealClient } from "@peal-social/sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 const credential = await peal.credential.get();

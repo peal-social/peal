@@ -2,24 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import type { SocialChannel } from "peal-contract";
-import { Badge } from "peal-ui/components/badge";
 
 import { channelName } from "#channels/channel-name.ts";
-import { MediaFitBadges } from "#components/posts/media-fit-badges.tsx";
+import { ChannelFitBadges } from "#components/posts/channel-fit-badges.tsx";
 import { fits as takesPost } from "#posts/character-count.ts";
-import type { ChannelFit, ChannelProblem } from "#posts/character-count.ts";
+import type { ChannelFit } from "#posts/character-count.ts";
 import { mediaFits } from "#posts/media-fit.ts";
 import type { MediaFit } from "#posts/media-fit.ts";
-
-const countsOf = (problem: ChannelProblem) => {
-  if (problem._tag === "forbiddenCharacters") {
-    return { characters: problem.characters.join(" "), count: 0, maximum: 0 };
-  }
-
-  return problem._tag === "empty" || problem._tag === "mediaRequired"
-    ? { characters: "", count: 0, maximum: 0 }
-    : { characters: "", count: problem.count, maximum: problem.maximum };
-};
 
 interface CharacterCountersProps {
   readonly fits: readonly {
@@ -30,11 +19,27 @@ interface CharacterCountersProps {
   }[];
 }
 
+/**
+ * How many of these channels would refuse the post as it is, for screen
+ * readers, who hear it only when that number changes: the counts change
+ * with every key, so they are not announced.
+ */
+export const FitSummary = ({ fits }: CharacterCountersProps) => {
+  const t = useTranslations("Posts.Composer");
+
+  const refusing = fits.filter(
+    ({ fit, media }) =>
+      !takesPost(fit) || (media !== undefined && !mediaFits(media))
+  ).length;
+
+  return (
+    <output className="sr-only">{t("fitSummary", { count: refusing })}</output>
+  );
+};
+
 // For each channel the post goes to, how long its text is against the
 // platform's closest limit, and what else the platform would refuse, its
-// images and videos included. The counts change with every key, so they are
-// not announced; a status says how many channels would refuse the post,
-// which screen readers hear only when that number changes.
+// images and videos included, with `FitSummary` for screen readers.
 export const CharacterCounters = ({ fits }: CharacterCountersProps) => {
   const t = useTranslations("Posts.Composer");
   const tPosts = useTranslations("Posts");
@@ -46,58 +51,26 @@ export const CharacterCounters = ({ fits }: CharacterCountersProps) => {
     );
   }
 
-  const refusing = fits.filter(
-    ({ fit, media }) =>
-      !takesPost(fit) || (media !== undefined && !mediaFits(media))
-  ).length;
-
   return (
     <div className="flex flex-col gap-2">
-      <output className="sr-only">
-        {t("fitSummary", { count: refusing })}
-      </output>
+      <FitSummary fits={fits} />
       <ul className="flex flex-col gap-2">
-        {fits.map(({ channel, fit, media }) => {
-          const { tightest } = fit;
-
-          return (
-            <li
-              key={channel.id}
-              className="flex flex-wrap items-center justify-between gap-2 text-sm"
-            >
-              <span className="truncate">
-                {t("channelDetail", {
-                  handle: channelName(channel),
-                  platform: tPosts("platform", { platform: channel.platform }),
-                })}
-              </span>
-              <span className="flex flex-wrap items-center gap-2">
-                {fit.problems.map((problem) => (
-                  <Badge key={problem._tag} variant="destructive">
-                    {t("problem", {
-                      ...countsOf(problem),
-                      problem: problem._tag,
-                    })}
-                  </Badge>
-                ))}
-                {media === undefined ? null : <MediaFitBadges fit={media} />}
-                {tightest === undefined ? (
-                  <span className="text-muted-foreground">{t("noLimit")}</span>
-                ) : (
-                  <Badge
-                    variant={tightest.remaining < 0 ? "destructive" : "outline"}
-                  >
-                    {t("count", {
-                      length: tightest.length,
-                      maximum: tightest.maximum,
-                      unit: tightest.unit,
-                    })}
-                  </Badge>
-                )}
-              </span>
-            </li>
-          );
-        })}
+        {fits.map(({ channel, fit, media }) => (
+          <li
+            key={channel.id}
+            className="flex flex-wrap items-center justify-between gap-2 text-sm"
+          >
+            <span className="truncate">
+              {t("channelDetail", {
+                handle: channelName(channel),
+                platform: tPosts("platform", { platform: channel.platform }),
+              })}
+            </span>
+            <span className="flex flex-wrap items-center gap-2">
+              <ChannelFitBadges fit={fit} media={media} />
+            </span>
+          </li>
+        ))}
       </ul>
       {fits.some(({ fit }) => fit.textNotSent === true) ? (
         <p className="text-muted-foreground text-sm">

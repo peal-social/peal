@@ -16,6 +16,7 @@ import { Button } from "peal-ui/components/button";
 import { Checkbox } from "peal-ui/components/checkbox";
 import { Input } from "peal-ui/components/input";
 import { Label } from "peal-ui/components/label";
+import { PropertyRow } from "peal-ui/components/property";
 import {
   Select,
   SelectContent,
@@ -23,9 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "peal-ui/components/select";
-import { Separator } from "peal-ui/components/separator";
 import { Skeleton } from "peal-ui/components/skeleton";
-import { useEffect } from "react";
+import { createContext, use, useEffect } from "react";
 import type { ChangeEvent, ReactNode } from "react";
 
 import { channelName } from "#channels/channel-name.ts";
@@ -39,7 +39,6 @@ import {
 } from "#posts/api.ts";
 import { mediaItem } from "#posts/attached-media.ts";
 import { blueskyLimits } from "#posts/bluesky-account.ts";
-import type { ComposerFailure } from "#posts/composer-failure.ts";
 import { choicesOf } from "#posts/lookup-choices.ts";
 import type { LookupChoices } from "#posts/lookup-choices.ts";
 import {
@@ -127,6 +126,37 @@ const labelOf = (t: Translate, field: OptionField) =>
     : t(field.label);
 
 // The field's hint, then what is wrong with it, each with its own id.
+// Whether the fields are rows of a property list (a label beside its
+// value, its hint shown while the field has the focus), as in a channel's
+// row of the composer, rather than a label over its value.
+const Rows = createContext(false);
+
+/**
+ * One field: its label, its control and its notes, a label over its
+ * control, or, in a property list, beside it.
+ */
+const FieldFrame = ({
+  children,
+  label,
+  notes,
+}: {
+  readonly children: ReactNode;
+  readonly label: ReactNode;
+  readonly notes: ReactNode;
+}) =>
+  use(Rows) ? (
+    <PropertyRow label={label}>
+      {children}
+      {notes}
+    </PropertyRow>
+  ) : (
+    <div className="flex flex-col gap-2">
+      {label}
+      {children}
+      {notes}
+    </div>
+  );
+
 const Notes = ({
   field,
   id,
@@ -139,13 +169,21 @@ const Notes = ({
   readonly problem: string | undefined;
 }) => {
   const t = useTranslations("Posts.Options");
+  const rows = use(Rows);
   // Each reason once, however many choices it closes.
   const closed = [...new Set(limits.closedChoices?.values())];
 
   return (
     <>
       {field.hint === undefined ? null : (
-        <p id={`${id}-hint`} className="text-muted-foreground text-xs">
+        <p
+          id={`${id}-hint`}
+          className={
+            rows
+              ? "text-muted-foreground hidden text-xs group-focus-within/property-row:block"
+              : "text-muted-foreground text-xs"
+          }
+        >
           {t(field.hint)}
         </p>
       )}
@@ -208,8 +246,10 @@ const TextInput = ({
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>{labelOf(t, field)}</Label>
+    <FieldFrame
+      label={<Label htmlFor={id}>{labelOf(t, field)}</Label>}
+      notes={<Notes field={field} id={id} limits={limits} problem={problem} />}
+    >
       <Input
         id={id}
         type={inputTypeOf(field)}
@@ -220,8 +260,7 @@ const TextInput = ({
         aria-describedby={describedBy(field, id, problem)}
         onChange={handleChange}
       />
-      <Notes field={field} id={id} limits={limits} problem={problem} />
-    </div>
+    </FieldFrame>
   );
 };
 
@@ -232,6 +271,7 @@ interface Choice {
 }
 
 const ChoiceSelect = ({
+  after,
   choices,
   disabled,
   field,
@@ -241,6 +281,8 @@ const ChoiceSelect = ({
   limits,
   problem,
 }: {
+  /** What follows its notes: a lookup's word on its list. */
+  readonly after?: ReactNode;
   readonly choices: readonly Choice[];
   readonly disabled: boolean;
   readonly field: OptionField;
@@ -254,8 +296,15 @@ const ChoiceSelect = ({
   const chosen = choices.find(({ value }) => value === selected);
 
   return (
-    <div className="flex flex-col gap-2">
-      <Label id={`${id}-label`}>{labelOf(t, field)}</Label>
+    <FieldFrame
+      label={<Label id={`${id}-label`}>{labelOf(t, field)}</Label>}
+      notes={
+        <>
+          <Notes field={field} id={id} limits={limits} problem={problem} />
+          {after}
+        </>
+      }
+    >
       <Select
         value={chosen?.value ?? null}
         disabled={disabled}
@@ -283,8 +332,7 @@ const ChoiceSelect = ({
           ))}
         </SelectContent>
       </Select>
-      <Notes field={field} id={id} limits={limits} problem={problem} />
-    </div>
+    </FieldFrame>
   );
 };
 
@@ -380,26 +428,37 @@ const ToggleInput = ({
   const checked =
     !locked && (field.inverted === true ? value === false : value === true);
 
-  return (
+  const box = (
+    <Checkbox
+      id={id}
+      checked={checked}
+      disabled={disabled || locked}
+      aria-invalid={problem !== undefined}
+      aria-describedby={describedBy(field, id, problem)}
+      onCheckedChange={(ticked) => {
+        onValue(field.inverted === true ? ticked !== true : ticked === true);
+      }}
+    />
+  );
+
+  const notes = (
+    <Notes field={field} id={id} limits={limits} problem={problem} />
+  );
+
+  return use(Rows) ? (
+    <FieldFrame
+      label={<Label htmlFor={id}>{t(field.label)}</Label>}
+      notes={notes}
+    >
+      <div className="flex min-h-8.5 items-center">{box}</div>
+    </FieldFrame>
+  ) : (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
-        <Checkbox
-          id={id}
-          checked={checked}
-          disabled={disabled || locked}
-          aria-invalid={problem !== undefined}
-          aria-describedby={describedBy(field, id, problem)}
-          onCheckedChange={(ticked) => {
-            onValue(
-              field.inverted === true ? ticked !== true : ticked === true
-            );
-          }}
-        />
+        {box}
         <Label htmlFor={id}>{t(field.label)}</Label>
       </div>
-      <div className="pl-6">
-        <Notes field={field} id={id} limits={limits} problem={problem} />
-      </div>
+      <div className="pl-6">{notes}</div>
     </div>
   );
 };
@@ -420,8 +479,10 @@ const NumberInput = ({
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>{t(field.label)}</Label>
+    <FieldFrame
+      label={<Label htmlFor={id}>{t(field.label)}</Label>}
+      notes={<Notes field={field} id={id} limits={limits} problem={problem} />}
+    >
       <Input
         id={id}
         type="number"
@@ -435,8 +496,7 @@ const NumberInput = ({
         aria-describedby={describedBy(field, id, problem)}
         onChange={handleChange}
       />
-      <Notes field={field} id={id} limits={limits} problem={problem} />
-    </div>
+    </FieldFrame>
   );
 };
 
@@ -478,25 +538,27 @@ const LoadedLookup = ({
   ];
 
   return (
-    <div className="flex flex-col gap-2">
-      <ChoiceSelect
-        {...rest}
-        field={field}
-        choices={choices}
-        selected={selected === "" ? undefined : selected}
-        onChoice={(choice) => {
-          onValue(choice === noChoice ? undefined : choice);
-        }}
-      />
-      {loaded.choices.length === 0 && field.empty !== undefined ? (
-        <p className="text-muted-foreground text-xs">{t(field.empty)}</p>
-      ) : null}
-      {loaded.truncated ? (
-        <p className="text-muted-foreground text-xs">
-          {t("lookupTruncated", { count: loaded.choices.length })}
-        </p>
-      ) : null}
-    </div>
+    <ChoiceSelect
+      {...rest}
+      field={field}
+      choices={choices}
+      selected={selected === "" ? undefined : selected}
+      after={
+        <>
+          {loaded.choices.length === 0 && field.empty !== undefined ? (
+            <p className="text-muted-foreground text-xs">{t(field.empty)}</p>
+          ) : null}
+          {loaded.truncated ? (
+            <p className="text-muted-foreground text-xs">
+              {t("lookupTruncated", { count: loaded.choices.length })}
+            </p>
+          ) : null}
+        </>
+      }
+      onChoice={(choice) => {
+        onValue(choice === noChoice ? undefined : choice);
+      }}
+    />
   );
 };
 
@@ -513,9 +575,13 @@ const LookupInput = (props: FieldProps<LookupField>) => {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-sm leading-none font-medium">{labelOf(t, field)}</p>
-      <output className="text-sm">
+    <FieldFrame
+      label={
+        <p className="text-sm leading-none font-medium">{labelOf(t, field)}</p>
+      }
+      notes={<Notes field={field} id={id} limits={limits} problem={problem} />}
+    >
+      <output className="text-sm sm:py-2">
         {state._tag === "loading"
           ? t("lookupLoading")
           : t("lookupFailed", { reason: state.reason })}
@@ -533,8 +599,7 @@ const LookupInput = (props: FieldProps<LookupField>) => {
           </Button>
         </div>
       ) : null}
-      <Notes field={field} id={id} limits={limits} problem={problem} />
-    </div>
+    </FieldFrame>
   );
 };
 
@@ -598,29 +663,39 @@ export const MediaOptionView = ({
   return (
     <fieldset
       aria-describedby={describedBy(field, id, problem)}
-      className="flex flex-col gap-2"
+      className={
+        use(Rows)
+          ? "group/property-row grid gap-x-4 gap-y-1.5 sm:grid-cols-[minmax(0,10rem)_minmax(0,1fr)] sm:items-start"
+          : "flex flex-col gap-2"
+      }
     >
-      <legend className="mb-2 text-sm leading-none font-medium">
+      <legend className="sr-only">{labelOf(t, field)}</legend>
+      <p
+        aria-hidden="true"
+        className="text-sm leading-none font-medium sm:flex sm:min-h-8.5 sm:items-center"
+      >
         {labelOf(t, field)}
-      </legend>
-      <div className="flex flex-wrap items-center gap-3">
-        <ChosenPreview chosen={chosen} />
-        <div className="flex flex-wrap gap-2">
-          {picker}
-          {chosen._tag === "none" ? null : (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={disabled}
-              onClick={onRemove}
-            >
-              {t("mediaRemove")}
-            </Button>
-          )}
+      </p>
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <div className="flex flex-wrap items-center gap-3">
+          <ChosenPreview chosen={chosen} />
+          <div className="flex flex-wrap gap-2">
+            {picker}
+            {chosen._tag === "none" ? null : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={disabled}
+                onClick={onRemove}
+              >
+                {t("mediaRemove")}
+              </Button>
+            )}
+          </div>
         </div>
+        <Notes field={field} id={id} limits={limits} problem={problem} />
       </div>
-      <Notes field={field} id={id} limits={limits} problem={problem} />
     </fieldset>
   );
 };
@@ -773,6 +848,11 @@ const FieldInput = (props: FieldProps<OptionField>) =>
   );
 
 interface ChannelOptionsProps {
+  /**
+   * Drawn without a frame, its legend for screen readers only, inside a
+   * place that already names the channel (the composer's row of it).
+   */
+  readonly bare?: boolean | undefined;
   readonly channel: SocialChannel;
   readonly disabled: boolean;
   /** The kinds of the post's media, which some fields follow. */
@@ -822,6 +902,7 @@ const isOffered = (
 // by its account when it says how (`limits`), with `header` above them and
 // `footer` below.
 const ChannelOptionsFields = ({
+  bare = false,
   channel,
   disabled,
   footer,
@@ -855,51 +936,65 @@ const ChannelOptionsFields = ({
       isOffered(field, values, lookupsByField)
   );
 
+  // Bare, in a channel's row: a property list, whose row says the
+  // platform's line already.
   return (
-    <fieldset className="flex flex-col gap-4 rounded-lg border p-4">
-      <legend className="px-1 text-sm font-medium">
-        {t("legend", {
-          channel: tPosts("Composer.channelDetail", {
-            handle: channelName(channel),
-            platform,
-          }),
-        })}
-      </legend>
-      <p className="text-muted-foreground text-xs">
-        {t("description", { platform })}
-      </p>
-      {header}
-      {shown.map((field) => (
-        <div
-          key={field.name}
-          className={
-            field.kind === "toggle" && field.within !== undefined
-              ? "pl-6"
-              : undefined
-          }
-        >
-          <FieldInput
-            disabled={disabled}
-            field={field}
-            limits={limitsByField.get(field.name) ?? unlimited}
-            lookup={lookupsByField.get(field.name)}
-            id={`option-${channel.id}-${field.name}`}
-            value={values[field.name]}
-            problem={Option.fromUndefinedOr(
-              typed.get(field.name) ?? byField.get(field.name)
-            ).pipe(
-              Option.map((found) => problemOf(t, field, found)),
-              Option.getOrUndefined
-            )}
-            workspaceId={workspaceId}
-            onValue={(value) => {
-              onChange(withValue(channel.platform, values, field.name, value));
-            }}
-          />
-        </div>
-      ))}
-      {footer}
-    </fieldset>
+    <Rows value={bare}>
+      <fieldset
+        className={
+          bare
+            ? "flex min-w-0 flex-col gap-3"
+            : "flex flex-col gap-4 rounded-lg border p-4"
+        }
+      >
+        <legend className={bare ? "sr-only" : "px-1 text-sm font-medium"}>
+          {t("legend", {
+            channel: tPosts("Composer.channelDetail", {
+              handle: channelName(channel),
+              platform,
+            }),
+          })}
+        </legend>
+        {bare ? null : (
+          <p className="text-muted-foreground text-xs">
+            {t("description", { platform })}
+          </p>
+        )}
+        {header}
+        {shown.map((field) => (
+          <div
+            key={field.name}
+            className={
+              field.kind === "toggle" && field.within !== undefined && !bare
+                ? "pl-6"
+                : undefined
+            }
+          >
+            <FieldInput
+              disabled={disabled}
+              field={field}
+              limits={limitsByField.get(field.name) ?? unlimited}
+              lookup={lookupsByField.get(field.name)}
+              id={`option-${channel.id}-${field.name}`}
+              value={values[field.name]}
+              problem={Option.fromUndefinedOr(
+                typed.get(field.name) ?? byField.get(field.name)
+              ).pipe(
+                Option.map((found) => problemOf(t, field, found)),
+                Option.getOrUndefined
+              )}
+              workspaceId={workspaceId}
+              onValue={(value) => {
+                onChange(
+                  withValue(channel.platform, values, field.name, value)
+                );
+              }}
+            />
+          </div>
+        ))}
+        {footer}
+      </fieldset>
+    </Rows>
   );
 };
 
@@ -1189,6 +1284,8 @@ const BlueskyChannelOptions = ({
 const loadingLookup: LookupSource = { choices: { _tag: "loading" } };
 
 interface TargetOptionsPanelProps {
+  /** Each channel's fields drawn without a frame (`ChannelOptionsProps`). */
+  readonly bare?: boolean;
   /** The channels the post goes to; those whose platform takes options show. */
   readonly channels: readonly SocialChannel[];
   readonly disabled: boolean;
@@ -1236,6 +1333,7 @@ export const takesOptions = (
 // platform's fields describe them, with what the last schedule refused in
 // them under each field.
 export const TargetOptionsPanel = ({
+  bare = false,
   channels,
   disabled,
   media,
@@ -1250,6 +1348,7 @@ export const TargetOptionsPanel = ({
       .filter((channel) => hasFieldsFor(channel, media))
       .map((channel) => {
         const props: ChannelOptionsProps = {
+          bare,
           channel,
           disabled,
           media,
@@ -1310,57 +1409,3 @@ export const TargetOptionsPanel = ({
       })}
   </div>
 );
-
-const noViolations: readonly ContentViolation[] = [];
-
-interface TargetOptionsSectionProps extends Omit<
-  TargetOptionsPanelProps,
-  "violations"
-> {
-  /** The composer's last failure, whose violations the fields show. */
-  readonly failure: ComposerFailure | null;
-}
-
-// The composer's section of options, after a separator, when one of the
-// channels' platforms takes some.
-export const TargetOptionsSection = ({
-  failure,
-  ...panel
-}: TargetOptionsSectionProps) => {
-  const t = useTranslations("Posts.Options");
-
-  if (!takesOptions(panel.channels, panel.media)) {
-    return null;
-  }
-
-  // Something filled in the API would refuse, which nothing sends.
-  const wrong = panel.channels.some(
-    (channel) =>
-      problemsByField(channel.platform, panel.valuesOf(channel), panel.media)
-        .size > 0
-  );
-
-  return (
-    <>
-      <Separator />
-      <section aria-labelledby="options-title" className="flex flex-col gap-3">
-        <h2 id="options-title" className="text-sm font-medium">
-          {t("section")}
-        </h2>
-        {wrong ? (
-          <output className="text-destructive-text text-sm">
-            {t("fixToSend")}
-          </output>
-        ) : null}
-        <TargetOptionsPanel
-          {...panel}
-          violations={
-            failure?._tag === "PostContentInvalid"
-              ? failure.violations
-              : noViolations
-          }
-        />
-      </section>
-    </>
-  );
-};

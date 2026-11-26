@@ -10,12 +10,12 @@ import type {
   TextCount,
 } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
-import { Badge } from "peal-ui/components/badge";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
 
-import { channelName } from "#channels/channel-name.ts";
+import { channelTitle } from "#channels/channel-name.ts";
 import { MediaThumbnail } from "#components/media/media-thumbnail.tsx";
+import { ChannelAvatar } from "#components/posts/channel-avatar.tsx";
 import { PreviewedText } from "#components/review/previewed-text.tsx";
 import type { AttachedMedia } from "#posts/media-fit.ts";
 import type { PreviewState } from "#posts/post-preview.ts";
@@ -44,14 +44,16 @@ const Counts = ({ counts }: { readonly counts: readonly TextCount[] }) => {
   const t = useTranslations("Posts.Composer");
 
   return counts.length === 0 ? null : (
-    <p className="flex flex-wrap gap-1">
+    <p className="flex flex-wrap gap-x-3 text-xs tabular-nums">
       {counts.map(({ length, maximum, unit }) => (
-        <Badge
+        <span
           key={unit}
-          variant={length > maximum ? "destructive" : "outline"}
+          className={
+            length > maximum ? "text-destructive-text" : "text-muted-foreground"
+          }
         >
           {t("count", { length, maximum, unit })}
-        </Badge>
+        </span>
       ))}
     </p>
   );
@@ -100,18 +102,21 @@ const ChannelPanel = ({
   const name =
     channel === undefined
       ? tPosts("disconnectedChannel")
-      : channelName(channel);
+      : channelTitle(channel);
 
   return (
-    <li className="flex flex-col gap-3 rounded-lg border p-4">
-      <p className="flex flex-wrap items-baseline gap-2">
-        <span className="font-medium">{name}</span>
-        <span className="text-muted-foreground text-sm">
+    <li className="flex flex-col gap-2 rounded-lg border p-3 text-sm">
+      <p className="flex min-w-0 items-center gap-2">
+        {channel === undefined ? null : (
+          <ChannelAvatar channel={channel} marked />
+        )}
+        <span className="truncate font-medium">{name}</span>
+        <span className="text-muted-foreground truncate text-xs">
           {tPosts("platform", { platform: preview.platform })}
         </span>
       </p>
       {preview.violations.length === 0 ? null : (
-        <p className="text-destructive-text text-sm">{t("refused")}</p>
+        <p className="text-destructive-text text-xs">{t("refused")}</p>
       )}
       <PreviewedText empty={t("noText")} text={preview.text} />
       {preview.textNotSent === true ? (
@@ -155,6 +160,7 @@ const ChannelPanel = ({
  */
 export const PostPreviewsView = ({
   channels,
+  headed = true,
   media,
   onRetry,
   parts,
@@ -164,6 +170,11 @@ export const PostPreviewsView = ({
   waitingForOptions,
 }: {
   readonly channels: readonly SocialChannel[];
+  /**
+   * Whether it heads itself with its title; without, as in the
+   * composer's sheet, whose title it is, the title only names it.
+   */
+  readonly headed?: boolean;
   /** The post's images and videos, in order. */
   readonly media: readonly AttachedMedia[];
   readonly onRetry: () => void;
@@ -224,11 +235,18 @@ export const PostPreviewsView = ({
   };
 
   return (
-    <section aria-labelledby="previews-title" className="flex flex-col gap-3">
+    <section
+      {...(headed
+        ? { "aria-labelledby": "previews-title" }
+        : { "aria-label": t("title") })}
+      className="flex flex-col gap-3"
+    >
       <div className="flex flex-col gap-1">
-        <h2 id="previews-title" className="text-sm font-medium">
-          {t("title")}
-        </h2>
+        {headed ? (
+          <h2 id="previews-title" className="text-sm font-medium">
+            {t("title")}
+          </h2>
+        ) : null}
         <p className="text-muted-foreground text-xs">{t("description")}</p>
         {shortenLinks ? (
           <p className="text-muted-foreground text-xs">{t("shortLinks")}</p>

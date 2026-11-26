@@ -13,7 +13,7 @@
       "description": "Client for the Peal API: schedule social media posts across platforms.",
       "homepage": "https://peal.social",
       "license": "Apache-2.0",
-      "name": "peal-sdk",
+      "name": "@peal-social/sdk",
       "repository": {
         "directory": "packages/peal-sdk/node",
         "type": "git",

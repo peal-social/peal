@@ -51,18 +51,17 @@ const at = (path: string) =>
 describe(navigationOf, () => {
   it("puts a PealCreative page in PealCreative, with the pages the member may open", () => {
     const navigation = navigationOf({
-      pathname: `${base}/calendar`,
+      pathname: `${base}/media`,
       permissions: owner,
       workspace,
     });
 
     expect(navigation.mode).toBe("studio");
-    expect(navigation.current).toBe("calendar");
+    expect(navigation.current).toBe("media");
     expect(pagesOf(navigation)).toStrictEqual([
       "home",
       "channels",
       "posts",
-      "calendar",
       "media",
       "inbox",
       "analytics",
@@ -74,7 +73,7 @@ describe(navigationOf, () => {
       "engage",
     ]);
     expect(navigation.breadcrumb).toStrictEqual({
-      page: "calendar",
+      page: "media",
       trail: [],
     });
   });
@@ -97,25 +96,20 @@ describe(navigationOf, () => {
       "studio",
       "editor",
       { page: "editor", trail: [] },
-      ["editor", "posts", "calendar", "media"],
+      ["editor", "posts", "media"],
       `${base}/editor`,
-      ["posts", "calendar", "media"],
+      ["posts", "media"],
     ]);
   });
 
   it("leaves out what the member's permissions do not open", () => {
     const navigation = navigationOf({
-      pathname: `${base}/calendar`,
+      pathname: `${base}/media`,
       permissions: ["post:read"],
       workspace,
     });
 
-    expect(pagesOf(navigation)).toStrictEqual([
-      "home",
-      "channels",
-      "calendar",
-      "media",
-    ]);
+    expect(pagesOf(navigation)).toStrictEqual(["home", "channels", "media"]);
     expect(navigation.groups.map(({ group }) => group)).toStrictEqual([
       null,
       "studio",

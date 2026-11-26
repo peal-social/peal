@@ -8,7 +8,7 @@ import type {
   Inline,
   ListItem,
   Mark,
-} from "./article-body.ts";
+} from "./rich-body.ts";
 
 // The one place an article's HTML is written: from the body's document,
 // node by node, each of the allow-list's nodes and marks as the element it

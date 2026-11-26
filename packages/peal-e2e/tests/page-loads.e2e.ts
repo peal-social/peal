@@ -36,7 +36,7 @@ const pages = [
   "/articles",
   "/channels",
   "/posts",
-  "/calendar",
+  "/posts?layout=calendar",
   "/media",
   "/analytics",
   "/notifications",
