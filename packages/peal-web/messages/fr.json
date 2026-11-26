@@ -1700,6 +1700,7 @@
         "unknownChannels": "Certains de ces canaux ne sont plus connectés.",
         "unknownMedia": "Certaines images ou vidéos ne peuvent plus être jointes.",
         "unknownTags": "Certaines étiquettes n’existent plus. Choisissez à nouveau celles de la publication.",
+        "externalIdTaken": "Une autre publication de l’espace de travail a cet identifiant externe. Rien n’a été enregistré.",
         "unknownChannelSet": "Ce groupe de canaux n’existe plus. Choisissez à nouveau les canaux de la publication.",
         "unknownSignature": "Cette signature n’existe plus. Choisissez-en une autre.",
         "content": "À corriger avant de programmer :",
@@ -2348,6 +2349,8 @@
         "timeZone": "{zone} n’est pas un fuseau horaire que Peal connaît : donnez un fuseau IANA, comme Europe/Paris.",
         "duplicate": "Le même contenu part déjà sur certains de ces canaux à moins de {hours, number} heures de son heure. Mettez son allow_duplicate à true si vous voulez le publier deux fois.",
         "duplicateInFile": "Une ligne plus haut dans le fichier a le même contenu sur certains de ces canaux, près de son heure. Mettez son allow_duplicate à true si vous voulez le publier deux fois.",
+        "externalIdTaken": "Une autre publication de l’espace de travail a l’external_id de cette ligne. Donnez-en un autre à la ligne, ou laissez la cellule vide.",
+        "externalIdInFile": "Une ligne plus haut dans le fichier a le même external_id. Donnez à chaque ligne le sien.",
         "keyReused": "Sa clé d’idempotence a été envoyée ces {hours, number} dernières heures avec une autre publication : donnez-en une nouvelle à la ligne.",
         "postGone": "La publication que sa clé d’idempotence a créée a été supprimée : donnez une nouvelle clé à la ligne pour la créer à nouveau.",
         "forbidden": "Votre rôle ne le permet pas : une publication avec des médias demande le droit de lire les médias de l’espace de travail.",
@@ -2374,7 +2377,8 @@
           "time_zone": "Un fuseau IANA comme Europe/Paris. UTC si elle est vide.",
           "media": "Des identifiants de médias prêts de l’espace de travail.",
           "allow_duplicate": "true pour publier deux fois le même contenu à peu près à la même heure.",
-          "idempotency_key": "La clé propre à la ligne, qui la crée une seule fois, quel que soit le nombre d’envois."
+          "idempotency_key": "La clé propre à la ligne, qui la crée une seule fois, quel que soit le nombre d’envois.",
+          "external_id": "Votre propre identifiant de la publication, tiré de vos fichiers. Deux publications non annulées n’en partagent jamais un."
         },
         "sample": "Télécharger un exemple",
         "sampleName": "exemple-publications.csv"

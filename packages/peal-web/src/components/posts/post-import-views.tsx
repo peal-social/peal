@@ -115,6 +115,8 @@ const useRefusalText = (channels: readonly SocialChannel[]) => {
       case "Posts.Composer.errors.inPast":
       case "Posts.Composer.errors.queueNotFound":
       case "Posts.Import.refusal.duplicateInFile":
+      case "Posts.Import.refusal.externalIdInFile":
+      case "Posts.Import.refusal.externalIdTaken":
       case "Posts.Import.refusal.forbidden":
       case "Posts.Import.refusal.postGone":
       case "Posts.Import.refusal.unknownSet":

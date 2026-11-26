@@ -37,6 +37,8 @@ export type ImportRefusalWords =
         | "Posts.Composer.errors.inPast"
         | "Posts.Composer.errors.queueNotFound"
         | "Posts.Import.refusal.duplicateInFile"
+        | "Posts.Import.refusal.externalIdInFile"
+        | "Posts.Import.refusal.externalIdTaken"
         | "Posts.Import.refusal.forbidden"
         | "Posts.Import.refusal.postGone"
         | "Posts.Import.refusal.unknownSet"
@@ -100,6 +102,14 @@ export const importRefusalWords = (refusal: PostRefusal): ImportRefusalWords =>
       words({
         key: "Posts.Composer.errors.content",
         violations,
+      }),
+    // Against another row of the file, there is no post to name.
+    PostExternalIdTaken: ({ postId }) =>
+      words({
+        key:
+          postId === null
+            ? "Posts.Import.refusal.externalIdInFile"
+            : "Posts.Import.refusal.externalIdTaken",
       }),
     PostNotFound: () => words({ key: "Posts.Import.refusal.postGone" }),
     QueueHasNoRoom: ({ reason }) =>

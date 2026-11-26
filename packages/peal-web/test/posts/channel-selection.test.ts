@@ -1,3 +1,4 @@
+import { DateTime } from "effect";
 import { describe, expect, it } from "@effect/vitest";
 import type { SocialChannel, Post } from "peal-contract";
 
@@ -27,7 +28,9 @@ const channel = (
 const draftFor = (...channelIds: readonly string[]): Post => ({
   authorId: null,
   content: { media: [], overrides: [], text: "A synthetic draft" },
+  createdAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   createdVia: null,
+  externalId: null,
   id: "00000000-0000-7000-8000-000000000001",
   occurrence: null,
   outcome: null,
@@ -39,6 +42,7 @@ const draftFor = (...channelIds: readonly string[]): Post => ({
   shortenLinks: false,
   status: "draft",
   tagIds: [],
+  updatedAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   targets: channelIds.map((channelId, index) => ({
     channelId,
     editedAt: null,

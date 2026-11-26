@@ -728,6 +728,12 @@ const reasonOf =
         refused(
           "This idempotency key was sent in the last 24 hours with another post: nothing was made. Send this one under a new --idempotency-key."
         ),
+      PostExternalIdTaken: ({ postId }) =>
+        refused(
+          postId === null
+            ? "Another post of the same request has this external id: nothing was made. Give each post its own."
+            : `Post ${postId} has this external id already: nothing was made or changed. peal posts show ${postId} shows it; peal posts external-id ${postId} --clear frees the id.`
+        ),
       ImageProviderAddressRefused: ({ reason }) =>
         refused(providerAddressRefusals[reason]),
       ImageProviderKeyRequired: () =>

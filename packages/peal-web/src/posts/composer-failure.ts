@@ -4,6 +4,7 @@ import type {
   InvalidTimeZone,
   PlanLimitReached,
   PostContentInvalid,
+  PostExternalIdTaken,
   PostNotFound,
   PostStatusConflict,
   QueueHasNoRoom,
@@ -26,6 +27,9 @@ export type ComposerFailure =
   | InvalidTimeZone
   | PlanLimitReached
   | PostContentInvalid
+  // The composer sends no external id, but an API client may have given
+  // the draft one another post now has.
+  | PostExternalIdTaken
   | PostNotFound
   | PostStatusConflict
   | QueueHasNoRoom

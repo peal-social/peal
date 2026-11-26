@@ -48,7 +48,9 @@ const target = (
 const scheduled = (targets: readonly PostTarget[]): Post => ({
   authorId: null,
   content: { media: [], overrides: [], text: "A synthetic post." },
+  createdAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   createdVia: null,
+  externalId: null,
   id: "00000000-0000-7000-8000-000000000001",
   occurrence: null,
   outcome: null,
@@ -63,6 +65,7 @@ const scheduled = (targets: readonly PostTarget[]): Post => ({
   shortenLinks: false,
   status: "scheduled",
   tagIds: [],
+  updatedAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   targets,
 });
 

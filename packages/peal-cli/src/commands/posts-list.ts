@@ -94,6 +94,13 @@ export const list = Command.make(
       ),
       Flag.optional
     ),
+    externalId: Flag.String("external-id").pipe(
+      Flag.withMetavar("<id>"),
+      Flag.withDescription(
+        "Only the post that has this id of yours (its external id), exactly, and the cancelled ones that had it."
+      ),
+      Flag.optional
+    ),
     from: Flag.String("from").pipe(
       Flag.withMetavar("<instant>"),
       Flag.withDescription(
@@ -142,7 +149,7 @@ export const list = Command.make(
     ),
     sort: Flag.Literals("sort", PostSortSchema.literals).pipe(
       Flag.withDescription(
-        "Their order: by creation (createdDesc, newest first, unless given; createdAsc), or by time (scheduledDesc, scheduledAsc), which lists only the posts with a time."
+        "Their order: by creation (createdDesc, newest first, unless given; createdAsc), by time (scheduledDesc, scheduledAsc), which lists only the posts with a time, or by when each last changed (updatedDesc, updatedAsc). updatedAsc leaves out the posts changed in the last 5 seconds, so a sync that walks it with --updated-since misses no change."
       ),
       Flag.optional
     ),
@@ -169,12 +176,24 @@ export const list = Command.make(
       ),
       Flag.optional
     ),
+    updatedSince: Flag.String("updated-since").pipe(
+      Flag.withMetavar("<instant>"),
+      Flag.withDescription(
+        "Only the posts that changed then or later (their updatedAt), written as --from is."
+      ),
+      Flag.optional
+    ),
     workspace: workspaceFlag,
   },
   Effect.fn("posts.list")(function* list(input) {
     // A time that cannot be read is refused before a request leaves.
     const from = yield* instantFor(input.from, input.timeZone, "--from");
     const to = yield* instantFor(input.to, input.timeZone, "--to");
+    const updatedSince = yield* instantFor(
+      input.updatedSince,
+      input.timeZone,
+      "--updated-since"
+    );
     const session = yield* inWorkspace(input.workspace);
     const { client, url, workspace } = session;
 
@@ -200,6 +219,7 @@ export const list = Command.make(
           ...given(input.channel, (channelId) => ({ channelId })),
           ...given(input.createdVia, (createdVia) => ({ createdVia })),
           ...given(input.cursor, (cursor) => ({ cursor })),
+          ...given(input.externalId, (externalId) => ({ externalId })),
           ...given(from, (instantFrom) => ({ from: instantFrom })),
           ...given(input.limit, (size) => ({
             limit: Math.min(Math.max(size, 1), maxPostPageSize),
@@ -216,6 +236,7 @@ export const list = Command.make(
           ...given(input.status, (status) => ({ status })),
           ...given(tagId, (filedUnder) => ({ tagId: filedUnder })),
           ...given(to, (instantTo) => ({ to: instantTo })),
+          ...given(updatedSince, (since) => ({ updatedSince: since })),
         },
       })
       .pipe(Effect.mapError(explain(url)));

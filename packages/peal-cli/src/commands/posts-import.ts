@@ -43,6 +43,12 @@ const refusalOf = (refusal: PostRefusal): string =>
       "your role in this workspace does not allow it: a post with media needs the right to read the workspace's media",
     IdempotencyKeyReused: () =>
       `its idempotency key was sent in the last ${String(idempotencyKeyLifetimeHours)} hours with another post: give the row a new one`,
+    PostExternalIdTaken: ({ message, postId }) =>
+      // Another row of the file, which has no post yet: the server says
+      // which.
+      postId === null && message !== undefined && message !== ""
+        ? message
+        : `post ${postId ?? "another"} has its external_id already: give the row another, or leave it empty`,
     InvalidTimeZone: ({ timeZone }) =>
       `${timeZone} is not a time zone Peal knows: give an IANA zone, such as Europe/Paris`,
     PlanLimitReached: planLimitReason,
@@ -202,7 +208,7 @@ export const importPosts = Command.make(
     ),
     file: Argument.String("file").pipe(
       Argument.withDescription(
-        `A CSV file of at most ${String(maxImportRows)} posts, one per row under a first line that names its columns, in any order: text, channels (channel ids separated by spaces, commas or semicolons; a channel set's id or its name, as peal sets list shows them, stands for its connected channels, when the name holds no space, comma or semicolon) and at (now, an instant with its offset, or a local time read in the row's time_zone) are required; media (ids of the workspace's media), time_zone, allow_duplicate (true or false) and idempotency_key are optional. A cell with a comma, a quote or a line break goes between double quotes, a quote inside it written twice.`
+        `A CSV file of at most ${String(maxImportRows)} posts, one per row under a first line that names its columns, in any order: text, channels (channel ids separated by spaces, commas or semicolons; a channel set's id or its name, as peal sets list shows them, stands for its connected channels, when the name holds no space, comma or semicolon) and at (now, an instant with its offset, or a local time read in the row's time_zone) are required; media (ids of the workspace's media), time_zone, allow_duplicate (true or false), idempotency_key and external_id (your own id for the post, unique among the workspace's posts that are not cancelled, so a row imported again is refused) are optional. A cell with a comma, a quote or a line break goes between double quotes, a quote inside it written twice.`
       )
     ),
     idempotencyKey: Flag.String("idempotency-key").pipe(

@@ -338,6 +338,13 @@ export const post = Command.make(
       ),
       Flag.withDefault(false)
     ),
+    externalId: Flag.String("external-id").pipe(
+      Flag.withMetavar("<id>"),
+      Flag.withDescription(
+        "Your own id for the post, from the records of the system it comes from: 1 to 255 characters, unique among the workspace's posts that are not cancelled, so running the command again, however long after, makes no second post and is refused naming the post that has it. An id, never a person's name or address."
+      ),
+      Flag.optional
+    ),
     idempotencyKey: Flag.String("idempotency-key").pipe(
       Flag.withMetavar("<key>"),
       Flag.withDescription(
@@ -444,9 +451,14 @@ export const post = Command.make(
       const tagged: NewPost =
         tagIds.length === 0 ? written : { ...written, tagIds };
 
-      const filed: NewPost = Option.match(input.shortenLinks, {
+      const shortened: NewPost = Option.match(input.shortenLinks, {
         onNone: () => tagged,
         onSome: (shortenLinks) => ({ ...tagged, shortenLinks }),
+      });
+
+      const filed: NewPost = Option.match(input.externalId, {
+        onNone: () => shortened,
+        onSome: (externalId) => ({ ...shortened, externalId }),
       });
 
       return checkPost(

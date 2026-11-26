@@ -549,7 +549,9 @@ describe(valuesOfPost, () => {
       {
         authorId: null,
         content: { media: [], overrides: [], text: "A synthetic video" },
+        createdAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
         createdVia: null,
+        externalId: null,
         id: "00000000-0000-7000-8000-000000000009",
         occurrence: null,
         outcome: null,
@@ -561,6 +563,7 @@ describe(valuesOfPost, () => {
         shortenLinks: false,
         status: "draft",
         tagIds: [],
+        updatedAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
         targets: ["c1", "c2", "gone"].map((id) => ({
           channelId: id,
           editedAt: null,
@@ -681,7 +684,9 @@ describe(channelOptionsOf, () => {
       {
         authorId: null,
         content: { media: [], overrides: [], text: "A synthetic toot" },
+        createdAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
         createdVia: null,
+        externalId: null,
         id: "00000000-0000-7000-8000-000000000009",
         occurrence: null,
         outcome: null,
@@ -693,6 +698,7 @@ describe(channelOptionsOf, () => {
         shortenLinks: false,
         status: "draft",
         tagIds: [],
+        updatedAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
         targets: [
           {
             channelId: "c1",

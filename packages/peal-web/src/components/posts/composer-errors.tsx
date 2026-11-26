@@ -242,6 +242,7 @@ export const ComposerErrors = ({
     InvalidTimeZone: () => t("errors.timeZone"),
     PlanLimitReached: ({ limit }) => billing("limitReached", { limit }),
     PostContentInvalid: () => t("errors.content"),
+    PostExternalIdTaken: () => t("errors.externalIdTaken"),
     PostNotFound: () => t("errors.notFound"),
     PostStatusConflict: ({ status }) => t("errors.conflict", { status }),
     QueueHasNoRoom: ({ reason }) =>

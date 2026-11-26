@@ -1,3 +1,4 @@
+import { DateTime } from "effect";
 import { describe, expect, it } from "@effect/vitest";
 import type { Permission, Post, PostStatus } from "peal-contract";
 
@@ -25,7 +26,9 @@ const postIn = (
 ): Post => ({
   authorId,
   content: { media: [], overrides: [], text: "A synthetic post" },
+  createdAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   createdVia: null,
+  externalId: null,
   id: "00000000-0000-7000-8000-000000000001",
   occurrence: null,
   outcome: null,
@@ -37,6 +40,7 @@ const postIn = (
   shortenLinks: false,
   status,
   tagIds: [],
+  updatedAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   targets: [],
 });
 

@@ -254,6 +254,7 @@ const coverage = {
   "posts.schedule": by("posts schedule"),
   "posts.list": by("posts list"),
   "posts.create": by("post"),
+  "posts.setExternalId": by("posts external-id"),
   "posts.setTags": by("posts tag"),
   "posts.unpublish": by("posts unpublish"),
   "posts.unpublishTarget": by("posts unpublish"),

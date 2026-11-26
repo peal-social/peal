@@ -123,7 +123,9 @@ const postOn = (
     overrides: [],
     text: "Field notes from the coast: three new tide pools mapped.",
   },
+  createdAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   createdVia: null,
+  externalId: null,
   id: postId,
   occurrence: null,
   outcome,
@@ -135,6 +137,7 @@ const postOn = (
   shortenLinks: false,
   status: "finished",
   tagIds: [],
+  updatedAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   targets,
 });
 

@@ -1700,6 +1700,7 @@
         "unknownChannels": "Some of these channels are no longer connected.",
         "unknownMedia": "Some images or videos can no longer be attached.",
         "unknownTags": "Some tags no longer exist. Choose the post's tags again.",
+        "externalIdTaken": "Another post of the workspace has this external id. Nothing was saved.",
         "unknownChannelSet": "This channel set no longer exists. Choose the post's channels again.",
         "unknownSignature": "This signature no longer exists. Choose another one.",
         "content": "Fix these before scheduling:",
@@ -2348,6 +2349,8 @@
         "timeZone": "{zone} is not a time zone Peal knows: give an IANA zone, such as Europe/Paris.",
         "duplicate": "The same content already goes to some of these channels less than {hours, number} hours from its time. Set its allow_duplicate to true if you mean to post it twice.",
         "duplicateInFile": "An earlier row of the file has the same content on some of these channels near its time. Set its allow_duplicate to true if you mean to post it twice.",
+        "externalIdTaken": "Another post of the workspace has this row’s external_id. Give the row another, or leave the cell empty.",
+        "externalIdInFile": "An earlier row of the file has the same external_id. Give each row its own.",
         "keyReused": "Its idempotency key was sent in the last {hours, number} hours with another post: give the row a new one.",
         "postGone": "The post its idempotency key made was deleted: give the row a new key to make it again.",
         "forbidden": "Your role does not allow it: a post with media needs the right to read the workspace’s media.",
@@ -2374,7 +2377,8 @@
           "time_zone": "An IANA zone such as Europe/Paris. UTC if left empty.",
           "media": "Ids of ready media of the workspace.",
           "allow_duplicate": "true to post the same content twice near the same time.",
-          "idempotency_key": "The row’s own key, which makes it once however often it is sent."
+          "idempotency_key": "The row’s own key, which makes it once however often it is sent.",
+          "external_id": "Your own id for the post, from your records. No two posts that are not cancelled share one."
         },
         "sample": "Download a sample",
         "sampleName": "posts-sample.csv"

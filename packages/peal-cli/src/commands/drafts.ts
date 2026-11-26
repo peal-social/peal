@@ -136,6 +136,19 @@ const save = Command.make(
     defaultSignatures: defaultSignaturesFlag(
       "Put each channel's default signature under its text, as peal signatures list shows them: the workspace's under the post's text, a platform's or a channel's own under the text that channel has instead. A text that already ends with its signature is left as it is."
     ),
+    clearExternalId: Flag.Boolean("clear-external-id").pipe(
+      Flag.withDescription(
+        "Take the draft's external id off. A draft you change keeps its own without it or --external-id."
+      ),
+      Flag.withDefault(false)
+    ),
+    externalId: Flag.String("external-id").pipe(
+      Flag.withMetavar("<id>"),
+      Flag.withDescription(
+        "Your own id for the post, from the records of the system it comes from: 1 to 255 characters, unique among the workspace's posts that are not cancelled. A draft you change keeps its own without it. An id, never a person's name or address."
+      ),
+      Flag.optional
+    ),
     json: jsonFlag,
     options: Flag.String("options").pipe(
       Flag.withMetavar("<channel-id>=<json>"),
@@ -205,10 +218,24 @@ const save = Command.make(
 
     // Sent only when a flag says: a new draft takes the workspace's
     // default without, and a draft that changes keeps its own.
-    const filed = Option.match(input.shortenLinks, {
+    const shortened = Option.match(input.shortenLinks, {
       onNone: () => tagged,
       onSome: (shortenLinks) => ({ ...tagged, shortenLinks }),
     });
+
+    if (input.clearExternalId && Option.isSome(input.externalId)) {
+      return yield* new Refused({
+        reason: "Give --external-id or --clear-external-id, not both.",
+      });
+    }
+
+    // So is its external id: a draft that changes keeps its own.
+    const filed = input.clearExternalId
+      ? { ...shortened, externalId: null }
+      : Option.match(input.externalId, {
+          onNone: () => shortened,
+          onSome: (externalId) => ({ ...shortened, externalId }),
+        });
 
     const presets = yield* presetsOf(session, input);
 

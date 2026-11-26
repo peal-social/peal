@@ -75,7 +75,9 @@ const channel: SocialChannel = {
 const removed: Post = {
   authorId: null,
   content: { media: [], overrides: [], text: "Our field note." },
+  createdAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   createdVia: null,
+  externalId: null,
   id: "00000000-0000-7000-8000-000000000001",
   occurrence: null,
   outcome: "published",
@@ -87,6 +89,7 @@ const removed: Post = {
   shortenLinks: false,
   status: "finished",
   tagIds: [],
+  updatedAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   targets: [
     {
       channelId: "c1",

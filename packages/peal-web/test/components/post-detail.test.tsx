@@ -55,7 +55,9 @@ const target = (
 const post: Post = {
   authorId: null,
   content: { media: [], overrides: [], text: "Our field note." },
+  createdAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   createdVia: null,
+  externalId: null,
   id: "00000000-0000-7000-8000-000000000001",
   occurrence: null,
   outcome: "unconfirmed",
@@ -67,6 +69,7 @@ const post: Post = {
   shortenLinks: false,
   status: "finished",
   tagIds: [],
+  updatedAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   targets: [
     target("t1", "c1", {
       failureReason: "channelDisconnected",

@@ -43,6 +43,7 @@ import {
   LivePostNotChangeable,
   DuplicatePost,
   IdempotencyKeyReused,
+  PostExternalIdTaken,
   importColumns,
   ImportUnreadable,
   InvalidTimeRange,
@@ -527,11 +528,16 @@ const channelSets: readonly StudioSet[] = [
   },
 ];
 
+// When the studio's posts were made and last changed: one instant for all.
+const studioInstant = DateTime.makeUnsafe("2026-11-01T09:00:00Z");
+
 const posts: readonly Post[] = [
   {
     authorId: userId,
     content: content("A synthetic draft about the spring catalogue."),
+    createdAt: studioInstant,
     createdVia: null,
+    externalId: null,
     id: draftId,
     occurrence: null,
     outcome: null,
@@ -543,12 +549,15 @@ const posts: readonly Post[] = [
     shortenLinks: false,
     status: "draft",
     tagIds: [],
+    updatedAt: studioInstant,
     targets: [pendingOn("0190f3a0-0000-7000-8000-00000000e010", mastodonId)],
   },
   {
     authorId: userId,
     content: content("A synthetic post that goes out next week."),
+    createdAt: studioInstant,
     createdVia: null,
+    externalId: null,
     id: scheduledId,
     occurrence: null,
     outcome: null,
@@ -560,12 +569,15 @@ const posts: readonly Post[] = [
     shortenLinks: false,
     status: "scheduled",
     tagIds: [campaignTagId],
+    updatedAt: studioInstant,
     targets: [pendingOn("0190f3a0-0000-7000-8000-00000000e011", mastodonId)],
   },
   {
     authorId: contributorId,
     content: content("A synthetic post that waits. Out on Friday."),
+    createdAt: studioInstant,
     createdVia: null,
+    externalId: null,
     id: awaitingId,
     occurrence: null,
     outcome: null,
@@ -577,12 +589,15 @@ const posts: readonly Post[] = [
     shortenLinks: false,
     status: "awaitingApproval",
     tagIds: [],
+    updatedAt: studioInstant,
     targets: [pendingOn("0190f3a0-0000-7000-8000-00000000e012", mastodonId)],
   },
   {
     authorId: userId,
     content: content("A synthetic post that went out yesterday."),
+    createdAt: studioInstant,
     createdVia: null,
+    externalId: null,
     id: finishedId,
     occurrence: null,
     outcome: "failed",
@@ -594,6 +609,7 @@ const posts: readonly Post[] = [
     shortenLinks: false,
     status: "finished",
     tagIds: [],
+    updatedAt: studioInstant,
     targets: [
       {
         ...pendingOn(failedTargetId, mastodonId),
@@ -2791,6 +2807,19 @@ const makePost = (studio: Studio, payload: NewPost, key: string | undefined) =>
 
     const body = JSON.stringify(payload);
     const before = yield* Ref.get(studio.state);
+
+    // Its own id another post has: refused, naming that post.
+    const holder = before.posts.find(
+      (other) =>
+        payload.externalId !== undefined &&
+        other.externalId === payload.externalId &&
+        other.status !== "cancelled"
+    );
+
+    if (holder !== undefined) {
+      return yield* new PostExternalIdTaken({ postId: holder.id });
+    }
+
     const onQueue = yield* placed(studio, payload);
     const checked = yield* checkNewPost(studio, onQueue.payload);
     const { payload: written, warnings, when } = checked;
@@ -2815,7 +2844,9 @@ const makePost = (studio: Studio, payload: NewPost, key: string | undefined) =>
     const post = yield* savePost(studio, {
       authorId: userId,
       content: written.content,
+      createdAt: studioInstant,
       createdVia: viaCommandLine,
+      externalId: payload.externalId ?? null,
       id,
       occurrence: null,
       outcome: null,
@@ -2827,6 +2858,7 @@ const makePost = (studio: Studio, payload: NewPost, key: string | undefined) =>
       shortenLinks: payload.shortenLinks ?? before.shortLinksByDefault,
       status,
       tagIds: payload.tagIds ?? [],
+      updatedAt: studioInstant,
       targets: targetsOf(id, written),
     });
 
@@ -2984,6 +3016,9 @@ const sorted = (all: readonly Post[], sort: PostSort): readonly Post[] => {
       timed.toSorted((one, other) => scheduledAt(one) - scheduledAt(other)),
     scheduledDesc: () =>
       timed.toSorted((one, other) => scheduledAt(other) - scheduledAt(one)),
+    // Every post changed at the same instant: by creation.
+    updatedAsc: () => all.toReversed(),
+    updatedDesc: () => all,
   };
 
   return orders[sort]();
@@ -3850,7 +3885,9 @@ export const studioGroupsLive = (studio: Studio) =>
                 ),
                 text: post.content.text,
               },
+              createdAt: studioInstant,
               createdVia: null,
+              externalId: null,
               id,
               occurrence: null,
               outcome: null,
@@ -3868,6 +3905,7 @@ export const studioGroupsLive = (studio: Studio) =>
                 ...pendingOn(`${id}-${String(index)}`, target.channelId),
                 options: target.options,
               })),
+              updatedAt: studioInstant,
             });
           }),
         editTarget: ({ params, payload }) =>
@@ -4257,6 +4295,11 @@ export const studioGroupsLive = (studio: Studio) =>
                 query.authorId === undefined ||
                   post.authorId === query.authorId,
                 query.tagId === undefined || post.tagIds.includes(query.tagId),
+                query.externalId === undefined ||
+                  post.externalId === query.externalId,
+                query.updatedSince === undefined ||
+                  DateTime.toEpochMillis(post.updatedAt) >=
+                    DateTime.toEpochMillis(query.updatedSince),
               ].every(Boolean)
             );
 
@@ -4298,6 +4341,26 @@ export const studioGroupsLive = (studio: Studio) =>
               warnings
             );
           }),
+        setExternalId: ({ params, payload }) =>
+          Effect.gen(function* setExternalId() {
+            yield* allowed("post:update");
+
+            const post = yield* findPost(
+              studio,
+              (yield* CurrentMember).workspaceId,
+              params.postId
+            );
+
+            yield* record(
+              studio,
+              `external-id:${post.id}:${payload.externalId ?? "none"}`
+            );
+
+            return yield* savePost(studio, {
+              ...post,
+              externalId: payload.externalId,
+            });
+          }),
         setTags: ({ params, payload }) =>
           Effect.gen(function* tag() {
             yield* allowed("post:update");
@@ -4314,6 +4377,7 @@ export const studioGroupsLive = (studio: Studio) =>
             return yield* savePost(studio, {
               ...post,
               tagIds: payload.tagIds,
+              updatedAt: studioInstant,
             });
           }),
         unpublish: ({ params }) =>
@@ -4432,6 +4496,11 @@ export const studioGroupsLive = (studio: Studio) =>
             const saved = yield* savePost(studio, {
               ...post,
               content: written.content,
+              // Left out, kept; null takes it off.
+              externalId:
+                payload.externalId === undefined
+                  ? post.externalId
+                  : payload.externalId,
               // Tags left out are kept.
               tagIds: payload.tagIds ?? post.tagIds,
               targets: targetsOf(post.id, written),
@@ -4511,6 +4580,13 @@ export const studioGroupsLive = (studio: Studio) =>
             const validation: Omit<PostValidation, "valid" | "warnings"> = {
               // Where every post waits, this one would.
               awaitsApproval: when !== undefined && policy === "always",
+              externalIdTakenBy:
+                all.find(
+                  (other) =>
+                    asked.externalId !== undefined &&
+                    other.externalId === asked.externalId &&
+                    other.status !== "cancelled"
+                )?.id ?? null,
               channels: payload.channelIds.flatMap((channelId) => {
                 const channel = channels.find(({ id }) => id === channelId);
 
@@ -4587,7 +4663,9 @@ export const studioGroupsLive = (studio: Studio) =>
             const saved = yield* savePost(studio, {
               authorId: userId,
               content: written.content,
+              createdAt: studioInstant,
               createdVia: null,
+              externalId: payload.externalId ?? null,
               id,
               occurrence: null,
               outcome: null,
@@ -4599,6 +4677,7 @@ export const studioGroupsLive = (studio: Studio) =>
               shortenLinks: payload.shortenLinks ?? shortLinksByDefault,
               status: "draft",
               tagIds: payload.tagIds ?? [],
+              updatedAt: studioInstant,
               targets: targetsOf(id, written),
             });
 

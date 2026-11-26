@@ -2,11 +2,12 @@ import type { PostDraft, PostToValidate } from "peal-contract";
 
 /**
  * What the composer asks `posts.validate` for its previews: the very
- * request a save would send, as a draft (no `when`), but its tags, which
- * change nothing the post would be. So the preview is the post, signatures,
- * options and short links included, not a guess.
+ * request a save would send, as a draft (no `when`), but its tags and its
+ * external id, which change nothing the post would be. So the preview is
+ * the post, signatures, options and short links included, not a guess.
  */
 export const previewRequestOf = ({
+  externalId: _externalId,
   tagIds: _tags,
   ...checked
 }: PostDraft): PostToValidate => checked;

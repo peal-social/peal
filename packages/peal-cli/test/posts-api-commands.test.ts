@@ -525,6 +525,7 @@ describe("peal post --dry-run", () => {
       awaitsApproval: false,
       channels: [],
       duplicates: [],
+      externalIdTakenBy: null,
       planLimit: {
         allowed: 30,
         billingUrl: "https://peal.example/app/synthetic/billing",

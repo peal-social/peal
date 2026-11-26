@@ -30,23 +30,25 @@ const draft: Required<PostDraft> = {
     text: "Launch day",
   },
   defaultSignatures: true,
+  externalId: "record-42",
   options: [],
   shortenLinks: true,
   signatureId: "00000000-0000-7000-8000-00000000b001",
   tagIds: ["00000000-0000-7000-8000-00000000d001"],
 };
 
-// What a draft's request holds that a check has no use for: the tags file
-// the post, and change nothing it would be.
-const notChecked = new Set(["tagIds"]);
+// What a draft's request holds that a check has no use for: the tags and
+// the external id file the post, and change nothing it would be (checked,
+// a draft's own id would be taken by the draft itself).
+const notChecked = new Set(["externalId", "tagIds"]);
 
 // What a check takes that a draft never sends: a draft has no time, and a
-// duplicate is a matter of its time.
-const checkOnly = new Set(["allowDuplicate", "when"]);
+// duplicate is a matter of its time; nor its external id, as above.
+const checkOnly = new Set(["allowDuplicate", "externalId", "when"]);
 
 describe(previewRequestOf, () => {
-  it("sends every field a save sends, as it is, but the tags", () => {
-    const { tagIds: _tags, ...checked } = draft;
+  it("sends every field a save sends, as it is, but the tags and the id", () => {
+    const { externalId: _externalId, tagIds: _tags, ...checked } = draft;
 
     expect(previewRequestOf(draft)).toStrictEqual(checked);
   });

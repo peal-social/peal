@@ -265,6 +265,10 @@ const show = Command.make(
       yield* Console.log(`Tags: ${tagNames.join(", ")}`);
     }
 
+    if (post.externalId !== null) {
+      yield* Console.log(`External id: ${post.externalId}`);
+    }
+
     if (post.targets.length === 0) {
       yield* Console.log("It is for no channel yet.");
 
@@ -1012,6 +1016,68 @@ const tag = Command.make(
   )
 );
 
+const externalId = Command.make(
+  "external-id",
+  {
+    clear: Flag.Boolean("clear").pipe(
+      Flag.withDescription(
+        "Take the post's external id off, freeing it for another post."
+      ),
+      Flag.withDefault(false)
+    ),
+    json: jsonFlag,
+    postId: postArgument,
+    // After the post: arguments are read in their keys' order.
+    recordId: Argument.String("external-id").pipe(
+      Argument.withDescription(
+        "Your own id for the post, from the records of the system it comes from: 1 to 255 characters, unique among the workspace's posts that are not cancelled. An id, never a person's name or address."
+      ),
+      Argument.optional
+    ),
+    workspace: workspaceFlag,
+  },
+  Effect.fn("posts.externalId")(function* setExternalId({
+    clear,
+    json,
+    postId,
+    recordId: given,
+    workspace: choice,
+  }) {
+    if (clear === Option.isSome(given)) {
+      return yield* new Refused({
+        reason:
+          "Give the post's external id, or --clear to take it off: one of them.",
+      });
+    }
+
+    const { client, url } = yield* inWorkspace(choice);
+
+    const post = yield* client.posts
+      .setExternalId({
+        headers: {},
+        params: { postId },
+        payload: { externalId: Option.getOrNull(given) },
+      })
+      .pipe(Effect.mapError(explain(url)));
+
+    if (json) {
+      yield* printJson(PostSchema, post);
+
+      return;
+    }
+
+    yield* Console.log(
+      post.externalId === null
+        ? `Post ${post.id} has no external id now.`
+        : `Post ${post.id} has the external id ${post.externalId}.`
+    );
+  })
+).pipe(
+  Command.withDescription(
+    "Give a post your own id for it, instead of the one it had, or take it off with --clear. It says nothing to the platforms, so a post takes it whatever its status, sent or not; another post that is not cancelled with the same id is refused."
+  )
+);
+
 export const posts = Command.make("posts").pipe(
   Command.withDescription(
     "A workspace's posts: listing them, scheduling a draft, publishing it now, moving, cancelling, taking a channel off it or taking it back to draft, how it went, following up where it failed, deleting it from the platforms once live, filing it under tags, and importing a file of them. peal post writes and sends one in a single command."
@@ -1035,6 +1101,7 @@ export const posts = Command.make("posts").pipe(
     edit,
     changes,
     tag,
+    externalId,
     duplicate,
     importPosts,
   ])

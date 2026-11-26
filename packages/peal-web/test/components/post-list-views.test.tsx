@@ -30,7 +30,9 @@ const channel: SocialChannel = {
 const post = (changes: Partial<Post>): Post => ({
   authorId: null,
   content: { media: [], overrides: [], text: "Launch day, the notes" },
+  createdAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   createdVia: null,
+  externalId: null,
   id: "00000000-0000-7000-8000-000000000001",
   occurrence: null,
   outcome: null,
@@ -42,6 +44,7 @@ const post = (changes: Partial<Post>): Post => ({
   shortenLinks: false,
   status: "draft",
   tagIds: [],
+  updatedAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   targets: [
     {
       channelId: channel.id,

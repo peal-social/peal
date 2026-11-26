@@ -11,6 +11,7 @@ import {
   InvalidTimeZone,
   PlanLimitReached,
   PostContentInvalid,
+  PostExternalIdTaken,
   PostNotFound,
   PostRefusalSchema,
   QueueHasNoRoom,
@@ -94,6 +95,10 @@ const refusals: readonly [PostRefusal, string][] = [
   [
     new QueueHasNoRoom({ message, queueId: "q1", reason: "full" }),
     "Posts.Composer.errors.queueNoRoom",
+  ],
+  [
+    new PostExternalIdTaken({ message, postId: "p1" }),
+    "Posts.Import.refusal.externalIdTaken",
   ],
 ];
 

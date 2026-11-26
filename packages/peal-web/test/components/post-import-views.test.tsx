@@ -1,3 +1,4 @@
+import { DateTime } from "effect";
 import { describe, expect, it } from "@effect/vitest";
 import { NextIntlClientProvider } from "next-intl";
 import type { Locale } from "next-intl";
@@ -37,7 +38,9 @@ const channel: SocialChannel = {
 const post = (id: string): Post => ({
   authorId: null,
   content: { media: [], overrides: [], text: "Launch day" },
+  createdAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   createdVia: null,
+  externalId: null,
   id,
   occurrence: null,
   outcome: null,
@@ -49,6 +52,7 @@ const post = (id: string): Post => ({
   shortenLinks: false,
   status: "scheduled",
   tagIds: [],
+  updatedAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   targets: [],
 });
 

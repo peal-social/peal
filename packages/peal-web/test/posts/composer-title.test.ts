@@ -1,3 +1,4 @@
+import { DateTime } from "effect";
 import { describe, expect, it } from "@effect/vitest";
 import type { Post, PostStatus } from "peal-contract";
 
@@ -6,7 +7,9 @@ import { composerTitleOf } from "#posts/composer-title.ts";
 const postIn = (status: PostStatus): Post => ({
   authorId: "5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e2f",
   content: { media: [], overrides: [], text: "A synthetic post" },
+  createdAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   createdVia: null,
+  externalId: null,
   id: "00000000-0000-7000-8000-000000000001",
   occurrence: null,
   outcome: null,
@@ -18,6 +21,7 @@ const postIn = (status: PostStatus): Post => ({
   shortenLinks: false,
   status,
   tagIds: [],
+  updatedAt: DateTime.makeUnsafe("2026-11-01T09:00:00Z"),
   targets: [],
 });
 
