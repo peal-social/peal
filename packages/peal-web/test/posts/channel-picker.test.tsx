@@ -180,7 +180,9 @@ describe(ChannelChoices, () => {
     });
 
     expect(html).toContain("Fix the channels’ options first");
-    expect(html).toMatch(/option-save-set"[^>]*data-disabled|data-disabled[^>]*option-save-set"/u);
+    expect(html).toMatch(
+      /option-save-set"[^>]*data-disabled|data-disabled[^>]*option-save-set"/u
+    );
   });
 
   it("offers the sets, and saving the selection for who may", async () => {
