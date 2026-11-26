@@ -1,7 +1,7 @@
 import { assert, describe, it } from "@effect/vitest";
 import { Effect, Layer, Option, Scope } from "effect";
 import { MessageStorage } from "effect/cluster";
-import { Digest, Mac, SecureRandom } from "effect/crypto";
+import { Cipher, Digest, Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 
 import { LinkShortener } from "#publishing/application/link-shortener.ts";
@@ -67,6 +67,7 @@ const platformsOn = (instanceUrl: string) =>
         },
         pinterestApi: new URL(instanceUrl),
         slackHosts: { api: instanceUrl, uploads: instanceUrl },
+        snapchatApi: new URL(instanceUrl),
         telegramHosts: { api: instanceUrl },
         tiktokApi: new URL(instanceUrl),
         tiktokPullFrom: Option.none(),
@@ -99,7 +100,8 @@ const platformsOn = (instanceUrl: string) =>
         OpenOutboundGuard,
         Mac.layerWebCrypto.pipe(Layer.provide(SecureRandom.layerWebCrypto)),
         SecureRandom.layerWebCrypto,
-        Digest.layerWebCrypto
+        Digest.layerWebCrypto,
+        Cipher.layerWebCrypto.pipe(Layer.provide(SecureRandom.layerWebCrypto))
       )
     )
   );

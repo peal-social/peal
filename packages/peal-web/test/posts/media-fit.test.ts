@@ -174,6 +174,21 @@ describe(mediaFitOn, () => {
     ]);
   });
 
+  it("takes one MP4 on Snapchat, of 5 to 300 seconds", () => {
+    expect(
+      mediaFits(mediaFitOn("snapchat", [loaded(video("a"))]))
+    ).toBeTruthy();
+
+    for (const media of [
+      [loaded(file("a"))],
+      [loaded(video("a")), loaded(video("b"))],
+      [loaded(video("a", 4000))],
+      [loaded(video("a", 301_000))],
+    ]) {
+      expect(mediaFits(mediaFitOn("snapchat", media))).toBeFalsy();
+    }
+  });
+
   it("keeps a video apart from images where the platform must", () => {
     const both = [loaded(file("a")), loaded(video("b"))];
 

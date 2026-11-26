@@ -122,6 +122,7 @@ export const livePostRegistryWith = Effect.fn("LivePostClients.registry")(
         remove: pinterestLivePost({ api, apiUrl: settings.pinterestApi }),
       },
       slack: { edit: slackLiveEdit(slack), remove: slackLivePost(slack) },
+      snapchat: neither,
       telegram: {
         edit: telegramLiveEdit(telegram),
         remove: telegramLivePost(telegram),

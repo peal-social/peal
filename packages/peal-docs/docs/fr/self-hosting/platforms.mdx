@@ -23,11 +23,12 @@ Chaque plateforme prend ses propres réglages, et plusieurs demandent l’accord
 | [Pinterest](#pinterest)                        | `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`                                                                           | L’accès Standard de Pinterest                           |
 | [Google Business Profile](#google-business)    | `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET`                                                         | L’accès de Google aux API Business Profile              |
 | [Slack](#slack)                                | `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`                                                                             | La distribution publique, que vous activez chez Slack   |
+| [Snapchat](#snapchat)                          | `SNAPCHAT_CLIENT_ID`, `SNAPCHAT_CLIENT_SECRET`                                                                       | L’autorisation de l’application par Snap                |
 | [Sites WordPress](#wordpress)                  | Aucun : chaque membre donne le mot de passe d’application de son site                                                | Rien à enregistrer                                      |
 | [WordPress.com](#wordpress-com)                | `WORDPRESS_COM_CLIENT_ID`, `WORDPRESS_COM_CLIENT_SECRET`                                                             | Aucun examen connu                                      |
 | [DEV et Hashnode](#devto-hashnode)             | Aucun : chaque membre donne une clé à lui                                                                            | Rien à enregistrer                                      |
 
-Pour LinkedIn, X, YouTube, Pinterest, Google Business Profile, Slack et WordPress.com, définir l’un des deux réglages sans l’autre arrête le serveur au démarrage. Sans les deux, **Canaux** ne propose pas la plateforme. [Variables d’environnement](/self-hosting/environment-variables#channels) liste chaque réglage des plateformes, avec sa valeur par défaut.
+Pour LinkedIn, X, YouTube, Pinterest, Google Business Profile, Slack, Snapchat et WordPress.com, définir l’un des deux réglages sans l’autre arrête le serveur au démarrage. Sans les deux, **Canaux** ne propose pas la plateforme. [Variables d’environnement](/self-hosting/environment-variables#channels) liste chaque réglage des plateformes, avec sa valeur par défaut.
 
 ### Clés des jetons [#token-keys]
 
@@ -52,22 +53,23 @@ Pour publier une image ou une vidéo, le serveur lit le fichier entier dans le s
 
 Pour chaque plateforme, le serveur appelle ces hôtes et envoie les médias ainsi :
 
-| Plateforme              | Le serveur appelle                                                                                                                                   | Médias                                                                                                      |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Mastodon                | Le serveur Mastodon de chaque compte                                                                                                                 | Images et vidéos lues en entier                                                                             |
-| Bluesky                 | Le serveur Bluesky qui héberge chaque compte, et le service vidéo de Bluesky, `https://video.bsky.app`, pour les vidéos                              | Images et vidéos lues en entier : une vidéo Bluesky peut prendre jusqu’à 300 Mo                             |
-| LinkedIn                | `www.linkedin.com`, `api.linkedin.com` et les adresses d’envoi que LinkedIn donne                                                                    | Vidéos par parties de 4 Mio, une seule gardée à la fois                                                     |
-| X                       | `api.x.com`                                                                                                                                          | Vidéos par parties de 4 Mio, une seule gardée à la fois                                                     |
-| TikTok                  | `open.tiktokapis.com` et les adresses d’envoi que donne TikTok                                                                                       | Vidéos par parties de 10 Mo, une seule gardée à la fois, sauf si TikTok va les chercher ([TikTok](#tiktok)) |
-| Meta                    | `graph.facebook.com`, `graph.instagram.com`, `api.instagram.com` et `graph.threads.com`                                                              | Images et vidéos que Meta va chercher dans le stockage des médias                                           |
-| YouTube                 | `oauth2.googleapis.com` et `www.googleapis.com`                                                                                                      | Vidéos par parties de 8 Mio, une seule gardée à la fois                                                     |
-| Pinterest               | `api.pinterest.com` (ou le bac à sable), et l’adresse que Pinterest nomme pour chaque vidéo, celle d’un stockage d’objets                            | Vidéos envoyées à mesure qu’elles sont lues, jamais gardées entières, et images que Pinterest va chercher   |
-| Google Business Profile | `oauth2.googleapis.com`, `mybusinessaccountmanagement.googleapis.com`, `mybusinessbusinessinformation.googleapis.com` et `mybusiness.googleapis.com` | Photos que Google va chercher dans le stockage des médias                                                   |
-| Google Ads              | `oauth2.googleapis.com` et `googleads.googleapis.com`, quand `PEAL_ADS_NETWORKS` nomme `google`                                                      | Aucun, car il ne fait que lire                                                                              |
-| Slack                   | `slack.com`, et `files.slack.com`, où Slack fait envoyer chaque image                                                                                | Images envoyées à mesure qu’elles sont lues, jamais gardées entières                                        |
-| WordPress.com           | `public-api.wordpress.com`, dont l’API sert les routes de base de chaque site                                                                        | Images lues entières                                                                                        |
-| DEV                     | `dev.to`                                                                                                                                             | Images lues entières                                                                                        |
-| Hashnode                | `gql-beta.hashnode.com`, et l’adresse d’envoi que Hashnode donne pour chaque image                                                                   | Images envoyées à mesure qu’elles sont lues                                                                 |
+| Plateforme              | Le serveur appelle                                                                                                                                   | Médias                                                                                                                                                                                                 |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Mastodon                | Le serveur Mastodon de chaque compte                                                                                                                 | Images et vidéos lues en entier                                                                                                                                                                        |
+| Bluesky                 | Le serveur Bluesky qui héberge chaque compte, et le service vidéo de Bluesky, `https://video.bsky.app`, pour les vidéos                              | Images et vidéos lues en entier : une vidéo Bluesky peut prendre jusqu’à 300 Mo                                                                                                                        |
+| LinkedIn                | `www.linkedin.com`, `api.linkedin.com` et les adresses d’envoi que LinkedIn donne                                                                    | Vidéos par parties de 4 Mio, une seule gardée à la fois                                                                                                                                                |
+| X                       | `api.x.com`                                                                                                                                          | Vidéos par parties de 4 Mio, une seule gardée à la fois                                                                                                                                                |
+| TikTok                  | `open.tiktokapis.com` et les adresses d’envoi que donne TikTok                                                                                       | Vidéos par parties de 10 Mo, une seule gardée à la fois, sauf si TikTok va les chercher ([TikTok](#tiktok))                                                                                            |
+| Meta                    | `graph.facebook.com`, `graph.instagram.com`, `api.instagram.com` et `graph.threads.com`                                                              | Images et vidéos que Meta va chercher dans le stockage des médias                                                                                                                                      |
+| YouTube                 | `oauth2.googleapis.com` et `www.googleapis.com`                                                                                                      | Vidéos par parties de 8 Mio, une seule gardée à la fois                                                                                                                                                |
+| Pinterest               | `api.pinterest.com` (ou le bac à sable), et l’adresse que Pinterest nomme pour chaque vidéo, celle d’un stockage d’objets                            | Vidéos envoyées à mesure qu’elles sont lues, jamais gardées entières, et images que Pinterest va chercher                                                                                              |
+| Google Business Profile | `oauth2.googleapis.com`, `mybusinessaccountmanagement.googleapis.com`, `mybusinessbusinessinformation.googleapis.com` et `mybusiness.googleapis.com` | Photos que Google va chercher dans le stockage des médias                                                                                                                                              |
+| Google Ads              | `oauth2.googleapis.com` et `googleads.googleapis.com`, quand `PEAL_ADS_NETWORKS` nomme `google`                                                      | Aucun, car il ne fait que lire                                                                                                                                                                         |
+| Slack                   | `slack.com`, et `files.slack.com`, où Slack fait envoyer chaque image                                                                                | Images envoyées à mesure qu’elles sont lues, jamais gardées entières                                                                                                                                   |
+| Snapchat                | `accounts.snapchat.com` et `businessapi.snapchat.com`                                                                                                | Vidéos chiffrées et envoyées en parties de 32 Mio, comme l’exemple de Snap les découpe ; une partie et sa copie chiffrée gardées à la fois, si bien qu’une vidéo de 32 Mio ou moins est gardée entière |
+| WordPress.com           | `public-api.wordpress.com`, dont l’API sert les routes de base de chaque site                                                                        | Images lues entières                                                                                                                                                                                   |
+| DEV                     | `dev.to`                                                                                                                                             | Images lues entières                                                                                                                                                                                   |
+| Hashnode                | `gql-beta.hashnode.com`, et l’adresse d’envoi que Hashnode donne pour chaque image                                                                   | Images envoyées à mesure qu’elles sont lues                                                                                                                                                            |
 
 Les plateformes renvoient les personnes vers `PUBLIC_URL/connect/<plateforme>/callback`, par leur navigateur. Elles n’appellent jamais le serveur elles-mêmes, sauf Bluesky, qui lit la description du client de Peal, et les demandes de suppression de données et les événements de Meta.
 
@@ -631,6 +633,42 @@ Les membres ajoutent l’application à leur espace de travail Slack, puis chois
 Le jeton du bot n’expire pas. Si Slack le refuse, comme après le retrait de l’application de l’espace de travail, le canal affiche **Reconnecter**. Déconnecter un canal ne révoque rien, car le même jeton sert tous les canaux de cet espace de travail Slack.
 
 Ces réglages n’ont rien à voir avec `SLACK_ALERTS_WEBHOOK_URL`, où la surveillance envoie ses alertes.
+
+## Snapchat [#snapchat]
+
+Pour connecter des profils publics Snapchat, créez une application OAuth dans le Business Manager de Snap, demandez à Snap de l’autoriser pour son API Public Profile, et définissez ses identifiants une fois qu’il l’a fait.
+
+<Steps>
+<Step title="Créer un compte professionnel">
+
+Dans l’Ads Manager de Snap, créez un compte professionnel (une organisation) pour votre service. L’Ads Manager propose de faire du compte Snapchat avec lequel vous vous connectez le profil public de l’entreprise (**Create Public Profile**). Pour essayer votre serveur, il vous faut un compte Snapchat qui a un profil public.
+
+</Step>
+<Step title="Créer l’application OAuth">
+
+Dans le Business Manager, sous **Business Details**, ouvrez **OAuth Apps** et cliquez sur **+ OAuth App**. Seul un Organization Admin le voit, et la première fois Snap vous demande d’accepter les Snap Developer Terms et les Snap Business Tools Terms pour l’organisation. Ne créez pas l’application dans le Developer Portal de Snap : l’API Public Profile refuse ses identifiants client.
+
+Donnez-lui un nom et, sous **Snap Redirect URIs**, l’adresse qu’affiche [la commande](#platform-addresses), `PUBLIC_URL/connect/snapchat/callback`, par exemple `https://peal.example.com/connect/snapchat/callback`. Le champ prend une adresse par ligne, jusqu’à 10, si bien qu’une application peut servir plusieurs serveurs. Vérifiez-les d’abord : Snap prévient que le nom et les adresses de redirection ne peuvent plus changer une fois l’application créée.
+
+</Step>
+<Step title="Garder les identifiants">
+
+Snap affiche l’identifiant client et le secret client une fois l’application créée, et le secret seulement à ce moment-là : gardez-les en lieu sûr. Ne les définissez pas encore sur le serveur.
+
+</Step>
+<Step title="Demander à Snap d’autoriser l’application">
+
+L’API Public Profile n’accepte que les identifiants client que Snap a autorisés. Envoyez à votre contact chez Snap l’identifiant client et ce que votre service fait de l’API, jamais le secret.
+
+</Step>
+<Step title="Renseigner les identifiants">
+
+Une fois que Snap dit avoir autorisé l’identifiant, mettez-le dans `SNAPCHAT_CLIENT_ID` et le secret dans `SNAPCHAT_CLIENT_SECRET`. Le serveur propose Snapchat dès que les deux sont définis, alors définissez-les seulement à ce moment-là : avant, chaque connexion échoue, et le journal du serveur dit que Snap a refusé le client.
+
+</Step>
+</Steps>
+
+Les membres se connectent sur Snapchat et autorisent Peal à accéder à leur profil public. Peal demande la seule portée `snapchat-profile-api`. L’accès dure une heure, et Peal le renouvelle. Snap ne documente aucun appel qui révoque un accès : déconnecter un canal supprime les jetons de Peal et n’informe pas Snapchat.
 
 ## Sites WordPress [#wordpress]
 

@@ -142,7 +142,14 @@ describe(refreshDueBefore, () => {
           refresh._tag === "refreshToken" && refresh.rotates ? [name] : []
         )
         .toSorted()
-    ).toStrictEqual(["bluesky", "blueskyLoopback", "pinterest", "tiktok", "x"]);
+    ).toStrictEqual([
+      "bluesky",
+      "blueskyLoopback",
+      "pinterest",
+      "snapchat",
+      "tiktok",
+      "x",
+    ]);
   });
 
   it("is none for tokens that are never refreshed", () => {
@@ -221,6 +228,7 @@ describe(isRefreshDue, () => {
       mastodon: "none",
       pinterest: "beforeExpiry",
       slack: "none",
+      snapchat: "keepAlive",
       threads: "beforeExpiry",
       tiktok: "keepAlive",
       x: "keepAlive",

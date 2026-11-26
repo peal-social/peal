@@ -117,5 +117,7 @@
     "platform": "facebook",
     "videoTitle": "A synthetic reel title"
   },
-  { "format": "feed", "platform": "facebook" }
+  { "format": "feed", "platform": "facebook" },
+  { "platform": "snapchat" },
+  { "locale": "fr_FR", "platform": "snapchat" }
 ]

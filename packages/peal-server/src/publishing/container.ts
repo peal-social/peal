@@ -1,5 +1,5 @@
 import { Layer } from "effect";
-import { Digest, Mac, SecureRandom } from "effect/crypto";
+import { Cipher, Digest, Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 
 import { AccountRules } from "#publishing/application/account-rules.ts";
@@ -626,7 +626,8 @@ export const PlatformsLive = RoutedPlatformPublisher.pipe(
     Layer.mergeAll(
       FetchHttpClient.layer,
       Mac.layerWebCrypto,
-      Digest.layerWebCrypto
+      Digest.layerWebCrypto,
+      Cipher.layerWebCrypto
     ).pipe(Layer.provideMerge(SecureRandom.layerWebCrypto))
   )
 );
@@ -657,7 +658,8 @@ export const FollowUpPlatformsLive = RoutedFollowUpPublisher.pipe(
     Layer.mergeAll(
       FetchHttpClient.layer,
       Mac.layerWebCrypto,
-      Digest.layerWebCrypto
+      Digest.layerWebCrypto,
+      Cipher.layerWebCrypto
     ).pipe(Layer.provideMerge(SecureRandom.layerWebCrypto))
   )
 );

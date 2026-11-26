@@ -76,11 +76,15 @@ export class MediaForPublishing extends Context.Service<
     >;
     /**
      * The bytes, as the store sends them, read in parts: whatever the file
-     * waits for is waited for when the first part is read.
+     * waits for is waited for when the first part is read. An adapter that
+     * holds more of a file than a streamed part (Snapchat's 32 MiB parts)
+     * names the size from which its read counts as large (`largeFrom`), so
+     * it waits for its turn among the large uploads from there.
      */
     readonly open: (
       workspaceId: WorkspaceId,
-      mediaId: MediaAssetId
+      mediaId: MediaAssetId,
+      options?: { readonly largeFrom?: number }
     ) => Stream.Stream<Uint8Array, MediaFailure>;
     /** A URL anyone can GET the media from for at least `expiresIn`. */
     readonly publicUrl: (

@@ -33,7 +33,13 @@ export type PlatformAnswer =
       readonly status: number;
     }
   // JSON written as is, as numbers too large for JavaScript's.
-  | { readonly _tag: "raw"; readonly body: string; readonly status: number }
+  | {
+      readonly _tag: "raw";
+      readonly body: string;
+      // JSON unless they say otherwise.
+      readonly headers?: Readonly<Record<string, string>>;
+      readonly status: number;
+    }
   | { readonly _tag: "drop" };
 
 export interface PlatformServer {
@@ -66,6 +72,18 @@ export const dropped: PlatformAnswer = { _tag: "drop" };
 export const rawJson = (body: string, status = 200): PlatformAnswer => ({
   _tag: "raw",
   body,
+  status,
+});
+
+/** A plain text answer, written as it is given. */
+export const plainText = (
+  body: string,
+  status: number,
+  headers: Readonly<Record<string, string>> = {}
+): PlatformAnswer => ({
+  _tag: "raw",
+  body,
+  headers: { "content-type": "text/plain", ...headers },
   status,
 });
 
@@ -161,6 +179,7 @@ const send = (response: ServerResponse, answer: PlatformAnswer) => {
     response.writeHead(answer.status, {
       connection: "close",
       "content-type": "application/json",
+      ...answer.headers,
     });
     response.end(answer.body);
 

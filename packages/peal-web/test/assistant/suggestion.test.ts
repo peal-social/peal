@@ -55,6 +55,7 @@ describe(shortenablePlatforms, () => {
       "discord",
       "telegram",
       "slack",
+      "snapchat",
     ]);
   });
 });
@@ -74,6 +75,12 @@ describe(writablePlatforms, () => {
     expect(
       writablePlatforms(["linkedin", "threads", "x", "pinterest", "x"])
     ).toStrictEqual(["x", "threads"]);
+  });
+
+  it("offers a Spotlight, whose description takes 160 characters", () => {
+    expect(writablePlatforms(["snapchat", "youtube"])).toStrictEqual([
+      "snapchat",
+    ]);
   });
 
   it("offers none for a post without such a platform", () => {

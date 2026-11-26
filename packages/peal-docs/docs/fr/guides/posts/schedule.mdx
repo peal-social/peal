@@ -164,19 +164,20 @@ Peal envoie chaque image ou vidéo sous la forme que la plateforme demande, et c
 
 Peal ne vérifie que de façons qui ne peuvent pas publier deux fois :
 
-| Plateforme                 | Comment Peal vérifie                                                                                                                                                                      |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bluesky                    | Il relit la publication.                                                                                                                                                                  |
-| Mastodon                   | Il la renvoie sous la même clé, et Mastodon répond avec la publication qu’il a déjà faite.                                                                                                |
-| X                          | Il la cherche parmi les publications récentes du compte, par son texte, ses liens et ses fichiers. Il ne la renvoie jamais à X.                                                           |
-| Threads et Instagram       | Il leur demande si la publication qui leur a été remise a été publiée.                                                                                                                    |
-| Pages Facebook             | Il la cherche parmi les publications récentes de la Page, par son texte.                                                                                                                  |
-| TikTok                     | Il suit la publication que TikTok a déjà prise, par l’identifiant que TikTok a donné.                                                                                                     |
-| YouTube                    | Il demande où en est la mise en ligne. Il n’envoie jamais la vidéo deux fois.                                                                                                             |
-| Pinterest                  | Il cherche l’épingle parmi celles créées depuis sur son tableau, par son titre, sa description, son lien et son type de média. Il ne la crée jamais une seconde fois.                     |
-| Google Business Profile    | Il cherche la publication parmi celles de l’établissement, par son type, son texte et le titre de son événement.                                                                          |
-| Page d’entreprise LinkedIn | Il la cherche parmi les publications les plus récentes de la page, par son texte.                                                                                                         |
-| Profil LinkedIn            | Il ne peut pas vérifier : LinkedIn ne laisse Peal ni lire les publications d’un membre ni en envoyer une deux fois sans risque. La publication indique donc **À vérifier** tout de suite. |
+| Plateforme                 | Comment Peal vérifie                                                                                                                                                                               |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bluesky                    | Il relit la publication.                                                                                                                                                                           |
+| Mastodon                   | Il la renvoie sous la même clé, et Mastodon répond avec la publication qu’il a déjà faite.                                                                                                         |
+| X                          | Il la cherche parmi les publications récentes du compte, par son texte, ses liens et ses fichiers. Il ne la renvoie jamais à X.                                                                    |
+| Threads et Instagram       | Il leur demande si la publication qui leur a été remise a été publiée.                                                                                                                             |
+| Pages Facebook             | Il la cherche parmi les publications récentes de la Page, par son texte.                                                                                                                           |
+| TikTok                     | Il suit la publication que TikTok a déjà prise, par l’identifiant que TikTok a donné.                                                                                                              |
+| YouTube                    | Il demande où en est la mise en ligne. Il n’envoie jamais la vidéo deux fois.                                                                                                                      |
+| Pinterest                  | Il cherche l’épingle parmi celles créées depuis sur son tableau, par son titre, sa description, son lien et son type de média. Il ne la crée jamais une seconde fois.                              |
+| Google Business Profile    | Il cherche la publication parmi celles de l’établissement, par son type, son texte et le titre de son événement.                                                                                   |
+| Page d’entreprise LinkedIn | Il la cherche parmi les publications les plus récentes de la page, par son texte.                                                                                                                  |
+| Profil LinkedIn            | Il ne peut pas vérifier : LinkedIn ne laisse Peal ni lire les publications d’un membre ni en envoyer une deux fois sans risque. La publication indique donc **À vérifier** tout de suite.          |
+| Snapchat                   | Il ne vérifie pas : Peal ne recherche pas le Spotlight sur Snapchat. La publication indique donc **À vérifier** tout de suite, y compris quand le serveur a redémarré pendant l’envoi de la vidéo. |
 
 Peal essaie trois fois, sur environ deux minutes et demie. Si le serveur s’arrête au milieu d’une publication, il vérifie de la même façon à son redémarrage. Ce n’est que si rien de cela ne tranche que la publication indique **À vérifier**. Peal ne la republie jamais de lui-même.
 

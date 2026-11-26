@@ -13036,6 +13036,7 @@ const (
 	ChannelPlatformDiscord        ChannelPlatform = "discord"
 	ChannelPlatformTelegram       ChannelPlatform = "telegram"
 	ChannelPlatformSlack          ChannelPlatform = "slack"
+	ChannelPlatformSnapchat       ChannelPlatform = "snapchat"
 	ChannelPlatformWordpress      ChannelPlatform = "wordpress"
 	ChannelPlatformDevto          ChannelPlatform = "devto"
 	ChannelPlatformHashnode       ChannelPlatform = "hashnode"
@@ -13072,6 +13073,8 @@ func NewChannelPlatformFromString(s string) (ChannelPlatform, error) {
 		return ChannelPlatformTelegram, nil
 	case "slack":
 		return ChannelPlatformSlack, nil
+	case "snapchat":
+		return ChannelPlatformSnapchat, nil
 	case "wordpress":
 		return ChannelPlatformWordpress, nil
 	case "devto":
@@ -43216,6 +43219,7 @@ const (
 	PlatformDiscord        Platform = "discord"
 	PlatformTelegram       Platform = "telegram"
 	PlatformSlack          Platform = "slack"
+	PlatformSnapchat       Platform = "snapchat"
 )
 
 func NewPlatformFromString(s string) (Platform, error) {
@@ -43248,6 +43252,8 @@ func NewPlatformFromString(s string) (Platform, error) {
 		return PlatformTelegram, nil
 	case "slack":
 		return PlatformSlack, nil
+	case "snapchat":
+		return PlatformSnapchat, nil
 	}
 	var t Platform
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -55559,6 +55565,93 @@ func (s *Slideshows) String() string {
 type SlotTime = string
 
 var (
+	snapchatOptionsFieldLocale = big.NewInt(1 << 0)
+)
+
+// How a post goes out on a Snapchat Public Profile, as a Spotlight. Scheduling needs none of them; `locale` is the Spotlight's language and country, as Snap's `locale` takes them (`en_US`), and `en_US` when left out.
+type SnapchatOptions struct {
+	Locale *string `json:"locale,omitempty" url:"locale,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SnapchatOptions) GetLocale() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Locale
+}
+
+func (s *SnapchatOptions) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SnapchatOptions) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetLocale sets the Locale field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SnapchatOptions) SetLocale(locale *string) {
+	s.Locale = locale
+	s.require(snapchatOptionsFieldLocale)
+}
+
+func (s *SnapchatOptions) UnmarshalJSON(data []byte) error {
+	type unmarshaler SnapchatOptions
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SnapchatOptions(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SnapchatOptions) MarshalJSON() ([]byte, error) {
+	type embed SnapchatOptions
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SnapchatOptions) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
 	spendCeilingExceededEncodedFieldCode      = big.NewInt(1 << 0)
 	spendCeilingExceededEncodedFieldMessage   = big.NewInt(1 << 1)
 	spendCeilingExceededEncodedFieldRequestID = big.NewInt(1 << 2)
@@ -56565,6 +56658,7 @@ type TargetOptions struct {
 	Discord        *DiscordOptions
 	Telegram       *TelegramOptions
 	Slack          *SlackOptions
+	Snapchat       *SnapchatOptions
 
 	rawJSON json.RawMessage
 }
@@ -56674,6 +56768,13 @@ func (t *TargetOptions) GetSlack() *SlackOptions {
 	return t.Slack
 }
 
+func (t *TargetOptions) GetSnapchat() *SnapchatOptions {
+	if t == nil {
+		return nil
+	}
+	return t.Snapchat
+}
+
 func (t *TargetOptions) UnmarshalJSON(data []byte) error {
 	var unmarshaler struct {
 		Platform string `json:"platform"`
@@ -56770,6 +56871,12 @@ func (t *TargetOptions) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		t.Slack = value
+	case "snapchat":
+		value := new(SnapchatOptions)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		t.Snapchat = value
 	}
 	t.rawJSON = json.RawMessage(data)
 	return nil
@@ -56821,6 +56928,9 @@ func (t TargetOptions) MarshalJSON() ([]byte, error) {
 	if t.Slack != nil {
 		return internal.MarshalJSONWithExtraProperty(t.Slack, "platform", "slack")
 	}
+	if t.Snapchat != nil {
+		return internal.MarshalJSONWithExtraProperty(t.Snapchat, "platform", "snapchat")
+	}
 	if len(t.rawJSON) > 0 {
 		return t.rawJSON, nil
 	}
@@ -56842,6 +56952,7 @@ type TargetOptionsVisitor interface {
 	VisitDiscord(*DiscordOptions) error
 	VisitTelegram(*TelegramOptions) error
 	VisitSlack(*SlackOptions) error
+	VisitSnapchat(*SnapchatOptions) error
 }
 
 func (t *TargetOptions) Accept(visitor TargetOptionsVisitor) error {
@@ -56886,6 +56997,9 @@ func (t *TargetOptions) Accept(visitor TargetOptionsVisitor) error {
 	}
 	if t.Slack != nil {
 		return visitor.VisitSlack(t.Slack)
+	}
+	if t.Snapchat != nil {
+		return visitor.VisitSnapchat(t.Snapchat)
 	}
 	return fmt.Errorf("type %T does not define a non-empty union type", t)
 }
@@ -56936,6 +57050,9 @@ func (t *TargetOptions) validate() error {
 	}
 	if t.Slack != nil {
 		fields = append(fields, "slack")
+	}
+	if t.Snapchat != nil {
+		fields = append(fields, "snapchat")
 	}
 	if len(fields) == 0 {
 		if t.Platform != "" {

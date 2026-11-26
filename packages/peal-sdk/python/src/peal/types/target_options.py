@@ -475,6 +475,24 @@ class TargetOptions_Slack(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+class TargetOptions_Snapchat(UniversalBaseModel):
+    """
+    What a post says on a channel that only its platform knows, tagged by `platform`. Platforms without options take none.
+    """
+
+    platform: typing.Literal["snapchat"] = "snapchat"
+    locale: typing.Optional[str] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
 TargetOptions = typing_extensions.Annotated[
     typing.Union[
         TargetOptions_Youtube,
@@ -491,6 +509,7 @@ TargetOptions = typing_extensions.Annotated[
         TargetOptions_Discord,
         TargetOptions_Telegram,
         TargetOptions_Slack,
+        TargetOptions_Snapchat,
     ],
     pydantic.Field(discriminator="platform"),
 ]

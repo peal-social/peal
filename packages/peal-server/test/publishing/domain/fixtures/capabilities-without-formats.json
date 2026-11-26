@@ -1772,5 +1772,71 @@
         "unit": "utf16Units"
       }
     ]
+  },
+  {
+    "counted": {
+      "account": [],
+      "post": []
+    },
+    "countsPosts": true,
+    "livePost": {
+      "edit": {
+        "_id": "Option",
+        "_tag": "Some",
+        "value": "noApi"
+      },
+      "unpublish": {
+        "_id": "Option",
+        "_tag": "Some",
+        "value": "unverified"
+      }
+    },
+    "lookups": [],
+    "maxAltTextLength": 5000,
+    "maxMedia": 1,
+    "optionConstraints": [],
+    "options": [
+      {
+        "pattern": "^[a-z]{2}_[A-Z]{2}$",
+        "name": "locale",
+        "required": false,
+        "type": "text",
+        "values": []
+      }
+    ],
+    "platform": "snapchat",
+    "rules": {
+      "maxMedia": 1,
+      "media": {
+        "formats": {
+          "video/mp4": {
+            "maxByteSize": 999999984,
+            "maxDurationMs": 300000,
+            "minDurationMs": 5000
+          }
+        },
+        "maxVideos": 1,
+        "mixesKinds": false,
+        "showsAltText": false
+      },
+      "mediaRequired": true,
+      "textLimits": [
+        {
+          "maximum": 160,
+          "unit": "utf16Units"
+        }
+      ]
+    },
+    "textLimits": [
+      {
+        "maximum": 160,
+        "unit": "utf16Units"
+      },
+      {
+        "maximum": 65536,
+        "unit": "utf16Units"
+      }
+    ],
+    "version": 1
   }
 ]

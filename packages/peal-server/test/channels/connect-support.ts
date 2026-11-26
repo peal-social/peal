@@ -34,6 +34,7 @@ import { pinterestAuthorizer } from "#channels/infrastructure/platforms/pinteres
 import { registryOf } from "#channels/infrastructure/platforms/platform-authorizers.ts";
 import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
 import { slackAuthorizer } from "#channels/infrastructure/platforms/slack/slack-authorizer.ts";
+import { snapchatAuthorizer } from "#channels/infrastructure/platforms/snapchat/snapchat-authorizer.ts";
 import { tiktokAuthorizer } from "#channels/infrastructure/platforms/tiktok/tiktok-authorizer.ts";
 import { xAuthorizer } from "#channels/infrastructure/platforms/x/x-authorizer.ts";
 import type { XEndpoints } from "#channels/infrastructure/platforms/x/x-authorizer.ts";
@@ -46,6 +47,7 @@ import { hashnodeHosts } from "#shared/infrastructure/platforms/hashnode-api.ts"
 import type { PinterestHosts } from "#shared/infrastructure/platforms/pinterest-api.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
 import type { SlackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
+import type { SnapchatHosts } from "#shared/infrastructure/platforms/snapchat-api.ts";
 import type { TikTokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
 import { UnmeteredTest } from "#test/billing/support.ts";
 import { googleClient } from "#test/channels/fakes/fake-google.ts";
@@ -58,6 +60,7 @@ import { fakeMastodon } from "#test/channels/fakes/fake-mastodon.ts";
 import type { FakeMastodonOptions } from "#test/channels/fakes/fake-mastodon.ts";
 import { pinterestClient } from "#test/channels/fakes/fake-pinterest.ts";
 import { slackClient } from "#test/channels/fakes/fake-slack.ts";
+import { snapchatClient } from "#test/channels/fakes/fake-snapchat.ts";
 import { tiktokClient } from "#test/channels/fakes/fake-tiktok.ts";
 import { xClient } from "#test/channels/fakes/fake-x.ts";
 import {
@@ -412,3 +415,20 @@ export const chatsOn = (hosts?: ChatHosts) =>
 export const WordPressSitesTest = siteSignInsWith(
   SiteAuthorizers.of({ for: () => Option.none() })
 );
+
+/** The Snapchat authorizer with the synthetic app, on the fake's hosts. */
+export const snapchatAuthorizerOn = (hosts: SnapchatHosts) =>
+  publicHttpClient.pipe(
+    Effect.flatMap((http) =>
+      snapchatAuthorizer({
+        client: {
+          clientId: snapchatClient.clientId,
+          clientSecret: Redacted.make(snapchatClient.clientSecret),
+        },
+        hosts,
+        http,
+        publicUrl: testPublicUrl,
+      })
+    ),
+    Effect.provide(AuthorizerServicesTest)
+  );

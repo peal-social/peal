@@ -176,6 +176,50 @@ describe(TargetOptionsPanel, () => {
     expect(html).toContain('aria-invalid="true"');
   });
 
+  it("shows a Spotlight's locale, and what scheduling refused of it, in both languages", async () => {
+    const snapchat = channel(
+      "00000000-0000-7000-8000-000000000020",
+      "snapchat",
+      "@peal_spotlights"
+    );
+
+    const rendered = async (locale: Locale) => {
+      const messages = await loadMessages(locale);
+
+      return renderToStaticMarkup(
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <TargetOptionsPanel
+            channels={[snapchat]}
+            disabled={false}
+            valuesOf={() => ({ ...initialValues("snapchat"), locale: "fr" })}
+            violations={[
+              {
+                _tag: "optionInvalid",
+                channelId: snapchat.id,
+                field: "locale",
+                platform: "snapchat",
+              },
+            ]}
+            onChange={() => {
+              // Rendered once, never changed.
+            }}
+          />
+        </NextIntlClientProvider>
+      );
+    };
+
+    const english = await rendered("en");
+
+    expect(english).toContain("@peal_spotlights on Snapchat: options");
+    expect(english).toContain("Language and country");
+    expect(english).toContain(
+      "Two lower-case letters, an underscore and two capitals, as fr_FR."
+    );
+    await expect(rendered("fr")).resolves.toContain(
+      "Deux minuscules, un tiret bas et deux majuscules, comme fr_FR."
+    );
+  });
+
   it("shows whose brand once the disclosure is on", async () => {
     const html = await render("en", {
       [tiktok.id]: {

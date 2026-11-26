@@ -18,6 +18,7 @@ pub enum Platform {
     Discord,
     Telegram,
     Slack,
+    Snapchat,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -40,6 +41,7 @@ impl Serialize for Platform {
             Self::Discord => serializer.serialize_str("discord"),
             Self::Telegram => serializer.serialize_str("telegram"),
             Self::Slack => serializer.serialize_str("slack"),
+            Self::Snapchat => serializer.serialize_str("snapchat"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -63,6 +65,7 @@ impl<'de> Deserialize<'de> for Platform {
             "discord" => Ok(Self::Discord),
             "telegram" => Ok(Self::Telegram),
             "slack" => Ok(Self::Slack),
+            "snapchat" => Ok(Self::Snapchat),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -85,6 +88,7 @@ impl fmt::Display for Platform {
             Self::Discord => write!(f, "discord"),
             Self::Telegram => write!(f, "telegram"),
             Self::Slack => write!(f, "slack"),
+            Self::Snapchat => write!(f, "snapchat"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

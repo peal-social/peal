@@ -228,6 +228,16 @@ describe(ConnectForms, () => {
     await expect(render("en", ["mastodon"])).resolves.not.toContain("Slack");
   });
 
+  it("offers Snapchat as a sign-in on a server with its app, in both languages", async () => {
+    const english = await render("en", ["mastodon", "snapchat"]);
+    const french = await render("fr", ["snapchat"]);
+
+    expect(english).toContain(">Connect Snapchat<");
+    expect(english).toContain("Spotlight videos");
+    expect(french).toContain(">Connecter Snapchat<");
+    await expect(render("en", ["mastodon"])).resolves.not.toContain("Snapchat");
+  });
+
   it("writes the buttons in French", async () => {
     const html = await render("fr", ["linkedin", "x"]);
 

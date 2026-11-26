@@ -169,6 +169,7 @@ type ButtonPlatform =
   | "linkedin"
   | "pinterest"
   | "slack"
+  | "snapchat"
   | "tiktok"
   | "x"
   | "youtube";
@@ -181,6 +182,7 @@ const buttonPlatforms: readonly ButtonPlatform[] = [
   "pinterest",
   "googleBusiness",
   "slack",
+  "snapchat",
 ];
 
 const ConnectWithButton = ({
@@ -318,6 +320,7 @@ const offerOrder: readonly ChannelPlatform[] = [
   "tiktok",
   "youtube",
   "pinterest",
+  "snapchat",
   "googleBusiness",
   "slack",
   "instagram",
@@ -372,7 +375,8 @@ const isButtonPlatform = (
 /**
  * Where a member starts connecting an account of one platform: a form for
  * Mastodon and Bluesky, which ask for a server or a handle; a button for
- * X, TikTok, YouTube, Pinterest, Google Business Profile and Slack; one
+ * X, TikTok, YouTube, Pinterest, Snapchat, Google Business Profile and
+ * Slack; one
  * for each of Instagram's ways in the server has; one for a LinkedIn
  * profile, and one for company pages on a server that connects pages;
  * Meta's sign-in for Threads and Facebook Pages; a WordPress site by its

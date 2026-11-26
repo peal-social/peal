@@ -16,6 +16,7 @@ export default defineMeta({
     "tiktok",
     "youtube",
     "pinterest",
+    "snapchat",
     "google-business",
     "discord",
     "telegram",

@@ -116,6 +116,14 @@ export const livePostSupport = {
   // https://docs.slack.dev/reference/methods/chat.delete
   // https://docs.slack.dev/reference/methods/chat.update
   slack: { edit: can, unpublish: can },
+  // `DELETE /v1/public_profiles/{profile_id}/spotlights/{spotlight_id}`
+  // "permanently deletes a Spotlight posted by the profile"
+  // (developers.snap.com, Public Profile API, Profile Asset Management,
+  // read 2026-11-26). The scopes table says `snapchat-profile-api`
+  // "allows the app to read": whether the permission Peal holds covers a
+  // deletion is not known. No call edits a Spotlight.
+  // https://developers.snap.com/marketing-api/Public-Profile-API/ProfileAssetManagement
+  snapchat: { edit: blockedBy("noApi"), unpublish: blockedBy("unverified") },
   // `deleteMessages` ("A JSON-serialized list of 1-100 identifiers of
   // messages to delete"), under `deleteMessage`'s rules: "A message can
   // only be deleted if it was sent less than 48 hours ago", and "Bots

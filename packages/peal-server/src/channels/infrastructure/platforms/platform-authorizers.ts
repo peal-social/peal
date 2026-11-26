@@ -35,6 +35,7 @@ import { instagramUnifiedAuthorizer } from "./meta/instagram-unified-authorizer.
 import { threadsAuthorizer } from "./meta/threads-authorizer.ts";
 import { pinterestAuthorizer } from "./pinterest/pinterest-authorizer.ts";
 import { slackAuthorizer } from "./slack/slack-authorizer.ts";
+import { snapchatAuthorizer } from "./snapchat/snapchat-authorizer.ts";
 import { tiktokAuthorizer } from "./tiktok/tiktok-authorizer.ts";
 import { xAuthorizer, xEndpoints } from "./x/x-authorizer.ts";
 import {
@@ -121,7 +122,7 @@ export const registryOf = (
  * credentials, TikTok with its client key and secret, YouTube with a Google
  * OAuth client, Pinterest with its app's id and secret, Google Business
  * Profile with a Google OAuth client of its own, Slack with its app's id
- * and secret. Needs an HttpClient, the outbound guard, the
+ * and secret, Snapchat with its app's id and secret. Needs an HttpClient, the outbound guard, the
  * database, the TokenCipher, SecureRandom, Digest and Mac.
  */
 export const PlatformAuthorizersLive = Layer.effect(
@@ -275,6 +276,17 @@ export const PlatformAuthorizersLive = Layer.effect(
         ]
       : [];
 
+    const snapchat = Option.isSome(settings.snapchat)
+      ? [
+          yield* snapchatAuthorizer({
+            client: settings.snapchat.value,
+            hosts: settings.snapchatHosts,
+            http,
+            publicUrl: settings.publicUrl,
+          }),
+        ]
+      : [];
+
     const configured = [
       mastodon,
       ...Option.toArray(bluesky),
@@ -290,6 +302,7 @@ export const PlatformAuthorizersLive = Layer.effect(
       ...pinterest,
       ...Option.toArray(googleBusiness),
       ...slack,
+      ...snapchat,
     ];
 
     // Platforms Peal supports, which this server lacks the settings for.
@@ -307,6 +320,7 @@ export const PlatformAuthorizersLive = Layer.effect(
           "pinterest",
           "googleBusiness",
           "slack",
+          "snapchat",
         ] as const
       ).filter(
         (platform) =>

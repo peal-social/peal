@@ -82,6 +82,10 @@ public final class TargetOptions {
         return new TargetOptions(new SlackValue(value));
     }
 
+    public static TargetOptions snapchat(SnapchatOptions value) {
+        return new TargetOptions(new SnapchatValue(value));
+    }
+
     public boolean isYoutube() {
         return value instanceof YoutubeValue;
     }
@@ -136,6 +140,10 @@ public final class TargetOptions {
 
     public boolean isSlack() {
         return value instanceof SlackValue;
+    }
+
+    public boolean isSnapchat() {
+        return value instanceof SnapchatValue;
     }
 
     public boolean _isUnknown() {
@@ -240,6 +248,13 @@ public final class TargetOptions {
         return Optional.empty();
     }
 
+    public Optional<SnapchatOptions> getSnapchat() {
+        if (isSnapchat()) {
+            return Optional.of(((SnapchatValue) value).value);
+        }
+        return Optional.empty();
+    }
+
     public Optional<Object> _getUnknown() {
         if (_isUnknown()) {
             return Optional.of(((_UnknownValue) value).value);
@@ -297,6 +312,8 @@ public final class TargetOptions {
 
         T visitSlack(SlackOptions slack);
 
+        T visitSnapchat(SnapchatOptions snapchat);
+
         T _visitUnknown(Object unknownType);
     }
 
@@ -315,7 +332,8 @@ public final class TargetOptions {
         @JsonSubTypes.Type(FacebookValue.class),
         @JsonSubTypes.Type(DiscordValue.class),
         @JsonSubTypes.Type(TelegramValue.class),
-        @JsonSubTypes.Type(SlackValue.class)
+        @JsonSubTypes.Type(SlackValue.class),
+        @JsonSubTypes.Type(SnapchatValue.class)
     })
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
@@ -868,6 +886,46 @@ public final class TargetOptions {
         }
 
         private boolean equalTo(SlackValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "TargetOptions{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("snapchat")
+    @JsonIgnoreProperties("platform")
+    private static final class SnapchatValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "platform", allowSetters = true)
+        private SnapchatOptions value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private SnapchatValue() {}
+
+        private SnapchatValue(SnapchatOptions value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitSnapchat(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof SnapchatValue && equalTo((SnapchatValue) other);
+        }
+
+        private boolean equalTo(SnapchatValue other) {
             return value.equals(other.value);
         }
 

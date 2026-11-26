@@ -18,6 +18,7 @@ import {
 } from "#shared/infrastructure/platforms/public-http.ts";
 import { slackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
 import type { SlackHosts } from "#shared/infrastructure/platforms/slack-api.ts";
+import { snapchatHosts } from "#shared/infrastructure/platforms/snapchat-api.ts";
 import { telegramHosts } from "#shared/infrastructure/platforms/telegram-api.ts";
 import type { TelegramHosts } from "#shared/infrastructure/platforms/telegram-api.ts";
 import { tiktokHosts } from "#shared/infrastructure/platforms/tiktok-api.ts";
@@ -32,6 +33,7 @@ import { instagramClient } from "./meta/instagram-client.ts";
 import { threadsClient } from "./meta/threads-client.ts";
 import { pinterestClient } from "./pinterest/pinterest-client.ts";
 import { slackClient } from "./slack/slack-client.ts";
+import { snapchatClient } from "./snapchat/snapchat-client.ts";
 import { telegramClient } from "./telegram/telegram-client.ts";
 import { tiktokClient } from "./tiktok/tiktok-client.ts";
 import { tiktokMediaUrlConfig } from "./tiktok/tiktok-settings.ts";
@@ -48,6 +50,8 @@ export interface PlatformClientSettings {
   readonly discordHosts: DiscordHosts;
   /** Slack's Web API, and the host its upload addresses are on. */
   readonly slackHosts: SlackHosts;
+  /** Snap's Business API, which takes a Spotlight's media and the Spotlight. */
+  readonly snapchatApi: URL;
   /** Telegram's Bot API, which takes bots' messages and their files. */
   readonly telegramHosts: TelegramHosts;
   /** The My Business API, which makes and lists local posts. */
@@ -88,13 +92,19 @@ export interface PlatformClientSettings {
 // An upload of a large video on a slow line.
 const uploadTimeout = Duration.minutes(10);
 
+// Posting a Spotlight: past it the post is unconfirmed, which a member
+// checks by hand, so a slow answer is waited for longer than a plain
+// call's 20 seconds, about as long as the confirmations of the others.
+const spotlightTimeout = Duration.minutes(2);
+
 /**
  * The platforms Peal publishes to: Mastodon, Bluesky, LinkedIn, X, Threads,
  * Instagram, Facebook Pages, TikTok, YouTube, Pinterest, Google Business
- * Profile, Discord, Telegram and Slack. Every request goes through
+ * Profile, Discord, Telegram, Slack and Snapchat. Every request goes through
  * the public HTTP client, so the outbound guard checks the servers users
  * chose. Needs an HttpClient, the OutboundGuard, SecureRandom and Digest
- * (for DPoP proofs), Mac (for Meta's proofs), PlatformCredentials,
+ * (for DPoP proofs), Mac (for Meta's proofs), Cipher (for Snapchat's
+ * encrypted uploads), PlatformCredentials,
  * MediaForPublishing, PublicationProgress (for TikTok's steps and
  * Facebook's reels and stories), and
  * UploadSessions and PlatformQuota (YouTube's uploads are journaled and
@@ -107,6 +117,10 @@ export const platformClientsWith = (settings: PlatformClientSettings) =>
     Effect.gen(function* PlatformClientsLive() {
       const api = yield* publicHttpClient;
       const uploads = yield* publicHttpClientWith({ timeout: uploadTimeout });
+
+      const spotlights = yield* publicHttpClientWith({
+        timeout: spotlightTimeout,
+      });
 
       const timing =
         settings.timing === undefined ? {} : { timing: settings.timing };
@@ -190,6 +204,13 @@ export const platformClientsWith = (settings: PlatformClientSettings) =>
           uploads,
           ...timing,
         }),
+        yield* snapchatClient({
+          api,
+          apiUrl: settings.snapchatApi,
+          spotlights,
+          uploads,
+          ...timing,
+        }),
       ];
 
       const byPlatform: ReadonlyMap<Platform, PlatformClient> = new Map(
@@ -226,6 +247,7 @@ export const PlatformClientsLive = Layer.unwrap(
       metaHosts,
       pinterestApi: pinterest.api,
       slackHosts,
+      snapchatApi: snapchatHosts.api,
       telegramHosts,
       tiktokApi: tiktokHosts.api,
       tiktokPullFrom,

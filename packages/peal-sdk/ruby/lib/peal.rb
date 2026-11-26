@@ -661,6 +661,7 @@ module Peal
     autoload :MastodonOptions, ::File.join(__dir__, "peal/types/mastodon_options")
     autoload :PinterestOptions, ::File.join(__dir__, "peal/types/pinterest_options")
     autoload :SlackOptions, ::File.join(__dir__, "peal/types/slack_options")
+    autoload :SnapchatOptions, ::File.join(__dir__, "peal/types/snapchat_options")
     autoload :TelegramOptions, ::File.join(__dir__, "peal/types/telegram_options")
     autoload :ThreadsReplyControl, ::File.join(__dir__, "peal/types/threads_reply_control")
     autoload :ThreadsOptions, ::File.join(__dir__, "peal/types/threads_options")

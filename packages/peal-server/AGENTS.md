@@ -547,7 +547,10 @@ and no socket, for tests.
   channel of `slack`, a target with its options or failed as
   `cannotPost`, and the events and notices that name one or that reason:
   never roll back past them while any is stored (the runbook's "Past
-  Slack"). Unified login did too: `unifiedLogin` in the `connection` of
+  Slack"). Snapchat did too: a channel of `snapchat`, a target with its
+  options, and the events and notices that name one: never roll back past
+  them while any is stored (the runbook's "Past Snapchat"). Unified login
+  did too: `unifiedLogin` in the `connection` of
   a channel, an attempt, a choice or a connect link, which the release
   before cannot decode where it reads them (every workspace's collection
   jobs included): never roll back past it while a channel or a link

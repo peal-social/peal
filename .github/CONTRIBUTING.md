@@ -390,6 +390,11 @@ be read, and their channels must be reconnected.
   `PUBLIC_URL/connect/pinterest/callback`. Until Pinterest grants the app
   Standard access, set `PINTEREST_SANDBOX=true`: Pins then go to Pinterest's
   Sandbox, where only their creator sees them, and which takes no video.
+- **Snapchat** needs an OAuth app made in Snap's Business Manager (Business
+  Details, not the Developer Portal), in `SNAPCHAT_CLIENT_ID` and
+  `SNAPCHAT_CLIENT_SECRET`, whose redirect is
+  `PUBLIC_URL/connect/snapchat/callback`, and Snap's allowlisting of its
+  client id for the Public Profile API: until then, sign-ins fail.
 - **WordPress.com** needs an application registered at
   developer.wordpress.com/apps, of type Web, in `WORDPRESS_COM_CLIENT_ID`
   and `WORDPRESS_COM_CLIENT_SECRET`, whose redirect is exactly
@@ -608,6 +613,7 @@ In development, these are the ones you may want:
 | `YOUTUBE_CLIENT_ID`           | unset: YouTube is not offered    | The Google OAuth client's id, with `YOUTUBE_CLIENT_SECRET`             |
 | `PINTEREST_APP_ID`            | unset: Pinterest is not offered  | The Pinterest app's id, with `PINTEREST_APP_SECRET`                    |
 | `PINTEREST_SANDBOX`           | `false`                          | `true` sends Pinterest's calls to its Sandbox (Trial access)           |
+| `SNAPCHAT_CLIENT_ID`          | unset: Snapchat is not offered   | The Snapchat app's client id, with `SNAPCHAT_CLIENT_SECRET`            |
 | `GOOGLE_BUSINESS_CLIENT_ID`   | unset: no Business Profile       | Its Google client's id, with `GOOGLE_BUSINESS_CLIENT_SECRET`           |
 | `WORDPRESS_COM_CLIENT_ID`     | unset: no WordPress.com          | The WordPress.com app's client id, with `WORDPRESS_COM_CLIENT_SECRET`  |
 | `PEAL_AI_PROVIDER`            | unset: no writing assistant      | `anthropic` or `openai-compatible`                                     |

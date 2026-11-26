@@ -441,10 +441,20 @@ def test_no_secret_is_required_of_an_app_the_settings_do_not_name() -> None:
 
     assert [name for name in required if name.endswith(("_CLIENT_SECRET", "_APP_SECRET"))] == []
 
-    names["peal_settings"] = {"SLACK_CLIENT_ID": "synthetic.1", "PINTEREST_APP_ID": "1", "TIKTOK_CLIENT_KEY": "k"}
+    names["peal_settings"] = {
+        "SLACK_CLIENT_ID": "synthetic.1",
+        "SNAPCHAT_CLIENT_ID": "synthetic.2",
+        "PINTEREST_APP_ID": "1",
+        "TIKTOK_CLIENT_KEY": "k",
+    }
     required = ansible_render(expression, **names)
 
-    assert {"SLACK_CLIENT_SECRET", "PINTEREST_APP_SECRET", "TIKTOK_CLIENT_SECRET"} <= set(required)
+    assert {
+        "SLACK_CLIENT_SECRET",
+        "SNAPCHAT_CLIENT_SECRET",
+        "PINTEREST_APP_SECRET",
+        "TIKTOK_CLIENT_SECRET",
+    } <= set(required)
 
 
 def _posthog_allowed(credentials: dict[str, str], peal_settings: dict[str, str]) -> bool:

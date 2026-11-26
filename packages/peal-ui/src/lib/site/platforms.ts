@@ -17,6 +17,7 @@ import {
   siMastodon,
   siMeta,
   siPinterest,
+  siSnapchat,
   siTelegram,
   siThreads,
   siTiktok,
@@ -128,6 +129,11 @@ const channelEntries: Readonly<
     name: "Pinterest",
   },
   slack: { docs: "platforms/slack", mark: slackMark, name: "Slack" },
+  snapchat: {
+    docs: "platforms/snapchat",
+    mark: markOf(siSnapchat),
+    name: "Snapchat",
+  },
   telegram: {
     docs: "platforms/telegram",
     mark: telegramMark,

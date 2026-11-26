@@ -7,7 +7,8 @@ import type {
 } from "peal-contract";
 
 // What the synthetic studio's server says a post may hold: YouTube and
-// TikTok with their options and lookups, every other platform plainly.
+// TikTok with their options and lookups, Snapchat with its one option,
+// every other platform plainly.
 
 const field = (
   described: Partial<FieldDescription> & Pick<FieldDescription, "name" | "type">
@@ -244,10 +245,29 @@ const tiktok: PlatformCapabilities = {
   },
 };
 
+// A Spotlight's one option, its language and country as Snap writes it.
+const snapchat: PlatformCapabilities = {
+  ...plain("snapchat"),
+  options: {
+    constraints: [],
+    fields: [
+      field({
+        name: "locale",
+        pattern: "^[a-z]{2}_[A-Z]{2}$",
+        type: "text",
+      }),
+    ],
+  },
+};
+
 /** What the studio's server says of the platform. */
 export const capabilitiesOn = (platform: Platform): PlatformCapabilities => {
   if (platform === "youtube") {
     return youtube;
+  }
+
+  if (platform === "snapchat") {
+    return snapchat;
   }
 
   if (platform === "pinterest") {
@@ -290,6 +310,7 @@ export const describedPlatforms: readonly Platform[] = [
   "bluesky",
   "tiktok",
   "youtube",
+  "snapchat",
 ];
 
 /** The YouTube channel's video categories. */

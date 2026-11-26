@@ -10,7 +10,7 @@ import {
   Ref,
   Stream,
 } from "effect";
-import { Digest, Mac, SecureRandom } from "effect/crypto";
+import { Cipher, Digest, Mac, SecureRandom } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 
 import { LivePostClients } from "#publishing/application/live-post-clients.ts";
@@ -43,6 +43,7 @@ import { instagramClient } from "#publishing/infrastructure/platforms/meta/insta
 import { threadsClient } from "#publishing/infrastructure/platforms/meta/threads-client.ts";
 import { pinterestClient } from "#publishing/infrastructure/platforms/pinterest/pinterest-client.ts";
 import { slackClient } from "#publishing/infrastructure/platforms/slack/slack-client.ts";
+import { snapchatClient } from "#publishing/infrastructure/platforms/snapchat/snapchat-client.ts";
 import { telegramClient } from "#publishing/infrastructure/platforms/telegram/telegram-client.ts";
 import { tiktokClient } from "#publishing/infrastructure/platforms/tiktok/tiktok-client.ts";
 import { xClient } from "#publishing/infrastructure/platforms/x/x-client.ts";
@@ -826,6 +827,70 @@ export const pinterestClientWith = Effect.fn("test.pinterestClient")(
           options.credentials,
           recordedOf(options.recorded ?? []),
           mediaOf(options.files ?? []),
+          OpenOutboundGuard
+        )
+      )
+    );
+  }
+);
+
+// The media given, telling `opened` what each read asks.
+const openings = (
+  media: Layer.Layer<MediaForPublishing>,
+  opened:
+    | ((options: { readonly largeFrom?: number } | undefined) => void)
+    | undefined
+) =>
+  Layer.effect(
+    MediaForPublishing,
+    MediaForPublishing.use((files) =>
+      Effect.succeed(
+        MediaForPublishing.of({
+          ...files,
+          open: (workspace, mediaId, read) => {
+            opened?.(read);
+
+            return files.open(workspace, mediaId, read);
+          },
+        })
+      )
+    )
+  ).pipe(Layer.provide(media));
+
+/**
+ * The Snapchat client, with the fake as Snap's Business API, its calls
+ * given up after `timeout` when one is set.
+ */
+export const snapchatClientWith = Effect.fn("test.snapchatClient")(
+  function* snapchatClientWith(options: {
+    readonly api: string;
+    readonly credentials: Layer.Layer<CredentialLog | PlatformCredentials>;
+    readonly files?: readonly TestFile[];
+    /** Hears what each read of a file asks of the upload slots. */
+    readonly opened?:
+      | ((options: { readonly largeFrom?: number } | undefined) => void)
+      | undefined;
+    readonly timeout?: Duration.Input;
+  }) {
+    const api =
+      options.timeout === undefined
+        ? yield* httpClient
+        : yield* httpClientTimingOutAfter(options.timeout);
+
+    return yield* snapchatClient({
+      api,
+      apiUrl: new URL(options.api),
+      spotlights: api,
+      timing: testTiming,
+      uploads: api,
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(
+          options.credentials,
+          openings(mediaOf(options.files ?? []), options.opened),
+          Cipher.layerWebCrypto.pipe(
+            Layer.provideMerge(SecureRandom.layerWebCrypto)
+          ),
           OpenOutboundGuard
         )
       )

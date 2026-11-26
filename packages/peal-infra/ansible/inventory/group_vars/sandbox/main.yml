@@ -60,6 +60,8 @@ peal_settings:
   # here, GOOGLE_ADS_CLIENT_SECRET in the vault.
   # One Slack app serves both environments, with both redirect URLs.
   SLACK_CLIENT_ID: "12606763099492.12617179827665"
+  # Snapchat stays off: Snap has not allowlisted Peal's app ("Peal", with
+  # both environments' redirect URIs) for its Public Profile API.
   # Google sign-in: its own OAuth client, "Peal: Google sign-in", in this
   # environment's project; the consent screen is in Testing until published.
   GOOGLE_SIGN_IN_CLIENT_ID: 342335857798-hn185gb2jd5d4cj7t8vc3ce3t93rcj8j.apps.googleusercontent.com

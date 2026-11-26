@@ -18,6 +18,7 @@ ChannelPlatform = typing.Union[
         "discord",
         "telegram",
         "slack",
+        "snapchat",
         "wordpress",
         "devto",
         "hashnode",
