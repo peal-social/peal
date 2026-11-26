@@ -27,6 +27,14 @@ const runnerAddress = Config.String("HOSTNAME").pipe(
 
 type ShardingSettings = Partial<ShardingConfig.ShardingConfig["Service"]>;
 
+/**
+ * How many entities the runner holds in memory at once (Effect's default
+ * is 10,000): room for every gate of a server with 41,000 channels, the
+ * load tests' database, twice over. A gate costs a few kilobytes; a job
+ * more, only while it runs.
+ */
+export const maxResidentEntities = 100_000;
+
 // SingleRunner reads its settings from the environment as well, and its
 // runner address from HOST and PORT, which name the HTTP server here. The
 // settings below replace whatever those variables say.
@@ -41,6 +49,14 @@ const runnerLive = (overrides: ShardingSettings, tablePrefix?: string) =>
         entityMessagePollInterval: Duration.seconds(2),
         // How long shutdown waits for calls in flight to the platforms.
         entityTerminationTimeout: workflowShutdownTimeout,
+        // The entities in memory at once: every workflow running, and every
+        // channel's gate called in its last ten minutes. Past the limit the
+        // runner takes no message for an entity not already in memory, so
+        // nothing new starts, publishing included, however idle the server
+        // is. Effect's 10,000 was reached by one collection over more
+        // channels than that, and held every post due behind it until the
+        // gates it opened went idle (a load test, 2026-11-26).
+        maxResidentEntities,
         runnerAddress: Option.some(address),
         ...overrides,
       };

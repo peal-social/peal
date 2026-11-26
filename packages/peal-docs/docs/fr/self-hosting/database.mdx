@@ -52,7 +52,8 @@ Ces réglages dimensionnent les connexions et les traces des tâches :
 
 | Réglage                  | Par défaut | Ce qu’il fait                                                                                                                              |
 | ------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `DATABASE_URL`           | aucune     | La base Postgres. Chaque processus serveur y ouvre jusqu’à 10 connexions.                                                                  |
+| `DATABASE_URL`           | aucune     | La base Postgres. Chaque processus serveur y ouvre jusqu’à `DATABASE_POOL_MAX` connexions.                                                 |
+| `DATABASE_POOL_MAX`      | `20`       | Les connexions que chaque processus serveur y ouvre au plus, pour l’API et les tâches.                                                     |
 | `AUTH_DB_POOL_MAX`       | `5`        | Les connexions que chaque processus serveur ouvre en plus, pour la connexion des utilisateurs.                                             |
 | `PEAL_CLUSTER_RETENTION` | `30 days`  | Un nettoyage quotidien supprime les traces des tâches terminées depuis plus longtemps. Les tâches encore en attente sont toujours gardées. |
 

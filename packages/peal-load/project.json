@@ -1,0 +1,38 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "peal-load",
+  "projectType": "application",
+  "implicitDependencies": ["peal-server"],
+  "targets": {
+    "typecheck": {
+      "command": "tsc --noEmit && tsc --noEmit -p k6/tsconfig.json",
+      "options": { "cwd": "{projectRoot}" }
+    },
+    "seed": {
+      "command": "bun scripts/seed.ts",
+      "options": { "cwd": "{projectRoot}" },
+      "cache": false
+    },
+    "serve": {
+      "command": "bun scripts/serve.ts",
+      "options": { "cwd": "{projectRoot}" },
+      "continuous": true,
+      "cache": false
+    },
+    "setup": {
+      "command": "bun scripts/setup.ts",
+      "options": { "cwd": "{projectRoot}" },
+      "cache": false
+    },
+    "api": {
+      "command": "k6 run --out csv=.local/api.csv k6/api-mix.ts; status=$?; bun scripts/summary.ts .local/api.csv; exit $status",
+      "options": { "cwd": "{projectRoot}" },
+      "cache": false
+    },
+    "burst": {
+      "command": "bun scripts/burst.ts",
+      "options": { "cwd": "{projectRoot}" },
+      "cache": false
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  // k6 runs these files itself: its globals (`__ENV`, `open`), never Bun's.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["k6"]
+  },
+  "include": ["*.ts"]
+}
