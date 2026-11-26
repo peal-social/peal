@@ -26,8 +26,10 @@ import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import { PublicationOutcomes } from "#publishing/application/publication-outcomes.ts";
 import { ShortLinkDefaults } from "#publishing/application/short-link-defaults.ts";
 import { publishingWith } from "#publishing/container.ts";
+import { ChannelOptions } from "#publishing/domain/channel-options.ts";
 import { repostTarget } from "#publishing/domain/post-target.ts";
 import { reopenPost } from "#publishing/domain/post.ts";
+import { WordPressOptions } from "#publishing/domain/wordpress-options.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
 import {
   FakePlatform,
@@ -613,6 +615,57 @@ const refuseOnce = (channelId: ChannelId) =>
   );
 
 describe("a post's post.finished event", () => {
+  it.effect(
+    "tells a post to Mastodon and a website published twice, and finished once",
+    () =>
+      onServerAt(
+        "2026-06-15T07:00:00Z",
+        Effect.gen(function* website() {
+          const owner = yield* freshOwner;
+          const mastodon = yield* connect(owner.workspaceId, "mastodon");
+          const site = yield* connect(owner.workspaceId, "wordpress");
+
+          const { endpoint } = yield* freshEndpoint(owner, {
+            eventTypes: ["post.published", "post.finished"],
+          });
+
+          const { post } = yield* PostScheduling.use((scheduling) =>
+            scheduling.schedule(owner, {
+              channelIds: [mastodon, site],
+              content: syntheticContent,
+              options: [
+                new ChannelOptions({
+                  channelId: site,
+                  options: new WordPressOptions({ title: "An article" }),
+                }),
+              ],
+              schedule: scheduleIn("2026-06-15T08:00:00Z"),
+            })
+          );
+
+          yield* eventually("the job sleeps", isSuspended(post.id));
+          yield* setTime("2026-06-15T08:00:00Z");
+          yield* eventually("the post finishes", isFinished(post.id));
+
+          const sent = yield* eventsSentTo(owner, endpoint.id);
+
+          const published = sent.flatMap((event) =>
+            event.type === "post.published" ? [event.data.platform] : []
+          );
+
+          assert.sameMembers([...published], ["mastodon", "wordpress"]);
+          assert.deepStrictEqual(yield* finishedSentTo(owner, endpoint.id), [
+            {
+              outcome: "published",
+              round: 1,
+              statuses: ["published", "published"],
+            },
+          ]);
+        })
+      ),
+    timeout
+  );
+
   it.effect(
     "says once every channel has its result, with each one's, never what the post says",
     () =>

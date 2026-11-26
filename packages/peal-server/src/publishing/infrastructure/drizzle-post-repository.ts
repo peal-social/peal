@@ -41,6 +41,7 @@ import type { TextOverride } from "#publishing/domain/text-override.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { ChannelIdSchema, PostIdSchema } from "#shared/domain/ids.ts";
 import type { MediaAssetId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
+import { ArticleBodySchema } from "#shared/domain/rich-text/rich-body.ts";
 import type { Schedule } from "#shared/domain/schedule.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
@@ -206,14 +207,22 @@ const scheduleColumns = (schedule: Option.Option<Schedule>) =>
     }),
   });
 
+// A rich text as JSON, as the allow-list's schema writes it.
+const encodeBody = Schema.encodeSync(ArticleBodySchema);
+
 const mediaColumn = (media: readonly MediaAttachment[]) =>
   media.map(({ altText, mediaId }) => ({ altText, mediaId }));
 
-// An override as its column holds it: its media only when it gives some.
-const overrideColumn = ({ channelId, media, text }: TextOverride) =>
-  media === undefined
-    ? { channelId, text }
-    : { channelId, media: mediaColumn(media), text };
+// An override as its column holds it: its media only when it gives some,
+// its rich text (a website's) only when it has one.
+const overrideColumn = ({ body, channelId, media, text }: TextOverride) => {
+  const column =
+    media === undefined
+      ? { channelId, text }
+      : { channelId, media: mediaColumn(media), text };
+
+  return body === undefined ? column : { ...column, body: encodeBody(body) };
+};
 
 // What the post says, as its columns hold it.
 const contentColumns = ({ content }: Post) => ({

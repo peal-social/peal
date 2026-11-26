@@ -73,6 +73,7 @@ const decodeMedia = Schema.decodeUnknownEffect(MediaSchema);
 
 const OverridesSchema = Schema.Array(
   Schema.Struct({
+    body: Schema.optionalKey(Schema.Json),
     channelId: Schema.String,
     media: Schema.optionalKey(MediaSchema),
     text: Schema.String,
@@ -110,11 +111,14 @@ const exportedMedia = (media: typeof MediaSchema.Type) =>
 
 // The texts by channel, with the media one gives its channel, if any.
 const exportedOverrides = (overrides: typeof OverridesSchema.Type) =>
-  overrides.map(({ channelId, media, text }) =>
-    media === undefined
-      ? { channelId, text }
-      : { channelId, media: exportedMedia(media), text }
-  );
+  overrides.map(({ body, channelId, media, text }) => {
+    const exported =
+      media === undefined
+        ? { channelId, text }
+        : { channelId, media: exportedMedia(media), text };
+
+    return body === undefined ? exported : { ...exported, body };
+  });
 
 // How a post was created or scheduled, as the post repository writes it.
 const decodeOrigin = Schema.decodeUnknownEffect(

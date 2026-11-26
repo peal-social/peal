@@ -12,8 +12,9 @@ import type { PostContent } from "peal-contract";
 
 import { PostDraftsHandlers } from "#publishing/api/post-drafts.ts";
 import { PostsHandlers } from "#publishing/api/posts.ts";
+import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
 import { newId } from "#shared/application/ids.ts";
-import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import { MediaAssetIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { memberOf } from "#test/channels/support.ts";
 import { utc } from "#test/publishing/infrastructure/harness.ts";
@@ -22,6 +23,7 @@ import {
   storeMedia,
 } from "#test/publishing/library-media.ts";
 import { connect } from "#test/publishing/posts-server.ts";
+import { askedToLetGo } from "#test/publishing/support.ts";
 import { securityTest } from "#workspace/api/security.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
 
@@ -211,6 +213,74 @@ describe("a post to a website", () => {
             elsewhere.violations.map(({ _tag }) => _tag),
             ["bodyNotTaken"]
           );
+        })
+      ),
+    timeout
+  );
+});
+
+describe("a rich text's files", () => {
+  it.effect(
+    "leave its body when a library file is deleted, and come with it when the post is duplicated",
+    () =>
+      onPostsWithLibraryAt(
+        start,
+        Effect.gen(function* files() {
+          const workspaceId = yield* freshWorkspace;
+          const site = yield* connect(workspaceId, "wordpress");
+          const client = yield* editorIn(workspaceId);
+          const kept = yield* storeMedia(workspaceId);
+          const gone = yield* storeMedia(workspaceId);
+
+          const body = {
+            content: [
+              { attrs: { alt: "Kept", mediaId: kept }, type: "image" },
+              { attrs: { alt: "Gone", mediaId: gone }, type: "image" },
+            ],
+            type: "doc" as const,
+          };
+
+          const draft = yield* client["posts.drafts"].create({
+            headers: forWorkspace(workspaceId),
+            payload: {
+              channelIds: [site],
+              content: {
+                media: [],
+                overrides: [{ body, channelId: site, text: "" }],
+                text: "Plain",
+              },
+            },
+          });
+
+          const copy = yield* client.posts.duplicate({
+            headers: forWorkspace(workspaceId),
+            params: { postId: draft.id },
+          });
+
+          assert.deepStrictEqual(
+            copy.content.overrides,
+            draft.content.overrides
+          );
+
+          yield* askedToLetGo(workspaceId, MediaAssetIdSchema.make(gone)).pipe(
+            Effect.provide(MediaInPosts.layer)
+          );
+
+          const after = yield* client.posts.get({
+            headers: forWorkspace(workspaceId),
+            params: { postId: draft.id },
+          });
+
+          const [override] = after.content.overrides;
+
+          assert.deepStrictEqual(
+            override?.media?.map(({ mediaId }) => mediaId),
+            [kept]
+          );
+          assert.deepStrictEqual(override?.body?.content, [
+            { attrs: { alt: "Kept", mediaId: kept }, type: "image" },
+            { type: "paragraph" },
+          ]);
         })
       ),
     timeout
