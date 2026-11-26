@@ -408,23 +408,25 @@ func (d *DuplicatePostsRequest) SetPostID(postID string) {
 }
 
 var (
-	livePostEditFieldPostID   = big.NewInt(1 << 0)
-	livePostEditFieldTargetID = big.NewInt(1 << 1)
-	livePostEditFieldWait     = big.NewInt(1 << 2)
-	livePostEditFieldBody     = big.NewInt(1 << 3)
-	livePostEditFieldOptions  = big.NewInt(1 << 4)
-	livePostEditFieldPart     = big.NewInt(1 << 5)
-	livePostEditFieldText     = big.NewInt(1 << 6)
+	livePostEditFieldPostID       = big.NewInt(1 << 0)
+	livePostEditFieldTargetID     = big.NewInt(1 << 1)
+	livePostEditFieldWait         = big.NewInt(1 << 2)
+	livePostEditFieldBody         = big.NewInt(1 << 3)
+	livePostEditFieldBodyMarkdown = big.NewInt(1 << 4)
+	livePostEditFieldOptions      = big.NewInt(1 << 5)
+	livePostEditFieldPart         = big.NewInt(1 << 6)
+	livePostEditFieldText         = big.NewInt(1 << 7)
 )
 
 type LivePostEdit struct {
-	PostID   string         `json:"-" url:"-"`
-	TargetID string         `json:"-" url:"-"`
-	Wait     *string        `json:"-" url:"wait,omitempty"`
-	Body     *RichText      `json:"body,omitempty" url:"-"`
-	Options  *TargetOptions `json:"options,omitempty" url:"-"`
-	Part     *int           `json:"part,omitempty" url:"-"`
-	Text     *string        `json:"text,omitempty" url:"-"`
+	PostID       string         `json:"-" url:"-"`
+	TargetID     string         `json:"-" url:"-"`
+	Wait         *string        `json:"-" url:"wait,omitempty"`
+	Body         *RichText      `json:"body,omitempty" url:"-"`
+	BodyMarkdown *string        `json:"bodyMarkdown,omitempty" url:"-"`
+	Options      *TargetOptions `json:"options,omitempty" url:"-"`
+	Part         *int           `json:"part,omitempty" url:"-"`
+	Text         *string        `json:"text,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -465,6 +467,13 @@ func (l *LivePostEdit) SetWait(wait *string) {
 func (l *LivePostEdit) SetBody(body *RichText) {
 	l.Body = body
 	l.require(livePostEditFieldBody)
+}
+
+// SetBodyMarkdown sets the BodyMarkdown field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *LivePostEdit) SetBodyMarkdown(bodyMarkdown *string) {
+	l.BodyMarkdown = bodyMarkdown
+	l.require(livePostEditFieldBodyMarkdown)
 }
 
 // SetOptions sets the Options field and marks it as non-optional;
@@ -1224,6 +1233,167 @@ func NewAttemptResultFromString(s string) (AttemptResult, error) {
 
 func (a AttemptResult) Ptr() *AttemptResult {
 	return &a
+}
+
+var (
+	bodyProblemFieldColumn  = big.NewInt(1 << 0)
+	bodyProblemFieldLine    = big.NewInt(1 << 1)
+	bodyProblemFieldProblem = big.NewInt(1 << 2)
+)
+
+type BodyProblem struct {
+	Column  *int            `json:"column,omitempty" url:"column,omitempty"`
+	Line    *int            `json:"line,omitempty" url:"line,omitempty"`
+	Problem BodyProblemKind `json:"problem" url:"problem"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (b *BodyProblem) GetColumn() *int {
+	if b == nil {
+		return nil
+	}
+	return b.Column
+}
+
+func (b *BodyProblem) GetLine() *int {
+	if b == nil {
+		return nil
+	}
+	return b.Line
+}
+
+func (b *BodyProblem) GetProblem() BodyProblemKind {
+	if b == nil {
+		return ""
+	}
+	return b.Problem
+}
+
+func (b *BodyProblem) GetExtraProperties() map[string]interface{} {
+	if b == nil {
+		return nil
+	}
+	return b.extraProperties
+}
+
+func (b *BodyProblem) require(field *big.Int) {
+	next := new(big.Int)
+	if b.explicitFields != nil {
+		next.Set(b.explicitFields)
+	}
+	next.Or(next, field)
+	b.explicitFields = next
+}
+
+// SetColumn sets the Column field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BodyProblem) SetColumn(column *int) {
+	b.Column = column
+	b.require(bodyProblemFieldColumn)
+}
+
+// SetLine sets the Line field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BodyProblem) SetLine(line *int) {
+	b.Line = line
+	b.require(bodyProblemFieldLine)
+}
+
+// SetProblem sets the Problem field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BodyProblem) SetProblem(problem BodyProblemKind) {
+	b.Problem = problem
+	b.require(bodyProblemFieldProblem)
+}
+
+func (b *BodyProblem) UnmarshalJSON(data []byte) error {
+	type unmarshaler BodyProblem
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*b = BodyProblem(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *b)
+	if err != nil {
+		return err
+	}
+	b.extraProperties = extraProperties
+	b.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (b *BodyProblem) MarshalJSON() ([]byte, error) {
+	type embed BodyProblem
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*b),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, b.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (b *BodyProblem) String() string {
+	if b == nil {
+		return "<nil>"
+	}
+	if len(b.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(b.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(b); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", b)
+}
+
+type BodyProblemKind string
+
+const (
+	BodyProblemKindHeadingLevel BodyProblemKind = "headingLevel"
+	BodyProblemKindHTML         BodyProblemKind = "html"
+	BodyProblemKindTable        BodyProblemKind = "table"
+	BodyProblemKindFootnote     BodyProblemKind = "footnote"
+	BodyProblemKindFrontMatter  BodyProblemKind = "frontMatter"
+	BodyProblemKindImage        BodyProblemKind = "image"
+	BodyProblemKindLink         BodyProblemKind = "link"
+	BodyProblemKindTooLarge     BodyProblemKind = "tooLarge"
+	BodyProblemKindNotTaken     BodyProblemKind = "notTaken"
+)
+
+func NewBodyProblemKindFromString(s string) (BodyProblemKind, error) {
+	switch s {
+	case "headingLevel":
+		return BodyProblemKindHeadingLevel, nil
+	case "html":
+		return BodyProblemKindHTML, nil
+	case "table":
+		return BodyProblemKindTable, nil
+	case "footnote":
+		return BodyProblemKindFootnote, nil
+	case "frontMatter":
+		return BodyProblemKindFrontMatter, nil
+	case "image":
+		return BodyProblemKindImage, nil
+	case "link":
+		return BodyProblemKindLink, nil
+	case "tooLarge":
+		return BodyProblemKindTooLarge, nil
+	case "notTaken":
+		return BodyProblemKindNotTaken, nil
+	}
+	var t BodyProblemKind
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (b BodyProblemKind) Ptr() *BodyProblemKind {
+	return &b
 }
 
 var (
@@ -3853,11 +4023,13 @@ func (c *ContentViolationAspectRatioUnsupportedMinimum) Accept(visitor ContentVi
 var (
 	contentViolationBodyInvalidFieldChannelID = big.NewInt(1 << 0)
 	contentViolationBodyInvalidFieldPart      = big.NewInt(1 << 1)
+	contentViolationBodyInvalidFieldProblems  = big.NewInt(1 << 2)
 )
 
 type ContentViolationBodyInvalid struct {
-	ChannelID string `json:"channelId" url:"channelId"`
-	Part      *int   `json:"part,omitempty" url:"part,omitempty"`
+	ChannelID string         `json:"channelId" url:"channelId"`
+	Part      *int           `json:"part,omitempty" url:"part,omitempty"`
+	Problems  []*BodyProblem `json:"problems,omitempty" url:"problems,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -3878,6 +4050,13 @@ func (c *ContentViolationBodyInvalid) GetPart() *int {
 		return nil
 	}
 	return c.Part
+}
+
+func (c *ContentViolationBodyInvalid) GetProblems() []*BodyProblem {
+	if c == nil {
+		return nil
+	}
+	return c.Problems
 }
 
 func (c *ContentViolationBodyInvalid) GetExtraProperties() map[string]interface{} {
@@ -3908,6 +4087,13 @@ func (c *ContentViolationBodyInvalid) SetChannelID(channelID string) {
 func (c *ContentViolationBodyInvalid) SetPart(part *int) {
 	c.Part = part
 	c.require(contentViolationBodyInvalidFieldPart)
+}
+
+// SetProblems sets the Problems field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationBodyInvalid) SetProblems(problems []*BodyProblem) {
+	c.Problems = problems
+	c.require(contentViolationBodyInvalidFieldProblems)
 }
 
 func (c *ContentViolationBodyInvalid) UnmarshalJSON(data []byte) error {

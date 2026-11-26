@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,12 +26,18 @@ public final class ContentViolationBodyInvalid {
 
     private final Optional<Integer> part;
 
+    private final Optional<List<BodyProblem>> problems;
+
     private final Map<String, Object> additionalProperties;
 
     private ContentViolationBodyInvalid(
-            String channelId, Optional<Integer> part, Map<String, Object> additionalProperties) {
+            String channelId,
+            Optional<Integer> part,
+            Optional<List<BodyProblem>> problems,
+            Map<String, Object> additionalProperties) {
         this.channelId = channelId;
         this.part = part;
+        this.problems = problems;
         this.additionalProperties = additionalProperties;
     }
 
@@ -42,6 +49,11 @@ public final class ContentViolationBodyInvalid {
     @JsonProperty("part")
     public Optional<Integer> getPart() {
         return part;
+    }
+
+    @JsonProperty("problems")
+    public Optional<List<BodyProblem>> getProblems() {
+        return problems;
     }
 
     @java.lang.Override
@@ -56,12 +68,12 @@ public final class ContentViolationBodyInvalid {
     }
 
     private boolean equalTo(ContentViolationBodyInvalid other) {
-        return channelId.equals(other.channelId) && part.equals(other.part);
+        return channelId.equals(other.channelId) && part.equals(other.part) && problems.equals(other.problems);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.channelId, this.part);
+        return Objects.hash(this.channelId, this.part, this.problems);
     }
 
     @java.lang.Override
@@ -89,11 +101,17 @@ public final class ContentViolationBodyInvalid {
         _FinalStage part(Optional<Integer> part);
 
         _FinalStage part(Integer part);
+
+        _FinalStage problems(Optional<List<BodyProblem>> problems);
+
+        _FinalStage problems(List<BodyProblem> problems);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder implements ChannelIdStage, _FinalStage {
         private String channelId;
+
+        private Optional<List<BodyProblem>> problems = Optional.empty();
 
         private Optional<Integer> part = Optional.empty();
 
@@ -105,6 +123,7 @@ public final class ContentViolationBodyInvalid {
         public Builder from(ContentViolationBodyInvalid other) {
             channelId(other.getChannelId());
             part(other.getPart());
+            problems(other.getProblems());
             return this;
         }
 
@@ -112,6 +131,19 @@ public final class ContentViolationBodyInvalid {
         @JsonSetter("channelId")
         public _FinalStage channelId(@NotNull String channelId) {
             this.channelId = Objects.requireNonNull(channelId, "channelId must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage problems(List<BodyProblem> problems) {
+            this.problems = Optional.ofNullable(problems);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "problems", nulls = Nulls.SKIP)
+        public _FinalStage problems(Optional<List<BodyProblem>> problems) {
+            this.problems = problems;
             return this;
         }
 
@@ -130,12 +162,12 @@ public final class ContentViolationBodyInvalid {
 
         @java.lang.Override
         public ContentViolationBodyInvalid build() {
-            return new ContentViolationBodyInvalid(channelId, part, additionalProperties);
+            return new ContentViolationBodyInvalid(channelId, part, problems, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
-            if (key.equalsIgnoreCase("channelId") || key.equalsIgnoreCase("part")) {
+            if (key.equalsIgnoreCase("channelId") || key.equalsIgnoreCase("part") || key.equalsIgnoreCase("problems")) {
                 return;
             }
             this.additionalProperties.put(key, value);

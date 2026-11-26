@@ -17,6 +17,9 @@ public record ContentViolationBodyInvalid : IJsonOnDeserialized
     [JsonPropertyName("part")]
     public int? Part { get; set; }
 
+    [JsonPropertyName("problems")]
+    public IEnumerable<BodyProblem>? Problems { get; set; }
+
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();
 

@@ -7,7 +7,7 @@ use Peal\Core\Json\JsonProperty;
 use Peal\Core\Types\ArrayType;
 
 /**
- * The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code and images.
+ * The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code (with its language) and images.
  */
 class RichText extends JsonSerializableType
 {

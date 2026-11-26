@@ -244,6 +244,8 @@ if typing.TYPE_CHECKING:
     from .bluesky_content_label import BlueskyContentLabel
     from .bluesky_options import BlueskyOptions
     from .bluesky_replies import BlueskyReplies
+    from .body_problem import BodyProblem
+    from .body_problem_kind import BodyProblemKind
     from .boost import Boost
     from .boost_audience import BoostAudience
     from .boost_budget import BoostBudget
@@ -1419,6 +1421,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "BlueskyContentLabel": ".bluesky_content_label",
     "BlueskyOptions": ".bluesky_options",
     "BlueskyReplies": ".bluesky_replies",
+    "BodyProblem": ".body_problem",
+    "BodyProblemKind": ".body_problem_kind",
     "Boost": ".boost",
     "BoostAudience": ".boost_audience",
     "BoostBudget": ".boost_budget",
@@ -2607,6 +2611,8 @@ __all__ = [
     "BlueskyContentLabel",
     "BlueskyOptions",
     "BlueskyReplies",
+    "BodyProblem",
+    "BodyProblemKind",
     "Boost",
     "BoostAudience",
     "BoostBudget",

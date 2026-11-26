@@ -51,6 +51,7 @@ public class SetTagsTest : BaseMockServerTest
                           ],
                           "type": "doc"
                         },
+                        "bodyMarkdown": "bodyMarkdown",
                         "channelId": "channelId",
                         "media": [
                           {
@@ -76,6 +77,7 @@ public class SetTagsTest : BaseMockServerTest
                           ],
                           "type": "doc"
                         },
+                        "bodyMarkdown": "bodyMarkdown",
                         "channelId": "channelId",
                         "media": [
                           {
@@ -117,6 +119,7 @@ public class SetTagsTest : BaseMockServerTest
                           ],
                           "type": "doc"
                         },
+                        "bodyMarkdown": "bodyMarkdown",
                         "channelId": "channelId",
                         "media": [
                           {
@@ -142,6 +145,7 @@ public class SetTagsTest : BaseMockServerTest
                           ],
                           "type": "doc"
                         },
+                        "bodyMarkdown": "bodyMarkdown",
                         "channelId": "channelId",
                         "media": [
                           {
@@ -182,6 +186,7 @@ public class SetTagsTest : BaseMockServerTest
                       ],
                       "type": "doc"
                     },
+                    "bodyMarkdown": "bodyMarkdown",
                     "channelId": "channelId",
                     "media": [
                       {
@@ -207,6 +212,7 @@ public class SetTagsTest : BaseMockServerTest
                       ],
                       "type": "doc"
                     },
+                    "bodyMarkdown": "bodyMarkdown",
                     "channelId": "channelId",
                     "media": [
                       {

@@ -46,6 +46,7 @@ public class EnqueueTest : BaseMockServerTest
                           ],
                           "type": "doc"
                         },
+                        "bodyMarkdown": "bodyMarkdown",
                         "channelId": "channelId",
                         "media": [
                           {
@@ -71,6 +72,7 @@ public class EnqueueTest : BaseMockServerTest
                           ],
                           "type": "doc"
                         },
+                        "bodyMarkdown": "bodyMarkdown",
                         "channelId": "channelId",
                         "media": [
                           {
@@ -112,6 +114,7 @@ public class EnqueueTest : BaseMockServerTest
                           ],
                           "type": "doc"
                         },
+                        "bodyMarkdown": "bodyMarkdown",
                         "channelId": "channelId",
                         "media": [
                           {
@@ -137,6 +140,7 @@ public class EnqueueTest : BaseMockServerTest
                           ],
                           "type": "doc"
                         },
+                        "bodyMarkdown": "bodyMarkdown",
                         "channelId": "channelId",
                         "media": [
                           {
@@ -177,6 +181,7 @@ public class EnqueueTest : BaseMockServerTest
                       ],
                       "type": "doc"
                     },
+                    "bodyMarkdown": "bodyMarkdown",
                     "channelId": "channelId",
                     "media": [
                       {
@@ -202,6 +207,7 @@ public class EnqueueTest : BaseMockServerTest
                       ],
                       "type": "doc"
                     },
+                    "bodyMarkdown": "bodyMarkdown",
                     "channelId": "channelId",
                     "media": [
                       {

@@ -53372,7 +53372,7 @@ var (
 	richTextFieldType    = big.NewInt(1 << 1)
 )
 
-// The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code and images.
+// The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code (with its language) and images.
 type RichText struct {
 	Content []any        `json:"content" url:"content"`
 	Type    RichTextType `json:"type" url:"type"`
@@ -58713,17 +58713,19 @@ func (t *TextLimit) String() string {
 }
 
 var (
-	textOverrideFieldBody      = big.NewInt(1 << 0)
-	textOverrideFieldChannelID = big.NewInt(1 << 1)
-	textOverrideFieldMedia     = big.NewInt(1 << 2)
-	textOverrideFieldText      = big.NewInt(1 << 3)
+	textOverrideFieldBody         = big.NewInt(1 << 0)
+	textOverrideFieldBodyMarkdown = big.NewInt(1 << 1)
+	textOverrideFieldChannelID    = big.NewInt(1 << 2)
+	textOverrideFieldMedia        = big.NewInt(1 << 3)
+	textOverrideFieldText         = big.NewInt(1 << 4)
 )
 
 type TextOverride struct {
-	Body      *RichText          `json:"body,omitempty" url:"body,omitempty"`
-	ChannelID string             `json:"channelId" url:"channelId"`
-	Media     []*MediaAttachment `json:"media,omitempty" url:"media,omitempty"`
-	Text      string             `json:"text" url:"text"`
+	Body         *RichText          `json:"body,omitempty" url:"body,omitempty"`
+	BodyMarkdown *string            `json:"bodyMarkdown,omitempty" url:"bodyMarkdown,omitempty"`
+	ChannelID    string             `json:"channelId" url:"channelId"`
+	Media        []*MediaAttachment `json:"media,omitempty" url:"media,omitempty"`
+	Text         string             `json:"text" url:"text"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -58737,6 +58739,13 @@ func (t *TextOverride) GetBody() *RichText {
 		return nil
 	}
 	return t.Body
+}
+
+func (t *TextOverride) GetBodyMarkdown() *string {
+	if t == nil {
+		return nil
+	}
+	return t.BodyMarkdown
 }
 
 func (t *TextOverride) GetChannelID() string {
@@ -58781,6 +58790,13 @@ func (t *TextOverride) require(field *big.Int) {
 func (t *TextOverride) SetBody(body *RichText) {
 	t.Body = body
 	t.require(textOverrideFieldBody)
+}
+
+// SetBodyMarkdown sets the BodyMarkdown field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (t *TextOverride) SetBodyMarkdown(bodyMarkdown *string) {
+	t.BodyMarkdown = bodyMarkdown
+	t.require(textOverrideFieldBodyMarkdown)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;

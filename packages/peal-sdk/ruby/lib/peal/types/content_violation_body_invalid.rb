@@ -8,6 +8,8 @@ module Peal
       field :channel_id, -> { String }, optional: false, nullable: false, api_name: "channelId"
 
       field :part, -> { Integer }, optional: true, nullable: false
+
+      field :problems, -> { Internal::Types::Array[Peal::Types::BodyProblem] }, optional: true, nullable: false
     end
   end
 end

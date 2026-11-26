@@ -4,6 +4,9 @@ pub use crate::prelude::*;
 pub struct TextOverride {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body: Option<RichText>,
+    #[serde(rename = "bodyMarkdown")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body_markdown: Option<String>,
     #[serde(rename = "channelId")]
     #[serde(default)]
     pub channel_id: String,
@@ -23,6 +26,7 @@ impl TextOverride {
 #[non_exhaustive]
 pub struct TextOverrideBuilder {
     body: Option<RichText>,
+    body_markdown: Option<String>,
     channel_id: Option<String>,
     media: Option<Vec<MediaAttachment>>,
     text: Option<String>,
@@ -31,6 +35,11 @@ pub struct TextOverrideBuilder {
 impl TextOverrideBuilder {
     pub fn body(mut self, value: RichText) -> Self {
         self.body = Some(value);
+        self
+    }
+
+    pub fn body_markdown(mut self, value: impl Into<String>) -> Self {
+        self.body_markdown = Some(value.into());
         self
     }
 
@@ -56,6 +65,7 @@ impl TextOverrideBuilder {
     pub fn build(self) -> Result<TextOverride, BuildError> {
         Ok(TextOverride {
             body: self.body,
+            body_markdown: self.body_markdown,
             channel_id: self
                 .channel_id
                 .ok_or_else(|| BuildError::missing_field("channel_id"))?,

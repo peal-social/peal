@@ -12,6 +12,8 @@ module Peal
 
         field :body, -> { Peal::Types::RichText }, optional: true, nullable: false
 
+        field :body_markdown, -> { String }, optional: true, nullable: false, api_name: "bodyMarkdown"
+
         field :options, -> { Peal::Types::TargetOptions }, optional: true, nullable: false
 
         field :part, -> { Integer }, optional: true, nullable: false

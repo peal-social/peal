@@ -361,6 +361,7 @@ public class ValidateTest : BaseMockServerTest
                         new TextOverride
                         {
                             Body = null,
+                            BodyMarkdown = null,
                             ChannelId = "channelId",
                             Media = null,
                             Text = "text",
@@ -368,6 +369,7 @@ public class ValidateTest : BaseMockServerTest
                         new TextOverride
                         {
                             Body = null,
+                            BodyMarkdown = null,
                             ChannelId = "channelId",
                             Media = null,
                             Text = "text",

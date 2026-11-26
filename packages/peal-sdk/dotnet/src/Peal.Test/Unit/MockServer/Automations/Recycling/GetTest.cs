@@ -64,6 +64,7 @@ public class GetTest : BaseMockServerTest
                         ],
                         "type": "doc"
                       },
+                      "bodyMarkdown": "bodyMarkdown",
                       "channelId": "channelId",
                       "media": [
                         {
@@ -89,6 +90,7 @@ public class GetTest : BaseMockServerTest
                         ],
                         "type": "doc"
                       },
+                      "bodyMarkdown": "bodyMarkdown",
                       "channelId": "channelId",
                       "media": [
                         {
@@ -119,6 +121,7 @@ public class GetTest : BaseMockServerTest
                         ],
                         "type": "doc"
                       },
+                      "bodyMarkdown": "bodyMarkdown",
                       "channelId": "channelId",
                       "media": [
                         {
@@ -144,6 +147,7 @@ public class GetTest : BaseMockServerTest
                         ],
                         "type": "doc"
                       },
+                      "bodyMarkdown": "bodyMarkdown",
                       "channelId": "channelId",
                       "media": [
                         {

@@ -1,6 +1,6 @@
 pub use crate::prelude::*;
 
-/// The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code and images.
+/// The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code (with its language) and images.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct RichText {
     #[serde(default)]

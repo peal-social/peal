@@ -53,6 +53,7 @@ public class EditTargetTest : BaseMockServerTest
                 PostId = "postId",
                 TargetId = "targetId",
                 Body = null,
+                BodyMarkdown = null,
                 Options = null,
                 Part = null,
                 Text = null,

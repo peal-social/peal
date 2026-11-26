@@ -8,6 +8,7 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from .body_problem import BodyProblem
 from .content_violation_aspect_ratio_unsupported_maximum import ContentViolationAspectRatioUnsupportedMaximum
 from .content_violation_aspect_ratio_unsupported_minimum import ContentViolationAspectRatioUnsupportedMinimum
 from .media_content_type import MediaContentType
@@ -779,6 +780,7 @@ class ContentViolation_BodyInvalid(UniversalBaseModel):
     ] = "bodyInvalid"
     channel_id: typing_extensions.Annotated[str, FieldMetadata(alias="channelId"), pydantic.Field(alias="channelId")]
     part: typing.Optional[int] = None
+    problems: typing.Optional[typing.List[BodyProblem]] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

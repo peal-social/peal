@@ -24,6 +24,8 @@ import social.peal.core.ObjectMappers;
 public final class TextOverride {
     private final Optional<RichText> body;
 
+    private final Optional<String> bodyMarkdown;
+
     private final String channelId;
 
     private final Optional<List<MediaAttachment>> media;
@@ -34,11 +36,13 @@ public final class TextOverride {
 
     private TextOverride(
             Optional<RichText> body,
+            Optional<String> bodyMarkdown,
             String channelId,
             Optional<List<MediaAttachment>> media,
             String text,
             Map<String, Object> additionalProperties) {
         this.body = body;
+        this.bodyMarkdown = bodyMarkdown;
         this.channelId = channelId;
         this.media = media;
         this.text = text;
@@ -48,6 +52,11 @@ public final class TextOverride {
     @JsonProperty("body")
     public Optional<RichText> getBody() {
         return body;
+    }
+
+    @JsonProperty("bodyMarkdown")
+    public Optional<String> getBodyMarkdown() {
+        return bodyMarkdown;
     }
 
     @JsonProperty("channelId")
@@ -78,6 +87,7 @@ public final class TextOverride {
 
     private boolean equalTo(TextOverride other) {
         return body.equals(other.body)
+                && bodyMarkdown.equals(other.bodyMarkdown)
                 && channelId.equals(other.channelId)
                 && media.equals(other.media)
                 && text.equals(other.text);
@@ -85,7 +95,7 @@ public final class TextOverride {
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.body, this.channelId, this.media, this.text);
+        return Objects.hash(this.body, this.bodyMarkdown, this.channelId, this.media, this.text);
     }
 
     @java.lang.Override
@@ -118,6 +128,10 @@ public final class TextOverride {
 
         _FinalStage body(RichText body);
 
+        _FinalStage bodyMarkdown(Optional<String> bodyMarkdown);
+
+        _FinalStage bodyMarkdown(String bodyMarkdown);
+
         _FinalStage media(Optional<List<MediaAttachment>> media);
 
         _FinalStage media(List<MediaAttachment> media);
@@ -131,6 +145,8 @@ public final class TextOverride {
 
         private Optional<List<MediaAttachment>> media = Optional.empty();
 
+        private Optional<String> bodyMarkdown = Optional.empty();
+
         private Optional<RichText> body = Optional.empty();
 
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -140,6 +156,7 @@ public final class TextOverride {
         @java.lang.Override
         public Builder from(TextOverride other) {
             body(other.getBody());
+            bodyMarkdown(other.getBodyMarkdown());
             channelId(other.getChannelId());
             media(other.getMedia());
             text(other.getText());
@@ -174,6 +191,19 @@ public final class TextOverride {
         }
 
         @java.lang.Override
+        public _FinalStage bodyMarkdown(String bodyMarkdown) {
+            this.bodyMarkdown = Optional.ofNullable(bodyMarkdown);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "bodyMarkdown", nulls = Nulls.SKIP)
+        public _FinalStage bodyMarkdown(Optional<String> bodyMarkdown) {
+            this.bodyMarkdown = bodyMarkdown;
+            return this;
+        }
+
+        @java.lang.Override
         public _FinalStage body(RichText body) {
             this.body = Optional.ofNullable(body);
             return this;
@@ -188,12 +218,13 @@ public final class TextOverride {
 
         @java.lang.Override
         public TextOverride build() {
-            return new TextOverride(body, channelId, media, text, additionalProperties);
+            return new TextOverride(body, bodyMarkdown, channelId, media, text, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
             if (key.equalsIgnoreCase("body")
+                    || key.equalsIgnoreCase("bodyMarkdown")
                     || key.equalsIgnoreCase("channelId")
                     || key.equalsIgnoreCase("media")
                     || key.equalsIgnoreCase("text")) {

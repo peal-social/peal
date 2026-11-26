@@ -158,6 +158,8 @@ export * from "./BillingUnavailableEncoded.js";
 export * from "./BlueskyContentLabel.js";
 export * from "./BlueskyOptions.js";
 export * from "./BlueskyReplies.js";
+export * from "./BodyProblem.js";
+export * from "./BodyProblemKind.js";
 export * from "./Boost.js";
 export * from "./BoostAudience.js";
 export * from "./BoostBudget.js";

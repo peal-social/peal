@@ -15,6 +15,12 @@ class TextOverride extends JsonSerializableType
     public ?RichText $body;
 
     /**
+     * @var ?string $bodyMarkdown
+     */
+    #[JsonProperty('bodyMarkdown')]
+    public ?string $bodyMarkdown;
+
+    /**
      * @var string $channelId
      */
     #[JsonProperty('channelId')]
@@ -37,6 +43,7 @@ class TextOverride extends JsonSerializableType
      *   channelId: string,
      *   text: string,
      *   body?: ?RichText,
+     *   bodyMarkdown?: ?string,
      *   media?: ?array<MediaAttachment>,
      * } $values
      */
@@ -44,6 +51,7 @@ class TextOverride extends JsonSerializableType
         array $values,
     ) {
         $this->body = $values['body'] ?? null;
+        $this->bodyMarkdown = $values['bodyMarkdown'] ?? null;
         $this->channelId = $values['channelId'];
         $this->media = $values['media'] ?? null;
         $this->text = $values['text'];

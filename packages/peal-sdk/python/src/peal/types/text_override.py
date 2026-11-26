@@ -12,6 +12,9 @@ from .rich_text import RichText
 
 class TextOverride(UniversalBaseModel):
     body: typing.Optional[RichText] = None
+    body_markdown: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="bodyMarkdown"), pydantic.Field(alias="bodyMarkdown")
+    ] = None
     channel_id: typing_extensions.Annotated[str, FieldMetadata(alias="channelId"), pydantic.Field(alias="channelId")]
     media: typing.Optional[typing.List[MediaAttachment]] = None
     text: str

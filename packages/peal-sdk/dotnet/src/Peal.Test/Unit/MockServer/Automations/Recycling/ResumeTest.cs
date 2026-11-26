@@ -68,6 +68,7 @@ public class ResumeTest : BaseMockServerTest
                         ],
                         "type": "doc"
                       },
+                      "bodyMarkdown": "bodyMarkdown",
                       "channelId": "channelId",
                       "media": [
                         {
@@ -93,6 +94,7 @@ public class ResumeTest : BaseMockServerTest
                         ],
                         "type": "doc"
                       },
+                      "bodyMarkdown": "bodyMarkdown",
                       "channelId": "channelId",
                       "media": [
                         {
@@ -123,6 +125,7 @@ public class ResumeTest : BaseMockServerTest
                         ],
                         "type": "doc"
                       },
+                      "bodyMarkdown": "bodyMarkdown",
                       "channelId": "channelId",
                       "media": [
                         {
@@ -148,6 +151,7 @@ public class ResumeTest : BaseMockServerTest
                         ],
                         "type": "doc"
                       },
+                      "bodyMarkdown": "bodyMarkdown",
                       "channelId": "channelId",
                       "media": [
                         {

@@ -21,6 +21,12 @@ class LivePostEdit extends JsonSerializableType
     public ?RichText $body;
 
     /**
+     * @var ?string $bodyMarkdown
+     */
+    #[JsonProperty('bodyMarkdown')]
+    public ?string $bodyMarkdown;
+
+    /**
      * @var ?TargetOptions $options
      */
     #[JsonProperty('options')]
@@ -42,6 +48,7 @@ class LivePostEdit extends JsonSerializableType
      * @param array{
      *   wait?: ?string,
      *   body?: ?RichText,
+     *   bodyMarkdown?: ?string,
      *   options?: ?TargetOptions,
      *   part?: ?int,
      *   text?: ?string,
@@ -52,6 +59,7 @@ class LivePostEdit extends JsonSerializableType
     ) {
         $this->wait = $values['wait'] ?? null;
         $this->body = $values['body'] ?? null;
+        $this->bodyMarkdown = $values['bodyMarkdown'] ?? null;
         $this->options = $values['options'] ?? null;
         $this->part = $values['part'] ?? null;
         $this->text = $values['text'] ?? null;

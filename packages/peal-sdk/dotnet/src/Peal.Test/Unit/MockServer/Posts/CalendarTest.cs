@@ -36,6 +36,7 @@ public class CalendarTest : BaseMockServerTest
                             "content": [],
                             "type": "doc"
                           },
+                          "bodyMarkdown": "bodyMarkdown",
                           "channelId": "channelId",
                           "media": [],
                           "text": "text"
@@ -45,6 +46,7 @@ public class CalendarTest : BaseMockServerTest
                             "content": [],
                             "type": "doc"
                           },
+                          "bodyMarkdown": "bodyMarkdown",
                           "channelId": "channelId",
                           "media": [],
                           "text": "text"
@@ -70,6 +72,7 @@ public class CalendarTest : BaseMockServerTest
                             "content": [],
                             "type": "doc"
                           },
+                          "bodyMarkdown": "bodyMarkdown",
                           "channelId": "channelId",
                           "media": [],
                           "text": "text"
@@ -79,6 +82,7 @@ public class CalendarTest : BaseMockServerTest
                             "content": [],
                             "type": "doc"
                           },
+                          "bodyMarkdown": "bodyMarkdown",
                           "channelId": "channelId",
                           "media": [],
                           "text": "text"
@@ -110,6 +114,7 @@ public class CalendarTest : BaseMockServerTest
                         ],
                         "type": "doc"
                       },
+                      "bodyMarkdown": "bodyMarkdown",
                       "channelId": "channelId",
                       "media": [
                         {
@@ -135,6 +140,7 @@ public class CalendarTest : BaseMockServerTest
                         ],
                         "type": "doc"
                       },
+                      "bodyMarkdown": "bodyMarkdown",
                       "channelId": "channelId",
                       "media": [
                         {
@@ -334,6 +340,7 @@ public class CalendarTest : BaseMockServerTest
                             "content": [],
                             "type": "doc"
                           },
+                          "bodyMarkdown": "bodyMarkdown",
                           "channelId": "channelId",
                           "media": [],
                           "text": "text"
@@ -343,6 +350,7 @@ public class CalendarTest : BaseMockServerTest
                             "content": [],
                             "type": "doc"
                           },
+                          "bodyMarkdown": "bodyMarkdown",
                           "channelId": "channelId",
                           "media": [],
                           "text": "text"
@@ -368,6 +376,7 @@ public class CalendarTest : BaseMockServerTest
                             "content": [],
                             "type": "doc"
                           },
+                          "bodyMarkdown": "bodyMarkdown",
                           "channelId": "channelId",
                           "media": [],
                           "text": "text"
@@ -377,6 +386,7 @@ public class CalendarTest : BaseMockServerTest
                             "content": [],
                             "type": "doc"
                           },
+                          "bodyMarkdown": "bodyMarkdown",
                           "channelId": "channelId",
                           "media": [],
                           "text": "text"
@@ -408,6 +418,7 @@ public class CalendarTest : BaseMockServerTest
                         ],
                         "type": "doc"
                       },
+                      "bodyMarkdown": "bodyMarkdown",
                       "channelId": "channelId",
                       "media": [
                         {
@@ -433,6 +444,7 @@ public class CalendarTest : BaseMockServerTest
                         ],
                         "type": "doc"
                       },
+                      "bodyMarkdown": "bodyMarkdown",
                       "channelId": "channelId",
                       "media": [
                         {

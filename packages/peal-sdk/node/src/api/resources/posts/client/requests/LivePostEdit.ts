@@ -14,6 +14,7 @@ export interface LivePostEdit {
     targetId: string;
     wait?: string;
     body?: Peal.RichText;
+    bodyMarkdown?: string;
     options?: Peal.TargetOptions;
     part?: number;
     text?: string;

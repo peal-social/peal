@@ -5,7 +5,7 @@ using Peal.Core;
 namespace Peal;
 
 /// <summary>
-/// The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code and images.
+/// The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code (with its language) and images.
 /// </summary>
 [Serializable]
 public record RichText : IJsonOnDeserialized

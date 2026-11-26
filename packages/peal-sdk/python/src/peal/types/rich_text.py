@@ -9,7 +9,7 @@ from .rich_text_type import RichTextType
 
 class RichText(UniversalBaseModel):
     """
-    The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code and images.
+    The rich-text editor's document: blocks of paragraphs, headings, lists, quotes, rules, code (with its language) and images.
     """
 
     content: typing.List[typing.Any]

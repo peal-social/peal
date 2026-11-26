@@ -18,6 +18,9 @@ public record LivePostEdit
     [JsonPropertyName("body")]
     public RichText? Body { get; set; }
 
+    [JsonPropertyName("bodyMarkdown")]
+    public string? BodyMarkdown { get; set; }
+
     [JsonPropertyName("options")]
     public TargetOptions? Options { get; set; }
 

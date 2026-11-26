@@ -14,6 +14,9 @@ public record TextOverride : IJsonOnDeserialized
     [JsonPropertyName("body")]
     public RichText? Body { get; set; }
 
+    [JsonPropertyName("bodyMarkdown")]
+    public string? BodyMarkdown { get; set; }
+
     [JsonPropertyName("channelId")]
     public required string ChannelId { get; set; }
 

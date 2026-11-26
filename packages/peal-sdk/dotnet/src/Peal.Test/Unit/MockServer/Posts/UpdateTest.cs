@@ -74,6 +74,7 @@ public class UpdateTest : BaseMockServerTest
                           ],
                           "type": "doc"
                         },
+                        "bodyMarkdown": "bodyMarkdown",
                         "channelId": "channelId",
                         "media": [
                           {
@@ -99,6 +100,7 @@ public class UpdateTest : BaseMockServerTest
                           ],
                           "type": "doc"
                         },
+                        "bodyMarkdown": "bodyMarkdown",
                         "channelId": "channelId",
                         "media": [
                           {
@@ -140,6 +142,7 @@ public class UpdateTest : BaseMockServerTest
                           ],
                           "type": "doc"
                         },
+                        "bodyMarkdown": "bodyMarkdown",
                         "channelId": "channelId",
                         "media": [
                           {
@@ -165,6 +168,7 @@ public class UpdateTest : BaseMockServerTest
                           ],
                           "type": "doc"
                         },
+                        "bodyMarkdown": "bodyMarkdown",
                         "channelId": "channelId",
                         "media": [
                           {
@@ -205,6 +209,7 @@ public class UpdateTest : BaseMockServerTest
                       ],
                       "type": "doc"
                     },
+                    "bodyMarkdown": "bodyMarkdown",
                     "channelId": "channelId",
                     "media": [
                       {
@@ -230,6 +235,7 @@ public class UpdateTest : BaseMockServerTest
                       ],
                       "type": "doc"
                     },
+                    "bodyMarkdown": "bodyMarkdown",
                     "channelId": "channelId",
                     "media": [
                       {
@@ -446,6 +452,7 @@ public class UpdateTest : BaseMockServerTest
                             new TextOverride
                             {
                                 Body = null,
+                                BodyMarkdown = null,
                                 ChannelId = "channelId",
                                 Media = null,
                                 Text = "text",
@@ -453,6 +460,7 @@ public class UpdateTest : BaseMockServerTest
                             new TextOverride
                             {
                                 Body = null,
+                                BodyMarkdown = null,
                                 ChannelId = "channelId",
                                 Media = null,
                                 Text = "text",

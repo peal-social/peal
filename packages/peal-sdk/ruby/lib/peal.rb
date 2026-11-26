@@ -625,6 +625,8 @@ module Peal
     autoload :BlueskyContentLabel, ::File.join(__dir__, "peal/types/bluesky_content_label")
     autoload :BlueskyReplies, ::File.join(__dir__, "peal/types/bluesky_replies")
     autoload :BlueskyOptions, ::File.join(__dir__, "peal/types/bluesky_options")
+    autoload :BodyProblemKind, ::File.join(__dir__, "peal/types/body_problem_kind")
+    autoload :BodyProblem, ::File.join(__dir__, "peal/types/body_problem")
     autoload :BoostObjective, ::File.join(__dir__, "peal/types/boost_objective")
     autoload :BoostPlatform, ::File.join(__dir__, "peal/types/boost_platform")
     autoload :BoostAudience, ::File.join(__dir__, "peal/types/boost_audience")

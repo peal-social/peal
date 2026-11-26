@@ -27,6 +27,8 @@ public final class LivePostEdit {
 
     private final Optional<RichText> body;
 
+    private final Optional<String> bodyMarkdown;
+
     private final Optional<TargetOptions> options;
 
     private final Optional<Integer> part;
@@ -38,12 +40,14 @@ public final class LivePostEdit {
     private LivePostEdit(
             Optional<String> wait,
             Optional<RichText> body,
+            Optional<String> bodyMarkdown,
             Optional<TargetOptions> options,
             Optional<Integer> part,
             Optional<String> text,
             Map<String, Object> additionalProperties) {
         this.wait = wait;
         this.body = body;
+        this.bodyMarkdown = bodyMarkdown;
         this.options = options;
         this.part = part;
         this.text = text;
@@ -58,6 +62,11 @@ public final class LivePostEdit {
     @JsonProperty("body")
     public Optional<RichText> getBody() {
         return body;
+    }
+
+    @JsonProperty("bodyMarkdown")
+    public Optional<String> getBodyMarkdown() {
+        return bodyMarkdown;
     }
 
     @JsonProperty("options")
@@ -89,6 +98,7 @@ public final class LivePostEdit {
     private boolean equalTo(LivePostEdit other) {
         return wait.equals(other.wait)
                 && body.equals(other.body)
+                && bodyMarkdown.equals(other.bodyMarkdown)
                 && options.equals(other.options)
                 && part.equals(other.part)
                 && text.equals(other.text);
@@ -96,7 +106,7 @@ public final class LivePostEdit {
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.wait, this.body, this.options, this.part, this.text);
+        return Objects.hash(this.wait, this.body, this.bodyMarkdown, this.options, this.part, this.text);
     }
 
     @java.lang.Override
@@ -114,6 +124,8 @@ public final class LivePostEdit {
 
         private Optional<RichText> body = Optional.empty();
 
+        private Optional<String> bodyMarkdown = Optional.empty();
+
         private Optional<TargetOptions> options = Optional.empty();
 
         private Optional<Integer> part = Optional.empty();
@@ -127,6 +139,7 @@ public final class LivePostEdit {
         public Builder from(LivePostEdit other) {
             wait(other.getWait());
             body(other.getBody());
+            bodyMarkdown(other.getBodyMarkdown());
             options(other.getOptions());
             part(other.getPart());
             text(other.getText());
@@ -152,6 +165,17 @@ public final class LivePostEdit {
 
         public Builder body(RichText body) {
             this.body = Optional.ofNullable(body);
+            return this;
+        }
+
+        @JsonSetter(value = "bodyMarkdown", nulls = Nulls.SKIP)
+        public Builder bodyMarkdown(Optional<String> bodyMarkdown) {
+            this.bodyMarkdown = bodyMarkdown;
+            return this;
+        }
+
+        public Builder bodyMarkdown(String bodyMarkdown) {
+            this.bodyMarkdown = Optional.ofNullable(bodyMarkdown);
             return this;
         }
 
@@ -189,12 +213,13 @@ public final class LivePostEdit {
         }
 
         public LivePostEdit build() {
-            return new LivePostEdit(wait, body, options, part, text, additionalProperties);
+            return new LivePostEdit(wait, body, bodyMarkdown, options, part, text, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
             if (key.equalsIgnoreCase("body")
+                    || key.equalsIgnoreCase("bodyMarkdown")
                     || key.equalsIgnoreCase("options")
                     || key.equalsIgnoreCase("part")
                     || key.equalsIgnoreCase("text")) {

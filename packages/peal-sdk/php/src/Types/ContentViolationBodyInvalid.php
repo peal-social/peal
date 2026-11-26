@@ -4,6 +4,7 @@ namespace Peal\Types;
 
 use Peal\Core\Json\JsonSerializableType;
 use Peal\Core\Json\JsonProperty;
+use Peal\Core\Types\ArrayType;
 
 class ContentViolationBodyInvalid extends JsonSerializableType
 {
@@ -20,9 +21,16 @@ class ContentViolationBodyInvalid extends JsonSerializableType
     public ?int $part;
 
     /**
+     * @var ?array<BodyProblem> $problems
+     */
+    #[JsonProperty('problems'), ArrayType([BodyProblem::class])]
+    public ?array $problems;
+
+    /**
      * @param array{
      *   channelId: string,
      *   part?: ?int,
+     *   problems?: ?array<BodyProblem>,
      * } $values
      */
     public function __construct(
@@ -30,6 +38,7 @@ class ContentViolationBodyInvalid extends JsonSerializableType
     ) {
         $this->channelId = $values['channelId'];
         $this->part = $values['part'] ?? null;
+        $this->problems = $values['problems'] ?? null;
     }
 
     /**

@@ -574,6 +574,8 @@ pub enum ContentViolation {
         channel_id: String,
         #[serde(skip_serializing_if = "Option::is_none")]
         part: Option<i64>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        problems: Option<Vec<BodyProblem>>,
     },
 
     #[serde(rename = "bodyNotTaken")]
@@ -1112,6 +1114,7 @@ impl ContentViolation {
         Self::BodyInvalid {
             channel_id,
             part: None,
+            problems: None,
         }
     }
 
@@ -1673,10 +1676,27 @@ impl ContentViolation {
         }
     }
 
-    pub fn body_invalid_with_part(channel_id: String, part: i64) -> Self {
+    pub fn body_invalid_with_part(
+        channel_id: String,
+        part: i64,
+        problems: Option<Vec<BodyProblem>>,
+    ) -> Self {
         Self::BodyInvalid {
             channel_id,
             part: Some(part),
+            problems,
+        }
+    }
+
+    pub fn body_invalid_with_problems(
+        channel_id: String,
+        part: Option<i64>,
+        problems: Vec<BodyProblem>,
+    ) -> Self {
+        Self::BodyInvalid {
+            channel_id,
+            part,
+            problems: Some(problems),
         }
     }
 
