@@ -940,3 +940,26 @@ options on its target) is the previous section's.
    it counts 0, and only if the previous section allows it. Never change
    the rows by hand. The columns stay: the release before neither reads
    nor writes them.
+
+## Past a code block's language
+
+The release that reads a website's body sent as Markdown keeps a code
+block's language in the rich text, `attrs.language` on a `codeBlock`
+(`publishing.posts.text_overrides`, the parts' overrides in `follow_ups`,
+`publishing.articles.body`), and keeps the editor's `language: null` as it
+came. The release before ignores the key when it reads a body: it sends
+the code without its language (no highlighting on the site), and a body
+it writes back (an edit, a draft saved again, a file deleted from the
+library) loses it. Nothing fails, and the code itself is kept, so a
+roll-back is safe; the check says how many bodies would lose a language.
+`bodyMarkdown` is never stored.
+
+1. **Bodies naming a language:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT (SELECT count(*) FROM publishing.posts WHERE jsonb_path_exists(text_overrides, 'strict \$.**.language ? (@.type() == \"string\")') OR jsonb_path_exists(follow_ups, 'strict \$.**.language ? (@.type() == \"string\")')) AS posts, (SELECT count(*) FROM publishing.articles WHERE jsonb_path_exists(body, 'strict \$.**.language ? (@.type() == \"string\")')) AS articles"
+   ```
+
+2. **It counts more than 0:** roll back if the highlighting may go; the
+   language comes back only when the body is sent again with it.

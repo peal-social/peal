@@ -215,7 +215,25 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   without either); a body is stored in `text_overrides` with the
   override. A request's body is checked against the allow-list
   where requests are read (`contentFrom`, `checkRequestFrom`:
-  `bodyInvalid`), then made with `richOverride`; a body on a platform
+  `bodyInvalid`), then made with `richOverride`. A body may be sent as
+  Markdown instead (`TextOverride.bodyMarkdown`, `LivePostEdit`'s too,
+  never both with `body`): it is read at the door into the document,
+  before that check, through the application port `MarkdownBodies`
+  (`application/markdown-bodies.ts`), whose adapter
+  (`infrastructure/markdown/`) parses CommonMark with GitHub's extensions,
+  walks the tree without recursion (GitHub's recursive transforms run
+  only on a tree measured shallow enough), and decodes what it made with
+  `ArticleBodySchema`, so the allow-list stays the one gate. The rule of
+  its tables: what the document has a node or a mark for becomes it;
+  everything else is refused with its line and column (`BodyProblem`,
+  `bodyInvalid.problems`, never an excerpt), never dropped and never sent
+  as stray characters (a level-1 heading, raw HTML, a table, a footnote,
+  front matter, an image that is no `media:<id>`). The Markdown is never
+  stored or answered, and the server fetches no image address while it
+  reads one. The handlers and the MCP tools take the reader once, when
+  their layer is built, and pass it to the readers (`contentFrom`,
+  `liveEditFrom`, `sendRequestFrom`, `checkRequestFrom`), as a
+  requirement left on a handler would be a request's; a body on a platform
   that is no website's, or on a later part, is `bodyNotTaken`, on a draft
   too. Without a body the site gets `bodyOfText` (a paragraph a block, a
   hard break a line, `http(s)` addresses as links, then the part's

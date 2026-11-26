@@ -119,7 +119,9 @@ and no socket, for tests.
   (`AttemptOutcome`: a `PublishResult` or a `PublishFailure`). While
   articles and posts both send to websites, it also holds what the site
   adapters need: the rich text (`domain/rich-text/`: the allow-listed
-  body, its HTML and Markdown writers, each site's rules, the adapters'
+  body, a code block's language among it (`CodeLanguageSchema`, written as
+  the code's class in HTML and the fence's info in Markdown), its HTML and
+  Markdown writers, each site's rules, the adapters'
   own refusal codes), the article as a site gets it (`OutgoingArticle`,
   `SiteArticleContent`), and what a site's call needs
   (`application/site-call-journal.ts`, `site-search.ts`, `site-token.ts`).
@@ -574,7 +576,11 @@ and no socket, for tests.
   website's rich text or options (`live_post_changes.body`, `options`),
   which the release before fails `notSupported` without clearing them:
   roll back past it only once none is pending (the runbook's "Past edits
-  of live websites").
+  of live websites"). A code block's language did too:
+  `attrs.language` in a stored rich text, which the release before
+  ignores, sending the code without it and dropping it from a body it
+  writes back: safe to roll back (the runbook's "Past a code block's
+  language").
 
 ### Product analytics
 

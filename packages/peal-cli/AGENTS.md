@@ -189,7 +189,24 @@
   post that waits; it words `LastTargetLeft` and `TargetStatusConflict`
   itself, before `explainingPublishing`, which leaves `src/explain.ts` and
   `src/api-error.ts` as they are. The command line has no flag for a
-  channel's own text or media: they go through the API or MCP.
+  channel's own text or media but a website's body: they go through the
+  API or MCP.
+- `peal post` and `peal drafts save` take a website's body from a Markdown
+  file, `--markdown <channel-id>=<file>` (repeated, parsed as `--options`
+  is), and `peal posts edit` takes `--markdown-file <file>` (never with
+  `--body`), all in `src/markdown-files.ts`: each file is read before any
+  request, 400,000 characters at most (`maxBodyMarkdownLength`), and never
+  printed, and sent as the override's `bodyMarkdown` with an empty text.
+  The images it names by a path (from the file's folder) or an https
+  address are stored first, once each, in the file's order, as `--media`
+  stores one, and written `media:<id>` in what is sent; the file is parsed
+  by the server's parser (`mdast-util-from-markdown` with GitHub's
+  extensions, their recursive transforms left out) to find the images'
+  places, an image's own or the definition an image reference reads.
+  `--dry-run` takes a file whose images are media ids only. `explain`
+  words each problem of a refused body with its line and column
+  (`bodyProblemOf`). A draft saved again keeps its other channels'
+  overrides.
 - `peal post` and `peal drafts save` take a poll with `--poll-choice`
   (repeated, in order), `--poll-minutes` (1440 unless given) and
   `--poll-multiple` (`pollOf`, `src/post-flags.ts`): a time or several
@@ -269,7 +286,8 @@
   `peal posts edit` (`commands/posts-edit.ts`) replaces a part's text on
   one channel (`--channel`, resolved as `unpublish` resolves it, `--text`,
   `--part`, `--wait`), and a website's rich text and options (`--body`,
-  `--options`, JSON read before any call), one of the three at least,
+  `--options`, JSON read before any call, or `--markdown-file`), one of
+  them at least,
   without asking: the edit is the user's own text.
 - `peal tags` (list, create, update, delete) keeps a workspace's tags, and
   `peal posts tag`, `peal posts list --tag`, `peal drafts save --tag` and
