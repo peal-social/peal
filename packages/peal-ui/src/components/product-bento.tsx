@@ -5,7 +5,7 @@ import { ChevronRightIcon } from "lucide-react";
 import { cn } from "../lib/utils";
 import { MockChip } from "./feature-cell";
 import type { MockChipContent } from "./feature-cell";
-import { PixelFigure } from "./pixel-figure";
+import { PixelIconArt } from "./pixel-icon-art";
 import { Mark, SiteIconView } from "./site-icons";
 import type { SiteIcon, SiteMark } from "./site-icons";
 
@@ -173,11 +173,9 @@ const Card = ({
 
 const TileBody = ({ tile }: { readonly tile: BentoTile }) => (
   <>
-    <PixelFigure
-      art={<SiteIconView icon={tile.icon} />}
-      className="h-20"
-      tones={["--brand-tint", "--lavender", "--brand", "--sun"]}
-    />
+    <span className="relative block h-20">
+      <PixelIconArt art={<SiteIconView icon={tile.icon} />} />
+    </span>
     <span className="flex flex-col gap-1">
       <span className="text-foreground flex items-center gap-2 text-[15px] font-semibold">
         <SiteIconView icon={tile.icon} />
@@ -193,7 +191,7 @@ const TileBody = ({ tile }: { readonly tile: BentoTile }) => (
 /**
  * A product's bento (DESIGN.md, Site): two large bordered cells, each a
  * feature cell with a mock drawn from the app, over a row of four tiles,
- * each still pixel art of its icon, a title and a line.
+ * each its icon in pixel art, a title and a line.
  */
 const ProductBento = ({
   cards,

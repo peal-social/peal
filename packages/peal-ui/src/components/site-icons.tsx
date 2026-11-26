@@ -3,6 +3,7 @@ import {
   BlocksIcon,
   BookOpenIcon,
   BotIcon,
+  BotMessageSquareIcon,
   BracesIcon,
   CalendarDaysIcon,
   ChartLineIcon,
@@ -34,6 +35,7 @@ import {
   SparklesIcon,
   SquareTerminalIcon,
   UsersIcon,
+  WandSparklesIcon,
   WebhookIcon,
 } from "lucide-react";
 
@@ -46,6 +48,7 @@ const siteIcons = {
   blocks: BlocksIcon,
   "book-open": BookOpenIcon,
   bot: BotIcon,
+  "bot-message": BotMessageSquareIcon,
   braces: BracesIcon,
   calendar: CalendarDaysIcon,
   chart: ChartLineIcon,
@@ -77,6 +80,7 @@ const siteIcons = {
   sparkles: SparklesIcon,
   terminal: SquareTerminalIcon,
   users: UsersIcon,
+  wand: WandSparklesIcon,
   webhook: WebhookIcon,
 } as const;
 
@@ -90,6 +94,11 @@ type SiteIcon = keyof typeof siteIcons;
  */
 type SiteMark =
   | {
+      /**
+       * The brand's own colour, where a mark is shown in it (the hero's
+       * Connect menu); otherwise the text's colour.
+       */
+      readonly colour?: string | undefined;
       readonly kind: "path";
       /** `evenodd` where a shape inside another is a hole, such as a letter. */
       readonly fillRule?: "evenodd" | undefined;
@@ -114,7 +123,7 @@ const Mark = ({
     <svg
       viewBox={mark.viewBox ?? "0 0 24 24"}
       aria-hidden="true"
-      fill="currentColor"
+      fill={mark.colour ?? "currentColor"}
       className={cn("size-4 shrink-0", className)}
     >
       <path d={mark.path} fillRule={mark.fillRule} />

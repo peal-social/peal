@@ -10,7 +10,7 @@ import {
   AccordionPanel,
   AccordionTrigger,
 } from "./accordion";
-import { PixelFigure } from "./pixel-figure";
+import { PixelIconArt } from "./pixel-icon-art";
 import { SectionCounter } from "./section-opener";
 
 // The label's brackets, as text.
@@ -34,17 +34,20 @@ interface FaqSectionProps {
   readonly groups: readonly FaqGroup[];
   /** The short label over the art, such as `FAQ`. */
   readonly label: string;
-  readonly lead: string;
-  /** The headline: a sentence, then a second one in muted text. */
-  readonly title: { readonly muted: string; readonly text: string };
+  readonly lead?: string | undefined;
+  /** The headline: a sentence, then, if any, a second one in muted text. */
+  readonly title: {
+    readonly muted?: string | undefined;
+    readonly text: string;
+  };
 }
 
 /**
- * A FAQ on the site's blueprint (DESIGN.md, Site): a band with quiet pixel
- * art and a label on the left and the headline on the right, then a row
- * per group, its title on the left and its questions as an accordion on
- * the right. Several answers may be open at once, and closed ones stay in
- * the page, findable with the browser's search.
+ * A FAQ on the site's blueprint (DESIGN.md, Site): a band with flowing
+ * pixel art and its label over it on the left and the headline on the
+ * right, then a row per group, its title on the left and its questions as
+ * an accordion on the right. Several answers may be open at once, and
+ * closed ones stay in the page, findable with the browser's search.
  */
 const FaqSection = ({
   className,
@@ -64,11 +67,10 @@ const FaqSection = ({
     >
       {counter === undefined ? null : <SectionCounter counter={counter} />}
       <div className="grid border-y md:grid-cols-2">
-        <div className="relative flex h-24 items-center justify-center overflow-hidden border-b md:h-auto md:min-h-64 md:border-e md:border-b-0">
-          <PixelFigure
+        <div className="relative flex h-40 items-center justify-center overflow-hidden border-b md:h-auto md:min-h-64 md:border-e md:border-b-0">
+          <PixelIconArt
             art={<MessageCircleQuestionMarkIcon strokeWidth={2} />}
-            className="absolute inset-0"
-            tones={["--brand-tint", "--brand-tint", "#ede7ff", "--lavender"]}
+            cells={34}
           />
           <span className="bg-background text-muted-foreground relative flex items-center gap-1.5 rounded-sm px-2 py-1 font-mono text-xs tracking-[0.04em]">
             <span aria-hidden="true">{slashes}</span>
@@ -86,12 +88,19 @@ const FaqSection = ({
             id={heading}
             className="text-[30px] leading-[1.1] font-semibold tracking-[-0.025em] sm:text-[40px]"
           >
-            {title.text}{" "}
-            <span className="text-muted-foreground">{title.muted}</span>
+            {title.text}
+            {title.muted === undefined ? null : (
+              <>
+                {" "}
+                <span className="text-muted-foreground">{title.muted}</span>
+              </>
+            )}
           </h2>
-          <p className="text-muted-foreground max-w-[40rem] text-base sm:text-lg">
-            {lead}
-          </p>
+          {lead === undefined ? null : (
+            <p className="text-muted-foreground max-w-[40rem] text-base sm:text-lg">
+              {lead}
+            </p>
+          )}
         </div>
       </div>
       {groups.map((group) => (

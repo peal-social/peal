@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from "astro";
 import { ProductPair } from "peal-ui/components/app-mock";
 import { buttonVariants } from "peal-ui/components/button";
+import { ConnectMenu } from "peal-ui/components/connect-menu";
 import { CtaBand } from "peal-ui/components/cta-band";
 import { FaqSection } from "peal-ui/components/faq-section";
 import { FeatureGrid } from "peal-ui/components/feature-cell";
@@ -13,6 +14,7 @@ import { ProductRows } from "peal-ui/components/product-rows";
 import { SectionOpener } from "peal-ui/components/section-opener";
 import { formatStars } from "peal-ui/lib/site/stars";
 
+import { skillDocument, skillsRoot } from "../../agent-skills.ts";
 import { homeCode } from "../../code/home-code.ts";
 import CodeBlock from "../../components/code-block.astro";
 import { appLink, docsLink } from "../../config.ts";
@@ -21,7 +23,9 @@ import { latestPulls, repositoryStars } from "../../github.ts";
 import {
   apiCode,
   apiRows,
+  connectMenu,
   ctaLinks,
+  glowParts,
   hardPartCells,
   heroCode,
   heroTabs,
@@ -29,6 +33,7 @@ import {
   productPair,
   sectionAction,
   studioBento,
+  withPlatformCount,
 } from "../../home.ts";
 import type { HomeSettings } from "../../home.ts";
 import { localePaths, pageLocale } from "../../i18n/locales.ts";
@@ -72,7 +77,16 @@ const counter = (index: number) =>
 
 const faq = faqGroups(locale);
 
-const hero = ctaLinks(t.hero, settings);
+// The hero's second button is the Connect menu, not the docs.
+const hero = ctaLinks({ primary: t.hero.primary }, settings);
+
+// The prompt points at the skill this site serves, by its full address.
+const skill =
+  Astro.site === undefined
+    ? undefined
+    : new URL(`${skillsRoot}/peal/${skillDocument}`, Astro.site).href;
+
+const connect = connectMenu(t.hero.connect, settings, skill);
 
 const cta = ctaLinks(t.cta, settings);
 
@@ -81,70 +95,85 @@ const pair = productPair(t);
 const bento = studioBento(locale, t, settings);
 ---
 
-<Base description={t.description} path="" title={t.title}>
+<Base
+  description={withPlatformCount(t.description)}
+  path=""
+  title={t.title}
+>
   <script
     slot="head"
     type="application/ld+json"
     is:inline
     set:html={faqJsonLdText(faq)}
   />
-  <div class="relative isolate mx-auto max-w-6xl overflow-hidden">
-    <PixelGlow client:load layout="hero" />
+  <div class="mx-auto max-w-6xl">
     <section
       aria-labelledby="hero-title"
-      class="flex flex-col gap-12 px-4 pt-20 pb-24 sm:px-6 sm:pt-24 lg:px-10"
+      class="flex flex-col gap-12 pb-24"
     >
-      <div class="grid items-end gap-8 lg:grid-cols-2 lg:gap-16">
-        <div>
+      <!-- The words on the centre line, in a band like the closing one: its
+      glow around them, a rule under it. -->
+      <div
+        class="relative isolate overflow-hidden border-b px-4 pt-20 pb-20 sm:px-6 sm:pt-24 sm:pb-24 lg:px-10"
+      >
+        <PixelGlow client:load layout="band" />
+        <div class="mx-auto flex max-w-4xl flex-col items-center text-center">
           <h1
             id="hero-title"
-            class="max-w-2xl text-4xl leading-[1.05] font-semibold tracking-[-0.025em] sm:text-[56px]"
+            class="text-4xl leading-[1.05] font-semibold tracking-[-0.025em] text-balance sm:text-[56px]"
           >
-            {t.hero.title}
+            {`${t.hero.title.first} `}<br class="hidden sm:inline" />{
+              t.hero.title.second
+            }
           </h1>
-          <div class="mt-8 flex flex-wrap items-center gap-3">
+          <p
+            class="text-foreground mt-6 max-w-[40rem] text-base font-medium text-balance sm:text-lg"
+          >
+            {
+              glowParts(t.hero.lead).map((part) =>
+                part.glow ? (
+                  <span class="text-shimmer-brand">{part.text}</span>
+                ) : (
+                  part.text
+                )
+              )
+            }
+          </p>
+          <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
             {
               hero.primary === undefined ? null : (
                 <a
                   href={hero.primary.href}
                   data-measure-cta="get_started"
                   data-measure-place="hero"
-                  class={buttonVariants()}
+                  class={buttonVariants({ className: "border-shimmer" })}
                 >
                   {hero.primary.label}
                 </a>
               )
             }
             {
-              hero.secondary === undefined ? null : (
-                <a
-                  href={hero.secondary.href}
-                  data-measure-cta="docs"
-                  data-measure-place="hero"
-                  class={buttonVariants({ variant: "outline" })}
-                >
-                  {hero.secondary.label}
-                </a>
+              connect === undefined ? null : (
+                <ConnectMenu client:load place="hero" {...connect} />
               )
             }
           </div>
         </div>
-        <p class="text-muted-foreground max-w-[40rem] text-base sm:text-lg">
-          {t.hero.lead}
-        </p>
       </div>
-      <HeroStage
-        client:load
-        className="border"
-        label={t.hero.stage}
-        tabs={heroTabs(locale, catalogue, settings)}
-      >
-        <CodeBlock
-          slot="code"
-          block={heroCode(t, code)}
-          class="rounded-none border-0"
-        />
-      </HeroStage>
+      <div class="px-4 sm:px-6 lg:px-10">
+        <HeroStage
+          client:load
+          className="border"
+          label={t.hero.stage}
+          tabs={heroTabs(locale, catalogue, settings)}
+        >
+          <CodeBlock
+            slot="code"
+            block={heroCode(t, code)}
+            class="rounded-none border-0"
+          />
+        </HeroStage>
+      </div>
     </section>
   </div>
 
@@ -154,7 +183,6 @@ const bento = studioBento(locale, t, settings);
       counter={counter(0)}
       eyebrow={{ icon: "layers", label: t.platforms.eyebrow }}
       headingId="products-title"
-      lead={t.platforms.lead}
       title={t.platforms.title}
     />
     <ProductPair mocks={pair.mocks} products={pair.products} />
@@ -223,7 +251,6 @@ const bento = studioBento(locale, t, settings);
     counter={counter(5)}
     groups={faq}
     label={t.faq.label}
-    lead={t.faq.lead}
     title={t.faq.title}
   />
 

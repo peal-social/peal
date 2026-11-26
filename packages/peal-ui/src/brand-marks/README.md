@@ -14,6 +14,20 @@ docs draw, and its test checks that each still matches its file here.
 | `slack-color.svg`             | `SLA-Slack-icon-RGB.svg`, from the same collection.                                                                                                                                                                                                     |
 | `google-business-profile.svg` | `google_my_business/v7/192px.svg`, the logo Google's own Business Profile page loads, <https://www.google.com/business/>, from <https://www.gstatic.com/images/branding/productlogos/google_my_business/v7/192px.svg>. It has no version in one colour. |
 
+The AI clients the site's Connect menu names, taken on 2026-11-26:
+
+| File                 | Source                                                                                                                                                                                                                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `openai-blossom.svg` | `OpenAI-logos/SVGs/OAI_OpenAI-Blossom_Black.svg` in <https://cdn.openai.com/brand/openai-logos.zip>, "Download logos" on <https://openai.com/brand/>: OpenAI's Blossom in black, for ChatGPT. OpenAI asks that no colour be added to it and that it be used only where it relates to OpenAI's services. |
+| `grok-bot.svg`       | A bot's drawing on <https://x.ai/bot> (`svg.grok-bot-mark`), as the page serves it: the round head most of its bots wear, with its two eyes up and to the right. The site's mark is the head with the eyes cut out.                                                                                     |
+| `muse.svg`           | <https://muse.ai/images/landing/brand/muse-logo.svg>, the logo of Muse, Meta's agent, on <https://muse.ai/>. Its one path is filled with a blue gradient; the site draws the same path in one colour, as every mark.                                                                                    |
+
+OpenAI Dots, Claude Duet, OpenClaw and Hermes Agent have logos that exist
+in colour only (a fluffy dot, an app tile, a red mascot, a portrait), so
+the menu shows each one's own file in its colours, from the
+site's `public/clients/`, with its source beside the list in the site's
+`src/home.ts`.
+
 Google publishes no one-colour version of its logo, so the site's
 one-colour mark is Peal's own, made from Google's file and nothing else:
 the logo's outline (its clip path `c`) with its "G" (the `#EEE` path) cut

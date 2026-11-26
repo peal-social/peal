@@ -28,7 +28,7 @@ const en = {
       copy: "Copy",
       demoLabel: "Ways to publish",
       eyebrow: "PealAPI",
-      lead: "Use the HTTP API, which comes with an OpenAPI document, the MCP server for AI agents, the command line or an SDK in one of eight languages. Whichever you pick, you're working in the same workspaces your team opens in PealCreative.",
+      lead: "Publish with the HTTP API, the MCP server, the command line or an SDK in eight languages, in the same workspaces your team uses in PealCreative.",
       rows: {
         cli: {
           link: "The command line",
@@ -64,10 +64,10 @@ const en = {
       title: { text: "Or build Peal into your own product." },
     },
     cta: {
-      line: "It's free to start, and every line of code is public on GitHub.",
+      line: "Start marketing for free and scale seamlessly as your project expands. No credit card needed.",
       primary: "Get started",
       secondary: "Read the docs",
-      title: "Start posting with Peal",
+      title: "Ready to connect your agents?",
     },
     hardParts: {
       cells: {
@@ -164,9 +164,8 @@ const en = {
       },
     },
     platforms: {
-      api: "Publish from your code, an AI agent or your own product.",
+      api: "Let your code and your AI agents post through one API and an MCP server.",
       eyebrow: "One foundation",
-      lead: "PealCreative and PealAPI are two sides of one app. You switch between them in the sidebar.",
       mock: {
         apiKeys: "API keys",
         deliveries: "Webhook deliveries",
@@ -190,12 +189,8 @@ const en = {
         settings: "Settings",
         workspace: "Maple",
       },
-      studio: "Write, schedule, approve and measure posts as a team.",
-      title: {
-        muted:
-          "The same workspaces, channels and posts, whichever side you work from.",
-        text: "Two platforms built on the same foundation.",
-      },
+      studio: "Plan, write and approve posts as a team, then see what worked.",
+      title: { text: "Two platforms built on the same foundation." },
     },
     sections: {
       api: "PealAPI",
@@ -215,14 +210,14 @@ const en = {
           text: "Send them a review link. They read the post, comment and approve it. Until they do, the post doesn't go out.",
         },
         composer: {
-          label: "Composer",
+          label: "Publishing",
           lead: "One post, a preview per platform.",
           link: "Write a post",
           text: "Give any channel its own text and options. Peal counts each platform's limit before you schedule.",
         },
       },
       eyebrow: "PealCreative",
-      lead: "Write a post once and adjust it where a platform needs something different. Schedule it on the calendar and send your client a link to approve it. Once it's out, answer the comments from the inbox and see how it did.",
+      lead: "Write a post once and fit it to each platform, schedule it, send it to your client for approval, then answer the comments and see how it did.",
       review: {
         approve: "Approve this post",
         badge: "Reviewer",
@@ -240,7 +235,7 @@ const en = {
           text: "Ask AI to write, rewrite, shorten or translate a post, or to suggest hashtags.",
         },
         calendar: {
-          label: "Calendar",
+          label: "Schedule",
           text: "Schedule in your own time zone, then move or cancel posts on the calendar.",
         },
         inbox: {
@@ -248,10 +243,10 @@ const en = {
           text: "Comments, Google Business Profile reviews and Mastodon and Bluesky messages in one place.",
         },
       },
-      title: { text: "Plan, write and approve posts as a team." },
+      title: { text: "Plan, write and approve in one workspace." },
     },
     description:
-      "PealCreative for marketing teams and PealAPI for developers and agents: write a post once, schedule it across platforms and see how it performs. Self-hostable and fair source.",
+      "Run your marketing on autopilot: Peal connects your team and your AI agents to {count} networks, with one workspace to plan and approve posts and one API and MCP server to publish them. Self-hostable.",
     faq: {
       groups: [
         {
@@ -357,11 +352,7 @@ const en = {
         },
       ],
       label: "FAQ",
-      lead: "Short answers here, and the details in the docs.",
-      title: {
-        muted: "Plain answers, before you start.",
-        text: "Frequently asked questions.",
-      },
+      title: { text: "Frequently asked questions." },
     },
     hero: {
       chips: {
@@ -377,14 +368,26 @@ const en = {
         text: "Text",
         time: "Tue 09:00 · Europe/Paris",
       },
-      lead: "Your team plans, writes and approves posts in PealCreative. Your code and your AI agents publish through PealAPI.",
-      primary: "Get started",
-      secondary: "Read the docs",
+      // The menu beside Start for free: the MCP clients an agent works
+      // in, then a prompt any agent can follow to set Peal up.
+      connect: {
+        copied: "Copied",
+        label: "Connect Peal",
+        setup: "Setup for agents",
+        setupPrompt:
+          "Set up Peal for me: read {url} and follow its Set up section.",
+      },
+      // In ink; the words between asterisks glow.
+      lead: "Connect your agents *now* and run your marketing on *autopilot*.",
+      primary: "Start for free",
       stage: "Peal's products",
-      title:
-        "Full-stack social media scheduling for marketing teams and agents",
+      // Two lines from 640 px: the claim, then whom it is for.
+      title: {
+        first: "Unified AI infrastructure",
+        second: "for marketing teams and agents",
+      },
     },
-    title: "Peal: schedule social media posts across platforms",
+    title: "Peal: unified AI infrastructure for marketing teams and agents",
   },
   pricing: {
     ...chromeMessages("en").pricing,
@@ -637,7 +640,7 @@ const fr: Messages = {
       copy: "Copier",
       demoLabel: "Façons de publier",
       eyebrow: "PealAPI",
-      lead: "Utilisez l’API HTTP, fournie avec son document OpenAPI, le serveur MCP pour les agents IA, la ligne de commande ou un SDK dans l’un des huit langages. Dans tous les cas, vous travaillez dans les mêmes espaces de travail que votre équipe ouvre dans PealCreative.",
+      lead: "Publiez avec l’API HTTP, le serveur MCP, la ligne de commande ou un SDK dans huit langages, dans les mêmes espaces de travail que votre équipe dans PealCreative.",
       rows: {
         cli: {
           link: "La ligne de commande",
@@ -673,10 +676,10 @@ const fr: Messages = {
       title: { text: "Ou intégrez Peal à votre propre produit." },
     },
     cta: {
-      line: "Vous commencez gratuitement, et tout le code est public sur GitHub.",
+      line: "Lancez votre marketing gratuitement et passez à l’échelle en douceur à mesure que votre projet grandit. Sans carte bancaire.",
       primary: "Commencer",
       secondary: "Lire la documentation",
-      title: "Commencez à publier avec Peal",
+      title: "Prêt à connecter vos agents ?",
     },
     hardParts: {
       cells: {
@@ -773,9 +776,8 @@ const fr: Messages = {
       },
     },
     platforms: {
-      api: "Publiez depuis votre code, un agent IA ou votre propre produit.",
+      api: "Laissez votre code et vos agents IA publier avec une API et un serveur MCP.",
       eyebrow: "Un même socle",
-      lead: "PealCreative et PealAPI sont les deux côtés d’une même application. Vous passez de l’un à l’autre dans la barre latérale.",
       mock: {
         apiKeys: "Clés d’API",
         deliveries: "Envois des webhooks",
@@ -804,12 +806,8 @@ const fr: Messages = {
         workspace: "Érable",
       },
       studio:
-        "Écrivez, programmez, faites approuver et mesurez vos publications en équipe.",
-      title: {
-        muted:
-          "Les mêmes espaces de travail, canaux et publications, quel que soit le côté où vous travaillez.",
-        text: "Deux plateformes bâties sur le même socle.",
-      },
+        "Planifiez, écrivez et faites approuver vos publications en équipe, puis voyez ce qui a marché.",
+      title: { text: "Deux plateformes bâties sur le même socle." },
     },
     sections: {
       api: "PealAPI",
@@ -829,14 +827,14 @@ const fr: Messages = {
           text: "Envoyez-lui un lien de relecture. Il lit la publication, la commente et l’approuve. Tant qu’il ne l’a pas fait, la publication ne part pas.",
         },
         composer: {
-          label: "Éditeur",
+          label: "Publication",
           lead: "Une publication, un aperçu par plateforme.",
           link: "Écrire une publication",
           text: "Donnez à chaque canal son propre texte et ses options. Peal compte la limite de chaque plateforme avant que vous programmiez.",
         },
       },
       eyebrow: "PealCreative",
-      lead: "Écrivez une publication une fois et adaptez-la là où une plateforme demande autre chose. Programmez-la sur le calendrier et envoyez à votre client un lien pour l’approuver. Une fois qu’elle est en ligne, répondez aux commentaires depuis la boîte de réception et voyez comment elle a marché.",
+      lead: "Écrivez une publication une fois et adaptez-la à chaque plateforme, programmez-la, envoyez-la à votre client pour approbation, puis répondez aux commentaires et voyez comment elle a marché.",
       review: {
         approve: "Approuver cette publication",
         badge: "Invité",
@@ -854,7 +852,7 @@ const fr: Messages = {
           text: "Demandez à l’IA d’écrire, de réécrire, de raccourcir ou de traduire une publication, ou de suggérer des hashtags.",
         },
         calendar: {
-          label: "Calendrier",
+          label: "Programmation",
           text: "Programmez dans votre fuseau horaire, puis déplacez ou annulez des publications sur le calendrier.",
         },
         inbox: {
@@ -862,10 +860,12 @@ const fr: Messages = {
           text: "Les commentaires, les avis Google Business Profile et les messages Mastodon et Bluesky au même endroit.",
         },
       },
-      title: { text: "Planifiez, écrivez et faites approuver en équipe." },
+      title: {
+        text: "Planifiez, écrivez et faites approuver dans un seul espace de travail.",
+      },
     },
     description:
-      "PealCreative pour les équipes marketing et PealAPI pour les développeurs et les agents : écrivez une publication une fois, planifiez-la sur plusieurs plateformes et suivez ses résultats. Auto-hébergeable et fair source.",
+      "Mettez votre marketing en pilote automatique : Peal relie votre équipe et vos agents IA à {count} réseaux, avec un espace de travail pour planifier et faire approuver les publications, et une API et un serveur MCP pour les publier. Auto-hébergeable.",
     faq: {
       groups: [
         {
@@ -972,11 +972,7 @@ const fr: Messages = {
         },
       ],
       label: "FAQ",
-      lead: "Des réponses courtes ici, et le détail dans la documentation.",
-      title: {
-        muted: "Des réponses simples, avant de commencer.",
-        text: "Questions fréquentes.",
-      },
+      title: { text: "Questions fréquentes." },
     },
     hero: {
       chips: {
@@ -992,14 +988,23 @@ const fr: Messages = {
         text: "Texte",
         time: "mar. 09:00 · Europe/Paris",
       },
-      lead: "Votre équipe planifie, écrit et fait approuver ses publications dans PealCreative. Votre code et vos agents IA publient avec PealAPI.",
-      primary: "Commencer",
-      secondary: "Lire la documentation",
+      connect: {
+        copied: "Copié",
+        label: "Connecter Peal",
+        setup: "Configuration pour agents",
+        setupPrompt:
+          "Configure Peal pour moi : lis {url} et suis sa partie Set up.",
+      },
+      lead: "Connectez vos agents *maintenant* et passez votre marketing en *pilote automatique*.",
+      primary: "Commencer gratuitement",
       stage: "Les produits de Peal",
-      title:
-        "La planification full-stack des réseaux sociaux, pour les équipes marketing et les agents",
+      title: {
+        first: "L’infrastructure IA unifiée",
+        second: "pour les équipes marketing et les agents",
+      },
     },
-    title: "Peal : planifiez vos publications sur les réseaux sociaux",
+    title:
+      "Peal : l’infrastructure IA unifiée pour les équipes marketing et les agents",
   },
   pricing: {
     ...chromeMessages("fr").pricing,

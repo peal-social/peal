@@ -1483,7 +1483,10 @@ alone; one behind Access cannot be), with no alert and no secret, and shows
 no URL, condition or error (`status-config.yaml.j2`). The sandbox, the
 certificate and DNS checks and the heartbeats stay on the private
 dashboard. The uptime Gatus checks the page's certificate hourly, as it
-does `uptime_hostname`'s.
+does `uptime_hostname`'s. The public environments' sites, and no other
+origin, may read the checks' last results from a page
+(`/api/v1/endpoints/statuses`, `Access-Control-Allow-Origin`): the site's
+footer colours its status icon from them.
 
 The page is in Peal's design ([`DESIGN.md`](../../../DESIGN.md)), light
 only: the status Gatus's `ui` settings and `status.css`, its stylesheet

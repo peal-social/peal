@@ -1,7 +1,11 @@
 import { renderElement } from "@ui-sdk/react/primitive";
 import type { PartProps } from "@ui-sdk/react/primitive";
-import { useId } from "react";
+import { Option, Schema } from "effect";
+import { ActivityIcon } from "lucide-react";
+import { useEffect, useId, useState } from "react";
 
+import { StatusChecksSchema, statusOf } from "../lib/site/status";
+import type { SiteStatus } from "../lib/site/status";
 import { cn } from "../lib/utils";
 import { LanguageMenu } from "./language-menu";
 import type { LanguageMenuLink } from "./language-menu";
@@ -56,10 +60,104 @@ type SiteFooterProps = Omit<PartProps<"footer">, "children" | "className"> & {
         readonly links: readonly LanguageMenuLink[];
       }
     | undefined;
+  /**
+   * The status page, at the foot of the mark's cell, as far from its
+   * bottom as the mark is from its top; its icon takes the colour of what
+   * the page's API says, once the browser has read it.
+   */
+  readonly status?: FooterStatus | undefined;
 };
+
+interface FooterStatus {
+  /** Where the status page lists its checks, each with its last result. */
+  readonly api: string;
+  readonly href: string;
+  readonly label: string;
+  /** Each status's meaning, for the icon's tooltip and screen readers. */
+  readonly states: Readonly<Record<SiteStatus, string>>;
+}
 
 const linkClassName =
   "text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 rounded-sm underline-offset-4 outline-none hover:underline focus-visible:ring-3 aria-[current=page]:text-foreground aria-[current=page]:font-medium";
+
+// The status icon's colour: a post state's dot (DESIGN.md, States), green
+// when up, amber when some checks fail, red when all do.
+const statusColour: Readonly<Record<SiteStatus, string>> = {
+  degraded: "text-[#E0A800]",
+  down: "text-[#D92D20]",
+  up: "text-[#16A34A]",
+};
+
+// The status page's link: its icon stays muted until the page's API has
+// answered, then takes the status's colour and beats like a heart (still
+// with reduced motion); an answer the browser cannot read leaves it muted.
+const StatusLink = ({ status }: { readonly status: FooterStatus }) => {
+  const [state, setState] = useState<SiteStatus | undefined>(undefined);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const read = async () => {
+      try {
+        const response = await fetch(status.api, {
+          credentials: "omit",
+          signal: controller.signal,
+        });
+
+        if (response.ok) {
+          const checks = Schema.decodeUnknownOption(StatusChecksSchema)(
+            await response.json()
+          );
+
+          setState(
+            Option.getOrUndefined(
+              checks.pipe(Option.flatMapNullishOr(statusOf))
+            )
+          );
+        }
+      } catch {
+        // Unreachable, or not readable from this page: the icon stays muted.
+      }
+    };
+
+    void read();
+
+    return () => {
+      controller.abort();
+    };
+  }, [status.api]);
+
+  const meaning = state === undefined ? undefined : status.states[state];
+
+  return (
+    <a
+      href={status.href}
+      title={meaning}
+      className={cn(
+        linkClassName,
+        "inline-flex items-center gap-1.5 text-sm md:mt-auto"
+      )}
+    >
+      <ActivityIcon
+        aria-hidden="true"
+        strokeWidth={2}
+        className={cn(
+          "size-3.5",
+          state === undefined
+            ? undefined
+            : cn(
+                statusColour[state],
+                "animate-heartbeat motion-reduce:animate-none"
+              )
+        )}
+      />
+      {status.label}
+      {meaning === undefined ? null : (
+        <span className="sr-only">{`: ${meaning}`}</span>
+      )}
+    </a>
+  );
+};
 
 const FooterLink = ({ link }: { readonly link: SiteFooterLink }) => (
   <a
@@ -102,8 +200,8 @@ const Column = ({ column }: { readonly column: SiteFooterColumn }) => {
 
 /**
  * The marketing site's footer (DESIGN.md, Site): the mark and the
- * language menu, then a bordered cell per column of links, and a row of
- * captions. Every link and label comes from the page. The language menu
+ * language menu, the status page at the cell's foot, then a bordered cell
+ * per column of links, and a row of captions. Every link and label comes from the page. The language menu
  * opens in the browser, so a page hydrates the footer.
  */
 const SiteFooter = ({
@@ -113,6 +211,7 @@ const SiteFooter = ({
   home,
   languages,
   render,
+  status,
   ...props
 }: SiteFooterProps) =>
   renderElement(
@@ -138,6 +237,7 @@ const SiteFooter = ({
                   side="top"
                 />
               )}
+              {status === undefined ? null : <StatusLink status={status} />}
             </div>
             {columns.map((column) => (
               <Column key={column.label} column={column} />

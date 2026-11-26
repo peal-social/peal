@@ -26,7 +26,6 @@ const props: SiteHeaderProps = {
           label: "Resources",
           links: [
             {
-              description: "Guides and the API",
               href: "/docs",
               icon: "book-open",
               title: "Docs",

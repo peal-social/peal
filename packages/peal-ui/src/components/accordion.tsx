@@ -78,14 +78,18 @@ const AccordionTrigger = ({
 );
 
 // The panel animates its measured height, and not at all for reduced
-// motion; its content sits under a hairline, in muted text.
+// motion; its content sits under a hairline, in muted text, unless
+// `contentClassName` styles it otherwise (the site's drawer lists links).
 const AccordionPanel = ({
   children,
   className,
+  contentClassName,
   ...props
 }: WithChildren<
   WithClassName<React.ComponentProps<typeof AccordionPanelPrimitive>>
->) => (
+> & {
+  readonly contentClassName?: string | undefined;
+}) => (
   <AccordionPanelPrimitive
     className={cn(
       "h-(--accordion-panel-height) overflow-hidden transition-[height] duration-200 data-ending-style:h-0 data-starting-style:h-0 motion-reduce:transition-none",
@@ -93,7 +97,12 @@ const AccordionPanel = ({
     )}
     {...props}
   >
-    <div className="text-muted-foreground mx-6 border-t pt-3 pb-5 text-sm leading-relaxed">
+    <div
+      className={cn(
+        "text-muted-foreground mx-6 border-t pt-3 pb-5 text-sm leading-relaxed",
+        contentClassName
+      )}
+    >
       {children}
     </div>
   </AccordionPanelPrimitive>

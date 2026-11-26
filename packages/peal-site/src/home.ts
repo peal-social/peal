@@ -2,6 +2,7 @@ import type { ChannelPlatform } from "peal-contract";
 import { measureText, platformRules } from "peal-contract/post-text";
 import type { AppMockProps, ProductSummary } from "peal-ui/components/app-mock";
 import type { CodeBlockContent } from "peal-ui/components/code-block";
+import type { ConnectMenuProps } from "peal-ui/components/connect-menu";
 import type { CtaLink } from "peal-ui/components/cta-band";
 import type { FeatureCellContent } from "peal-ui/components/feature-cell";
 import type { StageChip, StageTab } from "peal-ui/components/hero-stage";
@@ -12,9 +13,13 @@ import type {
 } from "peal-ui/components/product-bento";
 import type { ProductRow } from "peal-ui/components/product-rows";
 import type { SiteIcon, SiteMark } from "peal-ui/components/site-icons";
+import { grokBot, muse, openaiBlossom } from "peal-ui/lib/brand-marks";
+import type { OneColourMark } from "peal-ui/lib/brand-marks";
 import { repository } from "peal-ui/lib/site/navigation";
 import { entryOf, githubMark, siteEntries } from "peal-ui/lib/site/platforms";
 import {
+  siClaude,
+  siCursor,
   siDotnet,
   siGo,
   siOpenjdk,
@@ -150,26 +155,16 @@ export const heroTabs = (
   return [
     {
       chips: [
-        ...chip(settings, "pen", links.composer.title, "guides/posts"),
-        ...chip(
-          settings,
-          "calendar",
-          links.calendar.title,
-          "guides/posts/schedule"
-        ),
+        ...chip(settings, "pen", links.publishing, "guides/posts"),
+        ...chip(settings, "calendar", links.calendar, "guides/posts/schedule"),
         ...chip(
           settings,
           "check-check",
-          links.approvals.title,
+          links.approvals,
           "guides/posts/review"
         ),
-        ...chip(settings, "inbox", links.inbox.title, "guides/engage/inbox"),
-        ...chip(
-          settings,
-          "chart",
-          links.analytics.title,
-          "guides/engage/analytics"
-        ),
+        ...chip(settings, "inbox", links.inbox, "guides/engage/inbox"),
+        ...chip(settings, "chart", links.analytics, "guides/engage/analytics"),
       ],
       chipsLabel: t.hero.chips.studio,
       content: {
@@ -199,21 +194,11 @@ export const heroTabs = (
     {
       chips: [
         ...chip(settings, "braces", t.hero.chips.restApi, "developers"),
-        ...chip(settings, "bot", links.mcp.title, "developers/mcp"),
-        ...chip(settings, "terminal", links.cli.title, "developers/cli"),
-        ...chip(settings, "package", links.sdks.title, "developers/sdks"),
-        ...chip(
-          settings,
-          "webhook",
-          links.webhooks.title,
-          "developers/webhooks"
-        ),
-        ...chip(
-          settings,
-          "panels",
-          links.embedding.title,
-          "developers/embedding"
-        ),
+        ...chip(settings, "bot", links.mcp, "developers/mcp"),
+        ...chip(settings, "terminal", links.cli, "developers/cli"),
+        ...chip(settings, "package", links.sdks, "developers/sdks"),
+        ...chip(settings, "webhook", links.webhooks, "developers/webhooks"),
+        ...chip(settings, "panels", links.embedding, "developers/embedding"),
       ],
       chipsLabel: t.hero.chips.api,
       content: { kind: "code" },
@@ -739,7 +724,7 @@ export interface CtaLinks {
 
 /** Get started (the app's sign-up) and Read the docs, for the hero and the closing band. */
 export const ctaLinks = (
-  labels: { readonly primary: string; readonly secondary: string },
+  labels: { readonly primary: string; readonly secondary?: string },
   settings: Pick<HomeSettings, "app" | "docs">
 ): CtaLinks => {
   const signUp = settings.app("signup");
@@ -751,8 +736,98 @@ export const ctaLinks = (
         ? undefined
         : { href: signUp, label: labels.primary, measure: "get_started" },
     secondary:
-      docs === undefined
+      docs === undefined || labels.secondary === undefined
         ? undefined
         : { href: docs, label: labels.secondary, measure: "docs" },
   };
+};
+
+/** A message's runs of text, those between asterisks set to glow. */
+export const glowParts = (text: string) =>
+  text
+    .split("*")
+    .map((part, index) => ({ glow: index % 2 === 1, text: part }))
+    .filter((part) => part.text !== "");
+
+/** A message with the number of platforms in place of its `{count}`. */
+export const withPlatformCount = (text: string) =>
+  text.replace("{count}", String(platformCount));
+
+// A brand's own one-colour mark, from peal-ui's brand marks.
+const ownMark = ({ fillRule, path, viewBox }: OneColourMark): SiteMark => ({
+  fillRule,
+  kind: "path",
+  path,
+  viewBox,
+});
+
+// A mark in its brand's own colour.
+const inColour = (mark: SiteMark, colour: string): SiteMark =>
+  mark.kind === "path" ? { ...mark, colour } : mark;
+
+// The AI clients and agents the hero's Connect menu names, in the owner's
+// order, the three first on its button: each product's own logo in its
+// brand's colours. A one-colour mark (simple-icons or peal-ui's brand
+// marks) takes its owner's colour: Claude's and Cursor's as simple-icons
+// gives them, OpenAI's Blossom black as its file is, Grok Bot's head in
+// x.ai's #0A0A0A, Muse's "m" in #0064E0, the middle of its file's blue
+// gradient. The others are their own icons, from public/clients/, taken on
+// 2026-11-26:
+// - claude-duet.svg: https://claude.com/static/claude-duet/app-icon.svg,
+//   on https://claude.com/product/claude-duet
+// - openai-dots.png: Todd, the green dot with a bow tie that opens
+//   https://chatgpt.com/features/dots; the page draws its dots live in 3D
+//   and publishes no file of them, so this is a capture of that drawing,
+//   on white, cropped square at 96 px
+// - openclaw.svg: https://openclaw.ai/brand/openclaw-mascot.svg, the
+//   mascot of https://openclaw.ai/
+// - hermes-agent.png: the 48 px icon of https://hermes-agent.nousresearch.com/
+//   (web-assets.nousresearch.com/…/assets/hermes-agent/icon.png)
+const mcpClients = [
+  { mark: inColour(markOf(siClaude), `#${siClaude.hex}`), name: "Claude" },
+  { mark: inColour(ownMark(openaiBlossom), "#000000"), name: "ChatGPT" },
+  { mark: inColour(markOf(siCursor), `#${siCursor.hex}`), name: "Cursor" },
+  { mark: inColour(ownMark(grokBot), "#0A0A0A"), name: "Grok Bot" },
+  { icon: "/clients/openai-dots.png", name: "OpenAI Dots" },
+  { mark: inColour(ownMark(muse), "#0064E0"), name: "Muse" },
+  { icon: "/clients/claude-duet.svg", name: "Claude Duet" },
+  { icon: "/clients/openclaw.svg", name: "OpenClaw" },
+  { icon: "/clients/hermes-agent.png", name: "Hermes Agent" },
+] as const;
+
+/** The site's own files the Connect menu's icons are, for its tests. */
+export const clientIcons = mcpClients.flatMap((client) =>
+  "icon" in client ? [client.icon] : []
+);
+
+/**
+ * The hero's Connect menu: each client leads to the MCP page, and the last
+ * item copies a prompt that points an agent at the skill this site serves,
+ * when the site knows its own address. Nothing without the docs.
+ */
+export const connectMenu = (
+  t: Messages["home"]["hero"]["connect"],
+  settings: Pick<HomeSettings, "docs">,
+  skill: string | undefined
+): Omit<ConnectMenuProps, "place"> | undefined => {
+  const mcp = settings.docs("developers/mcp");
+
+  return mcp === undefined
+    ? undefined
+    : {
+        clients: mcpClients.map((client) => ({
+          ...client,
+          href: mcp,
+          measure: "docs" as const,
+        })),
+        label: t.label,
+        setup:
+          skill === undefined
+            ? undefined
+            : {
+                copied: t.copied,
+                label: t.setup,
+                prompt: t.setupPrompt.replace("{url}", skill),
+              },
+      };
 };

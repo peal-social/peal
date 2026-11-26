@@ -145,6 +145,115 @@
   }
 }
 
+/* The words the site's hero lead sets off (DESIGN.md, Site): the agent's
+   shimmer in the mark's colours, a lavender light passing along blue text
+   and starting again, without end; blue and still with reduced motion. */
+@utility text-shimmer-brand {
+  background-image: linear-gradient(
+    90deg,
+    var(--brand) 35%,
+    var(--lavender) 50%,
+    var(--brand) 65%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  color: transparent;
+  animation: var(--animate-shimmer);
+  animation-duration: 2.4s;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background-image: none;
+    color: var(--brand);
+  }
+}
+
+/* The hero's Start for free (DESIGN.md, Site): the primary button, ink,
+   whose border, 2 px, is blue with a light of the mark's lavender and
+   yellow running round it and starting again without end: a long arc,
+   lavender, then a band of yellow, then lavender again. The fill is
+   painted over the border's gradient, inside it, so there is one edge; it
+   lightens on hover as the primary button does, at once: the background
+   stays out of the button's transitions, which would freeze the turning
+   gradient for their length and make it jump back.
+   Blue and still with reduced motion. Scoped to a link or a button, it
+   outweighs the button's own fill, 1 px border and padding-box clip. */
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@theme {
+  --animate-border-loop: border-loop 2s linear infinite;
+
+  @keyframes border-loop {
+    to {
+      --border-angle: 360deg;
+    }
+  }
+}
+
+@utility border-shimmer {
+  &:is(a, button) {
+    --fill: var(--primary);
+
+    border-width: 2px;
+    border-color: transparent;
+    color: var(--primary-foreground);
+    background:
+      linear-gradient(var(--fill), var(--fill)) padding-box,
+      conic-gradient(
+          from var(--border-angle),
+          var(--brand) 0deg,
+          var(--brand) 150deg,
+          var(--lavender) 205deg,
+          var(--sun) 250deg,
+          var(--sun) 300deg,
+          var(--lavender) 335deg,
+          var(--brand) 360deg
+        )
+        border-box;
+    transition-property: color, box-shadow, translate, transform;
+    animation: var(--animate-border-loop);
+
+    &:hover,
+    &[aria-expanded="true"] {
+      --fill: color-mix(in oklab, var(--primary) 80%, var(--background));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+      background:
+        linear-gradient(var(--fill), var(--fill)) padding-box,
+        linear-gradient(var(--brand), var(--brand)) border-box;
+    }
+  }
+}
+
+/* The footer's status icon, once the status page answered: a heartbeat,
+   two beats and a rest, as a pulse does. */
+@theme {
+  --animate-heartbeat: heartbeat 1.4s ease-in-out infinite;
+
+  @keyframes heartbeat {
+    0%,
+    40%,
+    100% {
+      transform: scale(1);
+    }
+    10% {
+      transform: scale(1.3);
+    }
+    20% {
+      transform: scale(1);
+    }
+    30% {
+      transform: scale(1.2);
+    }
+  }
+}
+
 /* A block that waits, a skeleton: muted grey with the same light passing
    across it, as where a dragged widget will land; with reduced motion,
    still. */

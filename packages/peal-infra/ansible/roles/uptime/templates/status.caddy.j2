@@ -6,6 +6,18 @@
 # and HEAD gets a 405 here.
 header -Server
 
+# The public sites' footer colours its status icon from the checks' last
+# results: those sites, and no other origin, may read them.
+{% set status_readers = uptime_environments | selectattr('public', 'defined') | selectattr('public') | map(attribute='hostnames.site') | map('regex_escape') | list %}
+@status_read {
+	path /api/v1/endpoints/statuses
+	header_regexp origin Origin ^https://({{ status_readers | join('|') }})$
+}
+header @status_read {
+	Access-Control-Allow-Origin {re.origin.0}
+	Vary Origin
+}
+
 # Peal's mark and fonts, which the page's stylesheet names (status.css),
 # from {{ uptime_brand_root }}; the icons browsers ask for at fixed paths
 # are Peal's too, not Gatus's.

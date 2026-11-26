@@ -44,7 +44,7 @@ const CtaBand = ({
             <h2 className="text-[30px] leading-[1.1] font-semibold tracking-[-0.025em] sm:text-[40px]">
               {title}
             </h2>
-            <p className="text-muted-foreground max-w-[40rem] text-base sm:text-lg">
+            <p className="text-muted-foreground max-w-[40rem] text-base text-balance sm:text-lg">
               {line}
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3">

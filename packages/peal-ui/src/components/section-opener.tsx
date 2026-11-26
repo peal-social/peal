@@ -96,7 +96,7 @@ const SectionOpener = ({
   };
   /** The headline's id, for the section's `aria-labelledby`. */
   readonly headingId: string;
-  readonly lead: string;
+  readonly lead?: string | undefined;
   readonly title: SectionTitle;
 }) => (
   <>
@@ -106,9 +106,11 @@ const SectionOpener = ({
       <div className="relative mx-auto flex max-w-3xl flex-col items-center gap-5">
         <Eyebrow icon={eyebrow.icon} label={eyebrow.label} />
         <SectionHeadline id={headingId} title={title} />
-        <p className="text-muted-foreground max-w-[40rem] text-base sm:text-lg">
-          {lead}
-        </p>
+        {lead === undefined ? null : (
+          <p className="text-muted-foreground max-w-[40rem] text-base sm:text-lg">
+            {lead}
+          </p>
+        )}
         {children}
       </div>
     </div>
