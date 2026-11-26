@@ -5,6 +5,7 @@ import { checkDraft } from "#publishing/domain/content-rules.ts";
 import type { InvalidPostTransition } from "#publishing/domain/invalid-post-transition.ts";
 import type { PostContentRejected } from "#publishing/domain/post-content-rejected.ts";
 import type { PostContent } from "#publishing/domain/post-content.ts";
+import type { PostTarget } from "#publishing/domain/post-target.ts";
 import {
   authorOf,
   createDraft,
@@ -37,8 +38,10 @@ import type { PresetAsk } from "./post-presets.ts";
 import { channelsFor, mediaFor, tagsFor } from "./post-references.ts";
 import { PostRepository } from "./post-repository.ts";
 import type { PostWithTargets } from "./post-repository.ts";
+import { PublicationScheduler } from "./publication-scheduler.ts";
 import { ShortLinkDefaults } from "./short-link-defaults.ts";
 import type { SignatureNotFound } from "./signature-not-found.ts";
+import { followGone } from "./site-holds.ts";
 import { TagStore } from "./tag-store.ts";
 import type { UnknownChannels } from "./unknown-channels.ts";
 import type { UnknownMedia } from "./unknown-media.ts";
@@ -158,10 +161,19 @@ export class PostDrafts extends Context.Service<
     Effect.gen(function* PostDraftsLive() {
       const posts = yield* PostRepository;
       const gate = yield* ApprovalGate;
+      const scheduler = yield* PublicationScheduler;
       const { transaction } = yield* TransactionRunner;
       const ports = yield* Effect.context<Ports>();
 
       const withPorts = Effect.provideContext(ports);
+
+      // Targets leaving with the draft, or as their channel is no longer
+      // chosen, are taken off their sites before their rows go.
+      const leaving = (gone: readonly PostTarget[]) =>
+        followGone(gone).pipe(
+          Effect.provideService(PostRepository, posts),
+          Effect.provideService(PublicationScheduler, scheduler)
+        );
 
       // The draft's channels, once its content and options may go to them.
       const checked = Effect.fn("PostDrafts.checked")(function* checked(
@@ -298,14 +310,21 @@ export class PostDrafts extends Context.Service<
                 ? tagged
                 : withLinksShortened(tagged, request.shortenLinks);
 
+            const existing = yield* posts.lockTargets(postId);
+
             const targets = yield* targetsOn(
               postId,
               channels,
-              yield* posts.lockTargets(postId),
+              existing,
               Option.some(request.options ?? [])
             ).pipe(withPorts);
 
             yield* applied(yield* posts.update(post, current.post));
+            yield* leaving(
+              existing.filter(
+                ({ id }) => !targets.some((kept) => kept.id === id)
+              )
+            );
             yield* posts.setTargets(postId, targets);
 
             if (Option.isSome(tags)) {
@@ -370,6 +389,7 @@ export class PostDrafts extends Context.Service<
             }
 
             yield* Effect.fromResult(discardDraft(current.post));
+            yield* leaving(yield* posts.lockTargets(postId));
             yield* posts.remove(postId);
 
             // What was said of it in review goes with it.

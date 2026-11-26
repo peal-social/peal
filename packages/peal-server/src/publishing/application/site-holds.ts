@@ -356,6 +356,18 @@ export const followOnSites = Effect.fn("Publishing.followOnSites")(
       }
     }
 
+    yield* followGone(gone);
+  }
+);
+
+/**
+ * Takes off their sites what targets about to go with their draft left
+ * there (a draft deleted, a channel taken off it, a dropped target going
+ * back to draft), by the ids the jobs are started with: run before their
+ * rows are deleted, in the transaction that deletes them.
+ */
+export const followGone = Effect.fn("Publishing.followGone")(
+  function* followGone(gone: readonly PostTarget[]) {
     for (const target of gone) {
       if (target.onSite !== undefined) {
         yield* handOver(target, Option.some(target.onSite.platformPostId));

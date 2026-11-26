@@ -7,6 +7,7 @@ import type { Post } from "#publishing/domain/post.ts";
 
 import { PostRepository } from "./post-repository.ts";
 import type { PostWithTargets } from "./post-repository.ts";
+import { followOnSites } from "./site-holds.ts";
 
 /**
  * Saves `draft`, the post `current` was, taken back to draft: by a member
@@ -14,15 +15,18 @@ import type { PostWithTargets } from "./post-repository.ts";
  * that came too late (`HeldPosts.release`). A draft is for the channels it
  * still goes to: a channel taken off the post (`dropped`) goes with its
  * target and every text and media its parts had there, so the draft
- * schedules as it is, and a channel chosen again starts afresh. Run in the
- * transaction that holds the post's lock.
+ * schedules as it is, and a channel chosen again starts afresh. The
+ * websites follow it (`followOnSites`): a post a site holds is taken back
+ * to a draft there, and one a dropped target left is taken off. Run in
+ * the transaction that holds the post's lock.
  */
 export const saveBackToDraft = Effect.fn("Publishing.saveBackToDraft")(
   function* saveBackToDraft(draft: Post, current: Post) {
     const posts = yield* PostRepository;
     const targets = yield* posts.lockTargets(draft.id);
+    const dropped = targets.filter(isDropped);
 
-    const gone = targets.filter(isDropped).map(({ channelId }) => channelId);
+    const gone = dropped.map(({ channelId }) => channelId);
 
     const cleaned =
       gone.length === 0
@@ -34,6 +38,10 @@ export const saveBackToDraft = Effect.fn("Publishing.saveBackToDraft")(
     if (!(yield* posts.update(cleaned, current))) {
       return yield* Effect.die("A post changed under its row lock");
     }
+
+    // Before the dropped targets' rows go: their sites' posts are taken
+    // off by the ids the jobs are started with.
+    yield* followOnSites(cleaned, dropped);
 
     if (gone.length > 0) {
       yield* posts.setTargets(

@@ -16,6 +16,7 @@ import type { PostNotFound } from "./post-not-found.ts";
 import { PostRepository } from "./post-repository.ts";
 import type { PostWithTargets } from "./post-repository.ts";
 import { PublicationScheduler } from "./publication-scheduler.ts";
+import { followOnSites } from "./site-holds.ts";
 import { withinPlan } from "./within-plan.ts";
 import { findInWorkspace, lockInWorkspace } from "./workspace-posts.ts";
 
@@ -95,6 +96,13 @@ export class HeldPosts extends Context.Service<
 
       const withPorts = Effect.provideContext(ports);
 
+      // What every way of taking a post on or off its sites needs.
+      const withScheduler = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+        effect.pipe(
+          Effect.provideService(PostRepository, posts),
+          Effect.provideService(PublicationScheduler, scheduler)
+        );
+
       const get = Effect.fn("HeldPosts.get")(function* get(
         workspaceId: WorkspaceId,
         postId: PostId
@@ -142,8 +150,8 @@ export class HeldPosts extends Context.Service<
             }
 
             if (released.status._tag !== "scheduled") {
-              const draft = yield* saveBackToDraft(released, current.post).pipe(
-                Effect.provideService(PostRepository, posts)
+              const draft = yield* withScheduler(
+                saveBackToDraft(released, current.post)
               );
 
               return { late: true, ...draft };
@@ -163,6 +171,8 @@ export class HeldPosts extends Context.Service<
             });
 
             yield* applied(yield* posts.setExecution(released, executionId));
+            // Approved: its websites that publish a post themselves hold it.
+            yield* withScheduler(followOnSites(released));
             // Now it is scheduled: whoever follows the workspace hears it,
             // which they did not while it waited.
             yield* events.scheduled(released, targets);
@@ -192,9 +202,7 @@ export class HeldPosts extends Context.Service<
 
             const draft = yield* Effect.fromResult(moveToDraft(current.post));
 
-            return yield* saveBackToDraft(draft, current.post).pipe(
-              Effect.provideService(PostRepository, posts)
-            );
+            return yield* withScheduler(saveBackToDraft(draft, current.post));
           })
         );
       });

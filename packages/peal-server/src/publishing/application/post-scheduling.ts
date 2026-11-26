@@ -100,6 +100,7 @@ import type { QueueNotFound } from "./queue-not-found.ts";
 import { QueueStore } from "./queue-store.ts";
 import { ShortLinkDefaults } from "./short-link-defaults.ts";
 import type { SignatureNotFound } from "./signature-not-found.ts";
+import { followGone, followOnSites } from "./site-holds.ts";
 import type { TagStore } from "./tag-store.ts";
 import { UnknownChannels } from "./unknown-channels.ts";
 import type { UnknownMedia } from "./unknown-media.ts";
@@ -806,6 +807,23 @@ export class PostScheduling extends Context.Service<
           onSome: scheduler.cancel,
         });
 
+      // The post's websites follow it, wherever its job is started or
+      // stopped (`followOnSites`), and targets leaving with their draft
+      // are taken off their sites before their rows go (`followGone`).
+      const withScheduler = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+        effect.pipe(
+          Effect.provideService(PostRepository, posts),
+          Effect.provideService(PublicationScheduler, scheduler)
+        );
+
+      const follow = (post: Post) => withScheduler(followOnSites(post));
+
+      const leaving = (gone: readonly PostTarget[]) =>
+        withScheduler(followGone(gone));
+
+      const backToDraft = (draft: Post, current: Post) =>
+        withScheduler(saveBackToDraft(draft, current));
+
       // How the actor reached Peal, which the post they schedule keeps.
       const originOf = (actor: Actor) =>
         PostOrigins.use((origins) => origins.of(actor)).pipe(withPorts);
@@ -873,6 +891,7 @@ export class PostScheduling extends Context.Service<
         yield* remember(moved, yield* posts.targets(moved.id)).pipe(withPorts);
         yield* stopJob(current);
         yield* startJob(moved);
+        yield* follow(moved);
 
         return moved;
       });
@@ -1057,6 +1076,7 @@ export class PostScheduling extends Context.Service<
               yield* kept(placed, targets).pipe(withPorts);
               yield* made(placed);
               yield* startJob(placed);
+              yield* follow(placed);
               // Told once, with the post: a request that finds its key
               // used made none, and tells nothing.
               yield* announce(placed, targets);
@@ -1412,6 +1432,10 @@ export class PostScheduling extends Context.Service<
             given
           ).pipe(withPorts);
 
+          // A channel no longer chosen goes with its target.
+          yield* leaving(
+            existing.filter(({ id }) => !targets.some((kept) => kept.id === id))
+          );
           yield* posts.setTargets(postId, targets);
 
           const post = yield* move(
@@ -1865,9 +1889,7 @@ export class PostScheduling extends Context.Service<
               const draft = yield* Effect.fromResult(moveToDraft(current.post));
 
               // A draft is for the channels it still goes to.
-              const saved = yield* saveBackToDraft(draft, current.post).pipe(
-                Effect.provideService(PostRepository, posts)
-              );
+              const saved = yield* backToDraft(draft, current.post);
 
               yield* stopJob(current);
               yield* noLongerWaits(current.post);
@@ -1917,6 +1939,9 @@ export class PostScheduling extends Context.Service<
             if (current.post.status._tag === "publishing") {
               const targets = yield* cancelTargets(postId, now);
 
+              // A target its site held as a draft is taken off there.
+              yield* follow(current.post);
+
               if (cancelledNow(targets).length > 0) {
                 yield* events.cancelled(current.post, cancelledNow(targets));
               }
@@ -1944,6 +1969,7 @@ export class PostScheduling extends Context.Service<
             const targets = yield* cancelTargets(postId, now);
 
             yield* stopJob(current);
+            yield* follow(cancelled);
             yield* noLongerWaits(current.post);
             yield* events.cancelled(cancelled, cancelledNow(targets));
 
@@ -2010,6 +2036,11 @@ export class PostScheduling extends Context.Service<
               if (asked.status._tag !== current.post.status._tag) {
                 yield* stopJob(current);
               }
+
+              // The dropped target's site post is taken off, and the
+              // others' taken back when the post now waits for an
+              // approval.
+              yield* follow(asked);
 
               yield* events.dropped(asked, dropped);
 
