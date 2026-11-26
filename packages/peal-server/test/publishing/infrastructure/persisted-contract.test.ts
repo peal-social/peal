@@ -12,6 +12,7 @@ import {
   RemovalClaimSchema,
 } from "#publishing/application/live-post-removal.ts";
 import { PublicationJournal } from "#publishing/application/publication-journal.ts";
+import { SiteHoldClaimSchema } from "#publishing/application/site-holds.ts";
 import { PostOutcomeSchema } from "#publishing/domain/post-status.ts";
 import {
   PartRecordSchema,
@@ -23,6 +24,7 @@ import {
 } from "#publishing/domain/publication-claims.ts";
 import { PublicationDecisionSchema } from "#publishing/domain/publication-policy.ts";
 import { RemovalDecisionSchema } from "#publishing/domain/removal-decision.ts";
+import { SiteHoldDecisionSchema } from "#publishing/domain/site-hold.ts";
 import { FakePlatform } from "#publishing/infrastructure/fake-platform-publisher.ts";
 import { ChangeLivePostV1 } from "#publishing/infrastructure/workflows/change-live-post.ts";
 import { PublishTargetV2 } from "#publishing/infrastructure/workflows/publish-parts.ts";
@@ -32,6 +34,7 @@ import {
   PublishPostV1,
 } from "#publishing/infrastructure/workflows/publish-post.ts";
 import { PublishTargetV1 } from "#publishing/infrastructure/workflows/publish-target.ts";
+import { SiteHoldV1 } from "#publishing/infrastructure/workflows/site-hold.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
 import { RateLimited } from "#shared/domain/rate-limited.ts";
 
@@ -80,6 +83,7 @@ const workflows = [
   PublishTargetV1,
   PublishTargetV2,
   ChangeLivePostV1,
+  SiteHoldV1,
 ];
 
 // The result schema of each activity a job started now runs, by name
@@ -205,6 +209,78 @@ describe("the persisted contract", () => {
         edits.map(({ _tag }) => _tag),
         ["edited", "retry", "failed", "gone"]
       );
+    })
+  );
+
+  // A target's hand-over to its website: its payload holds ids alone,
+  // the site's post's only for a target gone with its draft, and its
+  // execution id comes from the target and the hand-over's count, so a
+  // start is never answered by an earlier hand-over's job.
+  it.effect("decodes SiteHoldV1's payloads, results and ids", () =>
+    Effect.gen(function* decodesHandOvers() {
+      const payloads = yield* fixture(
+        "SiteHoldV1",
+        "payload.json",
+        Schema.Array(SiteHoldV1.payloadSchema)
+      );
+
+      const keys = yield* fixture(
+        "SiteHoldV1",
+        "keys.json",
+        Schema.Struct({ executionIds: Schema.Array(Schema.String) })
+      );
+
+      assert.deepStrictEqual(
+        yield* Effect.all(
+          payloads.map((payload) => SiteHoldV1.executionId(payload))
+        ),
+        keys.executionIds
+      );
+      assert.deepStrictEqual(
+        payloads.map(({ sitePostId }) => sitePostId),
+        [undefined, "4217"]
+      );
+
+      const claims = yield* fixture(
+        "SiteHoldV1",
+        "claim.json",
+        Schema.Array(SiteHoldClaimSchema)
+      );
+
+      const calls = yield* fixture(
+        "SiteHoldV1",
+        "call.json",
+        Schema.Array(SiteHoldDecisionSchema)
+      );
+
+      const results = yield* fixture(
+        "SiteHoldV1",
+        "result.json",
+        Schema.Array(SiteHoldV1.successSchema)
+      );
+
+      assert.deepStrictEqual(
+        claims.map(({ _tag }) => _tag),
+        ["claimed", "removeGone", "gone"]
+      );
+      assert.deepStrictEqual(
+        calls.map((call) =>
+          call._tag === "retry"
+            ? `retry:${call.cause}:${Duration.toMillis(call.delay)}`
+            : call._tag
+        ),
+        [
+          "done",
+          "retry:unavailable:60000",
+          "retry:rateLimited:30000",
+          "retry:takeBack:3600000",
+          "gaveUp",
+          "gaveUp",
+          "kept",
+          "gone",
+        ]
+      );
+      assert.deepStrictEqual(results, ["done", "gaveUp", "kept", "gone"]);
     })
   );
 

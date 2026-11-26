@@ -1,4 +1,4 @@
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Option } from "effect";
 import { WorkflowEngine } from "effect/workflow";
 
 import {
@@ -9,10 +9,12 @@ import {
 import { PublishTargetV2 } from "./workflows/publish-parts.ts";
 import { postJobVersion, PublishPostV1 } from "./workflows/publish-post.ts";
 import { PublishTargetV1 } from "./workflows/publish-target.ts";
+import { SiteHoldV1 } from "./workflows/site-hold.ts";
 
 /**
- * Starts and interrupts PublishPostV1 executions, and starts the
- * PublishTargetV2 execution of a reposted round, with no parent. A start is a
+ * Starts and interrupts PublishPostV1 executions, starts the
+ * PublishTargetV2 execution of a reposted round, with no parent, and
+ * starts and interrupts a target's hand-overs (SiteHoldV1). A start is a
  * persisted message: inside a TransactionRunner transaction it commits, or
  * rolls back, with the post, and the execution only runs after the commit.
  */
@@ -29,6 +31,12 @@ export const WorkflowPublicationScheduler = Layer.effect(
     return PublicationScheduler.of({
       cancel: (executionId) =>
         PublishPostV1.interrupt(executionId).pipe(withEngine),
+      cancelFollow: ({ channelId, handOver, targetId }) =>
+        Effect.gen(function* stopHandOver() {
+          yield* SiteHoldV1.interrupt(
+            yield* SiteHoldV1.executionId({ channelId, handOver, targetId })
+          );
+        }).pipe(withEngine),
       // A round is one execution, whichever version of the job runs it.
       cancelRound: ({ round, targetId }) =>
         Effect.gen(function* stopRound() {
@@ -41,6 +49,19 @@ export const WorkflowPublicationScheduler = Layer.effect(
             yield* PublishTargetV1.executionId(payload)
           );
         }).pipe(withEngine),
+      follow: ({ channelId, handOver, sitePostId, targetId }) =>
+        SiteHoldV1.execute(
+          Option.match(sitePostId, {
+            onNone: () => ({ channelId, handOver, targetId }),
+            onSome: (platformPostId) => ({
+              channelId,
+              handOver,
+              sitePostId: platformPostId,
+              targetId,
+            }),
+          }),
+          { discard: true }
+        ).pipe(withEngine, Effect.asVoid),
       repost: ({ round, targetId }) =>
         PublishTargetV2.execute(
           { codeVersion: 1, round, targetId },

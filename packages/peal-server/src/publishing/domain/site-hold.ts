@@ -137,8 +137,13 @@ export const SiteHoldDecisionSchema = Schema.Union([
   // The site shows the post as the post wants it, or had nothing to
   // change, or the call's answer was lost: the job ends.
   Schema.TaggedStruct("done", {}),
-  // Try again after `delay`.
-  Schema.TaggedStruct("retry", { delay: Schema.DurationFromMillis }),
+  // Try again after `delay`: the site asked to wait (`rateLimited`), could
+  // not be reached (`unavailable`), or did not answer a take-back yet
+  // (`takeBack`, every `takeBackRetry`).
+  Schema.TaggedStruct("retry", {
+    cause: Schema.Literals(["rateLimited", "unavailable", "takeBack"]),
+    delay: Schema.DurationFromMillis,
+  }),
   // Peal gave up: a hold leaves the target to go out, or fail, at the
   // post's time, as any target; `code` is the site's or Peal's reason.
   Schema.TaggedStruct("gaveUp", { code: Schema.optionalKey(Schema.String) }),
@@ -200,7 +205,11 @@ export const decideHold = (
   );
 
   if (decision._tag === "retry") {
-    return { _tag: "retry", delay: decision.delay };
+    return {
+      _tag: "retry",
+      cause: outcome._tag === "RateLimited" ? "rateLimited" : "unavailable",
+      delay: decision.delay,
+    };
   }
 
   return afterGivingUp(
@@ -246,6 +255,7 @@ export const afterGivingUp = (
 
   return {
     _tag: "retry",
+    cause: "takeBack",
     delay: Duration.min(takeBackRetry, DateTime.distance(now, at)),
   };
 };

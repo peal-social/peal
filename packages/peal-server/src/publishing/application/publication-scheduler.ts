@@ -1,8 +1,9 @@
 import { Context, Schema } from "effect";
-import type { DateTime, Effect } from "effect";
+import type { DateTime, Effect, Option } from "effect";
 
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
-import type { PostId } from "#shared/domain/ids.ts";
+import type { ChannelId, PostId } from "#shared/domain/ids.ts";
+import type { PlatformPostId } from "#shared/domain/publish-result.ts";
 
 /** The durable job that publishes one revision of a post. */
 export const ExecutionIdSchema = Schema.NonEmptyString.pipe(
@@ -20,6 +21,18 @@ export interface ScheduledPublication {
 /** A target sent again, in a new round. */
 export interface RepostedTarget {
   readonly round: number;
+  readonly targetId: PostTargetId;
+}
+
+/**
+ * A target's website asked to follow the post (`SiteHoldV1`): its n-th
+ * hand-over (`handOver`), and the site's post to take off when the
+ * target is gone with its draft (`sitePostId`), which no row holds then.
+ */
+export interface FollowedTarget {
+  readonly channelId: ChannelId;
+  readonly handOver: number;
+  readonly sitePostId: Option.Option<PlatformPostId>;
   readonly targetId: PostTargetId;
 }
 
@@ -56,5 +69,18 @@ export class PublicationScheduler extends Context.Service<
      * and finds the target gone.
      */
     readonly cancelRound: (target: RepostedTarget) => Effect.Effect<void>;
+    /**
+     * Starts the job that makes a target's website match the post
+     * (`#publishing/domain/site-hold.ts`). Inside a transaction, the job
+     * starts only once it commits. Only `followOnSites` starts one.
+     */
+    readonly follow: (target: FollowedTarget) => Effect.Effect<void>;
+    /**
+     * Stops a target's earlier hand-over, as a later one asks the same of
+     * the site: a call of it already under way ends on its own.
+     */
+    readonly cancelFollow: (
+      target: Pick<FollowedTarget, "channelId" | "handOver" | "targetId">
+    ) => Effect.Effect<void>;
   }
 >()("peal-server/publishing/application/PublicationScheduler") {}

@@ -314,6 +314,12 @@ export const claimTargetRun = Effect.fn("Publishing.claimTarget")(
 export interface PublishAttempt {
   readonly attempt: number;
   readonly channelId: ChannelId;
+  /**
+   * A hand-over's call (`./site-holds.ts`): journaled in the hand-overs'
+   * round at its own part, it asks the router about the post's first
+   * part, for the site to match the post.
+   */
+  readonly handOver?: boolean;
   // Unique to this attempt of this job, and the same for every run of it.
   readonly idempotencyKey: string;
   // The place of the part to send: 0 for the post itself, and for every
@@ -380,7 +386,7 @@ const interrupted: AttemptOutcome = {
 // member cancelled it, the call stays unconfirmed: what the earlier run sent
 // counts, nothing more is sent. A row that ended returns what it recorded,
 // so a run after a crash decides as the first one did.
-const callPlatform = Effect.fn("Publishing.callPlatform")(
+export const callPlatform = Effect.fn("Publishing.callPlatform")(
   function* callPlatform(attempt: PublishAttempt, cancelRequested: boolean) {
     const journal = yield* PublicationJournal;
     const publisher = yield* PlatformPublisher;
@@ -403,7 +409,7 @@ const callPlatform = Effect.fn("Publishing.callPlatform")(
     // When the call was made, by this run or the one that began it.
     const startedAt = start._tag === "inFlight" ? start.startedAt : now;
 
-    const request = {
+    const asked = {
       channelId: attempt.channelId,
       idempotencyKey: attempt.idempotencyKey,
       part: attempt.part,
@@ -411,6 +417,11 @@ const callPlatform = Effect.fn("Publishing.callPlatform")(
       startedAt,
       targetId: attempt.targetId,
     };
+
+    // A hand-over asks about the post itself, whatever part its calls
+    // are journaled at.
+    const request =
+      attempt.handOver === true ? { ...asked, handOver: true, part: 0 } : asked;
 
     const resumed = cancelRequested
       ? Effect.succeed(interrupted)

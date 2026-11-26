@@ -1,0 +1,34 @@
+[
+  {
+    "_tag": "done"
+  },
+  {
+    "_tag": "retry",
+    "cause": "unavailable",
+    "delay": 60000
+  },
+  {
+    "_tag": "retry",
+    "cause": "rateLimited",
+    "delay": 30000
+  },
+  {
+    "_tag": "retry",
+    "cause": "takeBack",
+    "delay": 3600000
+  },
+  {
+    "_tag": "gaveUp"
+  },
+  {
+    "_tag": "gaveUp",
+    "code": "wordpress:rest_cannot_create"
+  },
+  {
+    "_tag": "kept",
+    "at": "2026-06-20T09:30:00.000Z"
+  },
+  {
+    "_tag": "gone"
+  }
+]

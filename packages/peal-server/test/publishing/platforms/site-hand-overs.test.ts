@@ -117,7 +117,7 @@ const postWith = (site: FakeWordPress, call: SiteCall) =>
     text: "Held by the site until its time.",
   });
 
-const heldPost = (site: FakeWordPress): SitePost => {
+const heldPost = (site: FakeWordPress) => {
   const [post] = site.posts();
 
   return {

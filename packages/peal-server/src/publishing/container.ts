@@ -134,6 +134,7 @@ import { ChangeLivePostV1Live } from "#publishing/infrastructure/workflows/chang
 import { PublishTargetV2Live } from "#publishing/infrastructure/workflows/publish-parts.ts";
 import { PublishPostV1Live } from "#publishing/infrastructure/workflows/publish-post.ts";
 import { PublishTargetV1Live } from "#publishing/infrastructure/workflows/publish-target.ts";
+import { SiteHoldV1Live } from "#publishing/infrastructure/workflows/site-hold.ts";
 import { WorkspaceRecyclingActors } from "#publishing/infrastructure/workspace-recycling-actors.ts";
 import { XThreadsLive } from "#publishing/infrastructure/x-threads.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
@@ -577,6 +578,7 @@ export const PublishingWorkersLive = Layer.mergeAll(
   PublishTargetV1Live,
   PublishTargetV2Live,
   ChangeLivePostV1Live,
+  SiteHoldV1Live,
   SendFollowUpV1Live.pipe(Layer.provide(SendFollowUp.layer))
 );
 

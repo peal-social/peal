@@ -41,6 +41,7 @@ import {
 } from "#shared/domain/ids.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
+import { RateLimited } from "#shared/domain/rate-limited.ts";
 import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
@@ -271,7 +272,15 @@ describe(decideHold, () => {
   it("tries an outage again as the posts' policy does, then gives a hold up", () => {
     expect(decideHold(new PlatformUnavailable(), context)).toStrictEqual({
       _tag: "retry",
+      cause: "unavailable",
       delay: Duration.minutes(1),
+    });
+    expect(
+      decideHold(new RateLimited({ retryAfter: Duration.seconds(30) }), context)
+    ).toStrictEqual({
+      _tag: "retry",
+      cause: "rateLimited",
+      delay: Duration.seconds(30),
     });
     expect(
       decideHold(new PlatformUnavailable(), {
@@ -295,13 +304,17 @@ describe(decideHold, () => {
 
     expect(
       decideHold(new BadRequest({ code: "wordpress:rest_forbidden" }), takeBack)
-    ).toStrictEqual({ _tag: "retry", delay: takeBackRetry });
+    ).toStrictEqual({ _tag: "retry", cause: "takeBack", delay: takeBackRetry });
     expect(
       afterGivingUp(Option.none(), {
         ...takeBack,
         now: DateTime.subtractDuration(at, Duration.minutes(20)),
       })
-    ).toStrictEqual({ _tag: "retry", delay: Duration.minutes(20) });
+    ).toStrictEqual({
+      _tag: "retry",
+      cause: "takeBack",
+      delay: Duration.minutes(20),
+    });
     expect(
       afterGivingUp(Option.none(), { ...takeBack, now: at })
     ).toStrictEqual({ _tag: "kept", at });
