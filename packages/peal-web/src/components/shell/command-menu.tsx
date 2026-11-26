@@ -111,6 +111,10 @@ export const CommandMenu = ({
     ? workspacePath(workspaceSlug, "/posts/new")
     : null;
 
+  const newArticleHref = permissions.includes("post:create")
+    ? workspacePath(workspaceSlug, "/articles/new")
+    : null;
+
   // What a state of the posts list is called: a tab by its own name
   // ("Drafts"), any other state as the list's filter names it.
   const stateOf = (command: PostFilterCommand): string => {
@@ -184,6 +188,7 @@ export const CommandMenu = ({
       <CommandMenuView
         docsUrl={docsUrl}
         link={AppLink}
+        newArticleHref={newArticleHref}
         newPostHref={newPostHref}
         onChooseWorkspace={chooseWorkspace}
         onOpenChange={setOpen}

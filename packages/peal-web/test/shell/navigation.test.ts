@@ -146,7 +146,6 @@ describe(navigationOf, () => {
     expect(imported.section).toBe("posts");
     expect(imported.sectionLinks.map(({ page }) => page)).toStrictEqual([
       "posts",
-      "articles",
       "import",
     ]);
     expect(imported.sectionLinks.find(({ current }) => current)?.page).toBe(
@@ -189,33 +188,32 @@ describe(navigationOf, () => {
 
   it("leads each step of the breadcrumb back to its page", () => {
     expect(
-      (
-        ["posts", "settings", "articles", "channels", "newChannel"] as const
-      ).map((crumb) => crumbHrefOf(workspace, crumb))
+      (["posts", "settings", "channels", "newChannel"] as const).map((crumb) =>
+        crumbHrefOf(workspace, crumb)
+      )
     ).toStrictEqual([
       `${base}/posts`,
       `${base}/settings`,
-      `${base}/articles`,
       `${base}/channels`,
       `${base}/channels/new`,
     ]);
   });
 
-  it("keeps an article's pages under Posts, an article under Articles", () => {
-    expect(articleCrumb("")).toStrictEqual({
-      page: "articles",
-      trail: ["posts"],
-    });
+  it("keeps an article's pages under Posts, which lists articles", () => {
+    expect(at("/articles/new").current).toBe("posts");
     expect(articleCrumb("/new")).toStrictEqual({
       page: "newArticle",
-      trail: ["posts", "articles"],
+      trail: ["posts"],
     });
     expect(articleCrumb("/00000000-0000-7000-8000-0000000000c1")).toStrictEqual(
       {
         page: "article",
-        trail: ["posts", "articles"],
+        trail: ["posts"],
       }
     );
+    expect(
+      pageLinksOf({ permissions: owner, workspace }).map(({ page }) => page)
+    ).toStrictEqual(expect.not.arrayContaining(["articles"]));
   });
 
   it("keeps a post's own pages under Posts, and names them", () => {

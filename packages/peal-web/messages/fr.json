@@ -2221,7 +2221,8 @@
       "emptyDay": "Rien ce jour-là : aucune publication, et aucun créneau de file.",
       "openSlot": "Créneau libre de {queue}",
       "openDay": "Ouvrir le {date} dans la vue par jour",
-      "heldSlot": "Créneau de {queue}, pris par une publication que les filtres masquent"
+      "heldSlot": "Créneau de {queue}, pris par une publication que les filtres masquent",
+      "articleMark": "Article pour {site}"
     },
     "Links": {
       "suspicious": "Ceci ne ressemble pas à un lien qui fonctionne : {link}"
@@ -2231,6 +2232,7 @@
       "title": "Toutes les publications",
       "description": "Chaque publication de {workspace}, quel que soit son état.",
       "newPost": "Nouvelle publication",
+      "newArticle": "Nouvel article",
       "importPosts": "Importer depuis un fichier",
       "loading": "Chargement des publications…",
       "loadFailed": "Les publications n’ont pas pu être chargées.",
@@ -2273,7 +2275,12 @@
       "requestChangesLabel": "Demander des modifications sur « {post} »",
       "approvalChanged": "Cette publication a changé depuis le chargement de la liste. Rien n’a été décidé : ouvrez-la pour la relire.",
       "layoutCalendar": "Calendrier",
-      "layoutList": "Liste"
+      "layoutList": "Liste",
+      "type": "Type",
+      "typeValue": "{type, select, article {Article} other {Publication}}",
+      "website": "Site web",
+      "emptyArticlesTitle": "Aucun article",
+      "emptyArticles": "Un article part vers un site web connecté sur la page Canaux. Écrivez-en un avec Nouvel article."
     },
     "Import": {
       "title": "Importer des publications",
@@ -3598,7 +3605,6 @@
       "agent": "Agent",
       "agentChat": "Conversation",
       "platforms": "Plateformes",
-      "articles": "Articles",
       "article": "Article",
       "newArticle": "Nouvel article",
       "messages": "Messages privés",
@@ -3633,6 +3639,7 @@
       "help": "Aide"
     },
     "newPost": "Nouvelle publication",
+    "newArticle": "Nouvel article",
     "goTo": "Aller à la page {page}",
     "switchTo": "Ouvrir {workspace}",
     "footer": {
@@ -5593,7 +5600,6 @@
     "notFound": "Cet article n’est pas dans l’espace de travail.",
     "list": {
       "untitled": "Sans titre",
-      "meta": "{site} · modifié {updated}",
       "removed": "Dans la corbeille du site",
       "state": {
         "draft": "Brouillon",
@@ -5603,14 +5609,7 @@
         "failed": "Échec",
         "unconfirmed": "À vérifier"
       },
-      "noSite": "Connectez un site web sur la page Canaux (un site WordPress, WordPress.com, DEV ou Hashnode) pour y écrire des articles.",
-      "sites": "{count, plural, one {# site web connecté} other {# sites web connectés}}.",
-      "new": "Nouvel article",
-      "connect": "Connecter un site",
-      "loading": "Chargement des articles…",
-      "loadFailed": "Les articles n’ont pas pu être chargés.",
-      "retry": "Réessayer",
-      "empty": "Aucun article pour l’instant."
+      "noSite": "Connectez un site web sur la page Canaux (un site WordPress, WordPress.com, DEV ou Hashnode) pour y écrire des articles."
     },
     "editor": {
       "toolbar": "Mise en forme",

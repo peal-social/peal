@@ -2,14 +2,21 @@ import { describe, expect, it } from "@effect/vitest";
 import { DateTime } from "effect";
 import { NextIntlClientProvider } from "next-intl";
 import type { Locale } from "next-intl";
-import type { SocialChannel, Post } from "peal-contract";
+import type {
+  ArticleSummary,
+  Channel,
+  SocialChannel,
+  Post,
+} from "peal-contract";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { PostListToolbar } from "#components/posts/post-list-toolbar.tsx";
 import {
+  ArticleItemView,
   PostItemView,
   PostListEmpty,
+  useArticleTitle,
   usePostTitle,
 } from "#components/posts/post-list-views.tsx";
 import { loadMessages } from "#i18n/messages.ts";
@@ -213,6 +220,98 @@ describe(PostListEmpty, () => {
     expect(html).toContain(
       '<a href="https://app.example.test/posts">Clear the filters</a>'
     );
+  });
+
+  it("says there is no article yet, with New article, for the articles alone", async () => {
+    const html = await render(
+      "fr",
+      <PostListEmpty
+        articles
+        clearFilters={null}
+        filtering={false}
+        newArticle={
+          <a href="https://app.example.test/articles/new">Nouvel article</a>
+        }
+      />
+    );
+
+    expect(html).toContain("Aucun article");
+    expect(html).toContain(
+      `<a href="https://app.example.test/articles/new">Nouvel article</a>`
+    );
+  });
+});
+
+const site: Channel = {
+  avatarUrl: null,
+  connection: null,
+  displayName: null,
+  handle: "journal.example",
+  id: "00000000-0000-7000-8000-00000000c0a1",
+  label: "Synthetic Journal",
+  platform: "wordpress",
+  status: { _tag: "active" },
+  tokenExpiresAt: null,
+};
+
+const article = (state: ArticleSummary["state"]): ArticleSummary => ({
+  authorId: null,
+  categories: [],
+  channelId: site.id,
+  coverMediaId: null,
+  createdAt: DateTime.makeUnsafe("2026-12-01T08:00:00Z"),
+  excerpt: null,
+  id: "00000000-0000-7000-8000-0000000000a1",
+  siteStatus: "publish",
+  state,
+  tags: [],
+  title: "  ",
+  updatedAt: DateTime.makeUnsafe("2026-12-01T08:00:00Z"),
+});
+
+const ArticleItem = ({ item }: { readonly item: ArticleSummary }) => (
+  <ArticleItemView article={item} sites={[site]}>
+    <a href={`/articles/${item.id}`}>{useArticleTitle(item)}</a>
+  </ArticleItemView>
+);
+
+describe(ArticleItemView, () => {
+  it("links an article by its title, with its state and its website", async () => {
+    const html = await render(
+      "en",
+      <ArticleItem item={article({ _tag: "draft" })} />
+    );
+
+    expect(html).toContain(
+      '<a href="/articles/00000000-0000-7000-8000-0000000000a1">Untitled</a>'
+    );
+    expect(html).toContain("No time yet");
+    expect(html).toContain("Draft");
+    expect(html).toContain("Synthetic Journal (journal.example)");
+    expect(html).not.toContain("checkbox");
+  });
+
+  it("says when the site moved it to its trash", async () => {
+    const at = DateTime.makeUnsafe("2026-12-02T08:00:00Z");
+
+    const html = await render(
+      "fr",
+      <ArticleItem
+        item={article({
+          _tag: "published",
+          editedAt: null,
+          permalink: null,
+          platformPostId: "synthetic-7",
+          publishedAt: at,
+          removedAt: at,
+          scheduledAt: at,
+          timeZone: "Europe/Paris",
+        })}
+      />
+    );
+
+    expect(html).toContain("Dans la corbeille du site");
+    expect(html).toContain("Sans titre");
   });
 });
 

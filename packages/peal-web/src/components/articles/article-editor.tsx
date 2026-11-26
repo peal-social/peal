@@ -151,7 +151,7 @@ const useArticleRequests = (workspaceId: string) => {
   };
 
   const goTo = (path: string) => {
-    router.push(workspaceHref(workspaceId, `/articles${path}`));
+    router.push(workspaceHref(workspaceId, path));
   };
 
   return { failure, goTo, isPending, run };
@@ -312,7 +312,7 @@ export const ArticleEditor = ({
   // A new article opens at its own address once made.
   const opened = (made: Article) => {
     if (article === undefined) {
-      goTo(`/${made.id}`);
+      goTo(`/articles/${made.id}`);
     }
   };
 
@@ -398,7 +398,7 @@ export const ArticleEditor = ({
                   }),
                 "deleted",
                 () => {
-                  goTo("");
+                  goTo("/posts?type=article");
                 }
               );
             },

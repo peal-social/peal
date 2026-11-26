@@ -8,6 +8,7 @@ import {
   KeyboardIcon,
   LifeBuoyIcon,
   ListFilterIcon,
+  NewspaperIcon,
   PlusIcon,
   SearchIcon,
 } from "lucide-react";
@@ -334,6 +335,7 @@ const useMenuPages = (scope: CommandScope | null, request: MenuRequest) => {
 export const CommandMenuView = ({
   docsUrl,
   link,
+  newArticleHref,
   newPostHref,
   onChooseWorkspace,
   onOpenChange,
@@ -348,6 +350,8 @@ export const CommandMenuView = ({
 }: {
   readonly docsUrl: string | null;
   readonly link: MenuLink;
+  /** Where a new article starts, beside a new post. */
+  readonly newArticleHref: string | null;
   /** Where a new post starts, or null for a member who may not write one. */
   readonly newPostHref: string | null;
   /** Called with the workspace a command opens, as it opens. */
@@ -520,6 +524,14 @@ export const CommandMenuView = ({
                     label={t("newPost")}
                     link={link}
                   />
+                  {newArticleHref === null ? null : (
+                    <MenuItem
+                      href={newArticleHref}
+                      icon={NewspaperIcon}
+                      label={t("newArticle")}
+                      link={link}
+                    />
+                  )}
                 </CommandGroup>
               )}
               {groups.map((group) => {

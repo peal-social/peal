@@ -6,6 +6,9 @@ import {
 } from "peal-contract";
 import type { PostOutcome, PostSort, PostStatus } from "peal-contract";
 
+import { PostsTypeSchema } from "./articles-among-posts.ts";
+import type { PostsType } from "./articles-among-posts.ts";
+
 /**
  * What the posts list shows, kept in the page's query string so a link
  * shows the same list. An outcome is a filter on finished posts only.
@@ -17,6 +20,8 @@ export interface PostListFilters {
   readonly sort: PostSort;
   readonly status?: PostStatus;
   readonly tagId?: string;
+  /** Posts or articles alone; both when left out. */
+  readonly type?: PostsType;
 }
 
 /** Every post, newest first. */
@@ -48,6 +53,7 @@ export const filtersOf = (query: QueryString): PostListFilters => {
   const channelId = read(Schema.String, query.get("channel"));
   const tagId = read(Schema.String, query.get("tag"));
   const queueId = read(Schema.String, query.get("queue"));
+  const type = read(PostsTypeSchema, query.get("type"));
 
   const filters: Writable<PostListFilters> = {
     sort: Option.getOrElse(
@@ -76,6 +82,10 @@ export const filtersOf = (query: QueryString): PostListFilters => {
     filters.queueId = queueId.value;
   }
 
+  if (Option.isSome(type)) {
+    filters.type = type.value;
+  }
+
   return filters;
 };
 
@@ -89,22 +99,26 @@ export const queryOf = (filters: PostListFilters): string =>
       : [["channel", filters.channelId]]),
     ...(filters.tagId === undefined ? [] : [["tag", filters.tagId]]),
     ...(filters.queueId === undefined ? [] : [["queue", filters.queueId]]),
+    ...(filters.type === undefined ? [] : [["type", filters.type]]),
     ...(filters.sort === noFilters.sort ? [] : [["sort", filters.sort]]),
   ]).toString();
 
 /**
- * What `posts.list` is asked for one page: the filters, and the cursor
- * the page before gave, which holds only with the same filters and sort.
+ * What `posts.list` is asked for one page: the filters but the type,
+ * which the API does not know, and the cursor the page before gave,
+ * which holds only with the same filters and sort.
  */
 export const searchOf = (
   filters: PostListFilters,
   cursor: string | undefined
-): PostListFilters & { readonly cursor?: string } => {
+): Omit<PostListFilters, "type"> & { readonly cursor?: string } => {
+  const { type: _type, ...search } = filters;
+
   if (cursor === undefined) {
-    return filters;
+    return search;
   }
 
-  return { ...filters, cursor };
+  return { ...search, cursor };
 };
 
 /** Whether the sort lists only posts with a time. */
@@ -120,6 +134,7 @@ export const isFiltering = (filters: PostListFilters): boolean =>
   filters.channelId !== undefined ||
   filters.tagId !== undefined ||
   filters.queueId !== undefined ||
+  filters.type !== undefined ||
   byTime(filters.sort);
 
 /** A filter of the query string, by its name there. */
@@ -129,7 +144,8 @@ export type FilterName =
   | "queue"
   | "sort"
   | "status"
-  | "tag";
+  | "tag"
+  | "type";
 
 /** What the posts list can be ordered by, in the Display panel. */
 export type PostOrdering = "created" | "scheduled";

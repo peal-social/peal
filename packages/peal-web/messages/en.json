@@ -2221,7 +2221,8 @@
       "emptyDay": "Nothing on this day: no post, and no queue slot.",
       "openSlot": "Free slot of {queue}",
       "openDay": "Open {date} in the day view",
-      "heldSlot": "Slot of {queue}, taken by a post the filters hide"
+      "heldSlot": "Slot of {queue}, taken by a post the filters hide",
+      "articleMark": "Article for {site}"
     },
     "Links": {
       "suspicious": "This does not look like a working link: {link}"
@@ -2231,6 +2232,7 @@
       "title": "All posts",
       "description": "Every post of {workspace}, whatever its state.",
       "newPost": "New post",
+      "newArticle": "New article",
       "importPosts": "Import from a file",
       "loading": "Loading the posts…",
       "loadFailed": "The posts could not be loaded.",
@@ -2273,7 +2275,12 @@
       "requestChangesLabel": "Request changes on “{post}”",
       "approvalChanged": "This post changed after the list loaded. Nothing was decided: open it and read it again.",
       "layoutCalendar": "Calendar",
-      "layoutList": "List"
+      "layoutList": "List",
+      "type": "Type",
+      "typeValue": "{type, select, article {Article} other {Post}}",
+      "website": "Website",
+      "emptyArticlesTitle": "No articles yet",
+      "emptyArticles": "An article goes to a website connected on the Channels page. Write one with New article."
     },
     "Import": {
       "title": "Import posts",
@@ -3598,7 +3605,6 @@
       "agent": "Agent",
       "agentChat": "Chat",
       "platforms": "Platforms",
-      "articles": "Articles",
       "article": "Article",
       "newArticle": "New article",
       "messages": "Direct messages",
@@ -3633,6 +3639,7 @@
       "help": "Help"
     },
     "newPost": "New post",
+    "newArticle": "New article",
     "goTo": "Go to {page}",
     "switchTo": "Open {workspace}",
     "footer": {
@@ -5593,7 +5600,6 @@
     "notFound": "This article is not in the workspace.",
     "list": {
       "untitled": "Untitled",
-      "meta": "{site} · updated {updated}",
       "removed": "In the site’s trash",
       "state": {
         "draft": "Draft",
@@ -5603,14 +5609,7 @@
         "failed": "Failed",
         "unconfirmed": "To check"
       },
-      "noSite": "Connect a website on the Channels page (a WordPress site, WordPress.com, DEV or Hashnode) to write articles for it.",
-      "sites": "{count, plural, one {# website} other {# websites}} connected.",
-      "new": "New article",
-      "connect": "Connect a website",
-      "loading": "Loading the articles…",
-      "loadFailed": "The articles could not be loaded.",
-      "retry": "Try again",
-      "empty": "No article yet."
+      "noSite": "Connect a website on the Channels page (a WordPress site, WordPress.com, DEV or Hashnode) to write articles for it."
     },
     "editor": {
       "toolbar": "Formatting",

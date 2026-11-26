@@ -18,7 +18,7 @@ describe(filtersOf, () => {
     expect(
       filtersOf(
         new URLSearchParams(
-          `status=finished&outcome=failed&channel=${channelId}&tag=${tagId}&sort=scheduledAsc`
+          `status=finished&outcome=failed&channel=${channelId}&tag=${tagId}&type=post&sort=scheduledAsc`
         )
       )
     ).toStrictEqual({
@@ -27,6 +27,7 @@ describe(filtersOf, () => {
       sort: "scheduledAsc",
       status: "finished",
       tagId,
+      type: "post",
     });
   });
 
@@ -36,7 +37,9 @@ describe(filtersOf, () => {
 
   it("ignores a value it does not know, as a link written by hand may hold", () => {
     expect(
-      filtersOf(new URLSearchParams("status=lost&sort=random&outcome=won"))
+      filtersOf(
+        new URLSearchParams("status=lost&sort=random&outcome=won&type=reel")
+      )
     ).toStrictEqual(noFilters);
   });
 
@@ -52,7 +55,7 @@ describe(filtersOf, () => {
 
 describe(queryOf, () => {
   it("writes back what it reads, leaving defaults out", () => {
-    const query = `status=finished&outcome=partiallyPublished&channel=${channelId}&tag=${tagId}&sort=createdAsc`;
+    const query = `status=finished&outcome=partiallyPublished&channel=${channelId}&tag=${tagId}&type=article&sort=createdAsc`;
 
     expect(queryOf(filtersOf(new URLSearchParams(query)))).toBe(query);
     expect(queryOf(noFilters)).toBe("");
@@ -69,6 +72,7 @@ describe(searchOf, () => {
           sort: "scheduledDesc",
           status: "finished",
           tagId,
+          type: "post",
         },
         "cursor-2"
       )
@@ -92,6 +96,7 @@ describe(isFiltering, () => {
     expect(isFiltering({ ...noFilters, sort: "createdAsc" })).toBeFalsy();
     expect(isFiltering({ ...noFilters, sort: "scheduledAsc" })).toBeTruthy();
     expect(isFiltering({ ...noFilters, tagId })).toBeTruthy();
+    expect(isFiltering({ ...noFilters, type: "article" })).toBeTruthy();
   });
 });
 

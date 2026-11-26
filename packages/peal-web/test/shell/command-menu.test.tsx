@@ -111,6 +111,7 @@ const render = async (locale: Locale) =>
       <CommandMenuView
         docsUrl={null}
         link={PlainLink}
+        newArticleHref={`/${workspaceId}/articles/new`}
         newPostHref={`/${workspaceId}/posts/new`}
         onOpenChange={() => {
           // The menu stays closed in these tests.

@@ -1,9 +1,15 @@
 "use client";
 
 import { DateTime } from "effect";
-import { SquarePenIcon } from "lucide-react";
+import { NewspaperIcon, SquarePenIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import type { SocialChannel, Post, Tag } from "peal-contract";
+import type {
+  ArticleSummary,
+  Channel,
+  SocialChannel,
+  Post,
+  Tag,
+} from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Badge } from "peal-ui/components/badge";
 import { Button } from "peal-ui/components/button";
@@ -18,6 +24,7 @@ import {
 import type { MouseEvent, ReactNode } from "react";
 
 import { channelName } from "#channels/channel-name.ts";
+import { PlatformMark } from "#components/channels/platform-mark.tsx";
 import { TagList } from "#components/tags/tag-views.tsx";
 import { useTimeOptions } from "#i18n/hour-cycle.ts";
 import type { PostView } from "#posts/post-list-filter.ts";
@@ -34,6 +41,26 @@ export const usePostTitle = (post: Post): string => {
 };
 
 const noTags: readonly Tag[] = [];
+
+// A row of the list, a post's or an article's.
+const rowClass =
+  "group/row data-[focused]:bg-muted/60 data-[selected]:bg-brand-tint data-[focused]:data-[selected]:bg-brand-tint flex gap-3 px-4 py-3 transition-colors";
+
+// A row's time in the reader's zone, or that it has none yet.
+const useListTime = () => {
+  const t = useTranslations("Posts.List");
+  const format = useFormatter();
+  const timeOptions = useTimeOptions();
+
+  return (at: DateTime.Utc | null): string =>
+    at === null
+      ? t("noTime")
+      : format.dateTime(DateTime.toDate(at), {
+          dateStyle: "medium",
+          timeStyle: "short",
+          ...timeOptions,
+        });
+};
 
 /**
  * One post: its title (`children`, which links it to its page), its time
@@ -72,8 +99,7 @@ export const PostItemView = ({
 }) => {
   const t = useTranslations("Posts.List");
   const tPosts = useTranslations("Posts");
-  const format = useFormatter();
-  const timeOptions = useTimeOptions();
+  const time = useListTime();
 
   // A channel taken off the post is none of its channels.
   const named = post.targets.flatMap(({ channelId, dropped }) => {
@@ -95,7 +121,7 @@ export const PostItemView = ({
       data-post-row={post.id}
       data-selected={selected ? "" : undefined}
       data-focused={focused ? "" : undefined}
-      className="group/row data-[focused]:bg-muted/60 data-[selected]:bg-brand-tint data-[focused]:data-[selected]:bg-brand-tint flex gap-3 px-4 py-3 transition-colors"
+      className={rowClass}
       onPointerEnter={onPointerEnter}
       onClickCapture={onClickCapture}
     >
@@ -112,15 +138,7 @@ export const PostItemView = ({
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           {children}
           <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
-            <span>
-              {post.schedule === null
-                ? t("noTime")
-                : format.dateTime(DateTime.toDate(post.schedule.at), {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                    ...timeOptions,
-                  })}
-            </span>
+            <span>{time(post.schedule?.at ?? null)}</span>
             <Badge variant="outline">
               {tPosts("status", { status: post.status })}
             </Badge>
@@ -146,26 +164,102 @@ export const PostItemView = ({
   );
 };
 
+/** What an article is called in the list: its title, or Untitled. */
+export const useArticleTitle = (article: ArticleSummary): string => {
+  const t = useTranslations("Articles.list");
+  const title = article.title.trim();
+
+  return title === "" ? t("untitled") : title;
+};
+
+/**
+ * One article, as a post's row: its title (`children`, which links it to
+ * its editor), its time, its state in the article's own words, then its
+ * website, the platform's mark before its name. It is never chosen.
+ */
+export const ArticleItemView = ({
+  article,
+  children,
+  sites,
+}: {
+  readonly article: ArticleSummary;
+  readonly children: ReactNode;
+  /** The workspace's websites, which name the article's. */
+  readonly sites: readonly Channel[];
+}) => {
+  const t = useTranslations("Posts.List");
+  const tArticles = useTranslations("Articles.list");
+  const tPosts = useTranslations("Posts");
+  const time = useListTime();
+  const { state } = article;
+  const site = sites.find(({ id }) => id === article.channelId);
+  const removed = state._tag === "published" && state.removedAt !== null;
+
+  return (
+    <li data-article-row={article.id} className={rowClass}>
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        {children}
+        <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
+          <span>{time(state._tag === "draft" ? null : state.scheduledAt)}</span>
+          <Badge variant={state._tag === "failed" ? "destructive" : "outline"}>
+            {removed ? tArticles("removed") : tArticles(`state.${state._tag}`)}
+          </Badge>
+        </div>
+        <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+          <span className="sr-only">{t("website")}: </span>
+          {site === undefined ? (
+            tPosts("disconnectedChannel")
+          ) : (
+            <>
+              <PlatformMark platform={site.platform} />
+              {channelName(site)}
+            </>
+          )}
+        </p>
+      </div>
+    </li>
+  );
+};
+
 /**
  * The list when it holds nothing (DESIGN.md, "Empty states"): the posts'
  * icon in pixels, then none yet, with how to write the first, or none the
  * filters keep, with Clear.
  */
 export const PostListEmpty = ({
+  articles = false,
   clearFilters,
   filtering,
+  newArticle = null,
   newPost = null,
   view = "all",
 }: {
+  /** Whether the list shows the articles alone (Type, Article). */
+  readonly articles?: boolean;
   /** A link that shows every post again, while filters narrow the list. */
   readonly clearFilters: ReactNode;
   readonly filtering: boolean;
+  /** The next step when there is no article yet: New article. */
+  readonly newArticle?: ReactNode;
   /** The next step when there is no post yet: New post, if allowed. */
   readonly newPost?: ReactNode;
   /** The tab the list shows, which names what it lacks ("No drafts"). */
   readonly view?: PostView;
 }) => {
   const t = useTranslations("Posts.List");
+
+  if (articles && !filtering) {
+    return (
+      <EmptyState>
+        <EmptyStateIcon icon={<NewspaperIcon />} />
+        <EmptyStateTitle>{t("emptyArticlesTitle")}</EmptyStateTitle>
+        <EmptyStateDescription>{t("emptyArticles")}</EmptyStateDescription>
+        {newArticle === null ? null : (
+          <EmptyStateActions>{newArticle}</EmptyStateActions>
+        )}
+      </EmptyState>
+    );
+  }
 
   return (
     <EmptyState>

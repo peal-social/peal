@@ -6,6 +6,8 @@ import { AsyncResult } from "effect/reactivity";
 import { FileUpIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type {
+  ArticleSummary,
+  Channel,
   Permission,
   Post,
   Queue,
@@ -19,6 +21,7 @@ import { Skeleton } from "peal-ui/components/skeleton";
 import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
+import { workspaceArticles, workspaceSites } from "#articles/api.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { PostDecisionActions } from "#components/posts/post-decision-actions.tsx";
 import { PostListToolbar } from "#components/posts/post-list-toolbar.tsx";
@@ -32,6 +35,12 @@ import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
 import { postSearchPage, workspaceChannels } from "#posts/api.ts";
 import {
+  listedArticles,
+  pageRows,
+  postPlace,
+} from "#posts/articles-among-posts.ts";
+import type { Place, PostsRow } from "#posts/articles-among-posts.ts";
+import {
   filtersOf,
   isFilteringView,
   postViews,
@@ -44,9 +53,11 @@ import { workspaceTags } from "#tags/atoms.ts";
 import { tagsOf } from "#tags/post-tags.ts";
 
 import {
+  ArticleItemView,
   PostItemView,
   PostListEmpty,
   PostListFailed,
+  useArticleTitle,
   usePostTitle,
 } from "./post-list-views.tsx";
 
@@ -132,6 +143,73 @@ const PostItem = ({
   );
 };
 
+/** One article, opening in its editor. */
+const ArticleItem = ({
+  article,
+  sites,
+  workspaceId,
+}: {
+  readonly article: ArticleSummary;
+  readonly sites: readonly Channel[];
+  readonly workspaceId: string;
+}) => {
+  const workspaceHref = useWorkspaceHref();
+
+  return (
+    <ArticleItemView article={article} sites={sites}>
+      <Link
+        href={workspaceHref(workspaceId, `/articles/${article.id}`)}
+        dir="auto"
+        className="line-clamp-2 font-medium underline-offset-4 hover:underline"
+      >
+        {useArticleTitle(article)}
+      </Link>
+    </ArticleItemView>
+  );
+};
+
+/** What the rows need beside themselves. */
+interface RowsContext {
+  readonly canApprove: boolean;
+  readonly channels: readonly SocialChannel[];
+  readonly choosing: Choosing | null;
+  readonly sites: readonly Channel[];
+  readonly tags: readonly Tag[];
+  readonly workspaceId: string;
+}
+
+// A page's rows, its posts and the articles among them.
+const Rows = ({
+  context,
+  rows,
+}: {
+  readonly context: RowsContext;
+  readonly rows: readonly PostsRow[];
+}) => (
+  <ul className="bg-card divide-y overflow-hidden rounded-xl border">
+    {rows.map((row) =>
+      row._tag === "post" ? (
+        <PostItem
+          key={row.post.id}
+          canApprove={context.canApprove}
+          channels={context.channels}
+          choosing={context.choosing}
+          post={row.post}
+          tags={context.tags}
+          workspaceId={context.workspaceId}
+        />
+      ) : (
+        <ArticleItem
+          key={row.article.id}
+          article={row.article}
+          sites={context.sites}
+          workspaceId={context.workspaceId}
+        />
+      )
+    )}
+  </ul>
+);
+
 const LoadingList = () => {
   const t = useTranslations("Posts.List");
 
@@ -144,44 +222,85 @@ const LoadingList = () => {
   );
 };
 
+/** The empty list's next steps, for a member who may write. */
+interface EmptyActions {
+  readonly newArticle: ReactNode;
+  readonly newPost: ReactNode;
+}
+
+// The list when its first page holds no row.
+const EmptyList = ({
+  actions,
+  filters,
+  workspaceId,
+}: {
+  readonly actions: EmptyActions;
+  readonly filters: PostListFilters;
+  readonly workspaceId: string;
+}) => {
+  const workspaceHref = useWorkspaceHref();
+  const t = useTranslations("Posts.List");
+  const articles = filters.type === "article";
+
+  return (
+    <PostListEmpty
+      articles={articles}
+      filtering={isFilteringView(
+        articles ? withFilter(filters, "type", undefined) : filters
+      )}
+      view={
+        postViews.find(({ status }) => status === filters.status)?.view ?? "all"
+      }
+      newArticle={actions.newArticle}
+      newPost={actions.newPost}
+      clearFilters={
+        <Link
+          href={workspaceHref(workspaceId, "/posts")}
+          className={buttonVariants({ size: "sm", variant: "ghost" })}
+        >
+          {t("clearFilters")}
+        </Link>
+      }
+    />
+  );
+};
+
 interface PagesProps {
-  readonly canApprove: boolean;
-  readonly channels: readonly SocialChannel[];
-  readonly choosing: Choosing | null;
+  /** Where the page before ended, none on the first page. */
+  readonly after: Place | undefined;
+  /** The articles the filters keep, which the pages place among posts. */
+  readonly articles: readonly ArticleSummary[];
+  readonly context: RowsContext;
   readonly cursor: Option.Option<string>;
   /** The page's place: 0 for the first, then one more for each after it. */
   readonly depth: number;
-  /** The empty state's next step, on the first page: New post. */
-  readonly emptyAction: ReactNode;
+  /** The empty state's next steps, on the first page. */
+  readonly emptyActions: EmptyActions;
   readonly filters: PostListFilters;
   // How many pages to show after this one.
   readonly more: number;
   readonly onMore: () => void;
   /** Hears the posts a page shows, so the list knows them in order. */
   readonly onPosts: (depth: number, posts: readonly Post[]) => void;
-  readonly tags: readonly Tag[];
-  readonly workspaceId: string;
 }
 
-// A page of posts, then the pages after it that "Show more" opened, each
-// asked with the same filters and sort as the cursor needs.
+// A page of posts with the articles that sort among them, then the pages
+// after it that "Show more" opened, each asked with the same filters and
+// sort as the cursor needs.
 const PostPages = ({
-  canApprove,
-  channels,
-  choosing,
+  after,
+  articles,
+  context,
   cursor,
   depth,
-  emptyAction,
+  emptyActions,
   filters,
   more,
   onMore,
   onPosts,
-  tags,
-  workspaceId,
 }: PagesProps) => {
-  const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Posts.List");
-  const page = postSearchPage(workspaceId, filters, cursor);
+  const page = postSearchPage(context.workspaceId, filters, cursor);
   const result = useAtomValue(page);
   const reload = useAtomRefresh(page);
   const shown = Option.getOrUndefined(AsyncResult.value(result))?.items;
@@ -196,56 +315,40 @@ const PostPages = ({
     onFailure: () => <PostListFailed onRetry={reload} />,
     onInitial: () => <LoadingList />,
     onSuccess: ({ value }) => {
-      if (Option.isNone(cursor) && value.items.length === 0) {
+      const next = Option.fromNullOr(value.nextCursor);
+      const last = value.items.at(-1);
+
+      const rows = pageRows({
+        after,
+        articles,
+        more: Option.isSome(next),
+        posts: value.items,
+        sort: filters.sort,
+      });
+
+      if (Option.isNone(cursor) && rows.length === 0) {
         return (
-          <PostListEmpty
-            filtering={isFilteringView(filters)}
-            view={
-              postViews.find(({ status }) => status === filters.status)?.view ??
-              "all"
-            }
-            newPost={emptyAction}
-            clearFilters={
-              <Link
-                href={workspaceHref(workspaceId, "/posts")}
-                className={buttonVariants({ size: "sm", variant: "ghost" })}
-              >
-                {t("clearFilters")}
-              </Link>
-            }
+          <EmptyList
+            actions={emptyActions}
+            filters={filters}
+            workspaceId={context.workspaceId}
           />
         );
       }
 
-      const next = Option.fromNullOr(value.nextCursor);
-
       return (
         <>
-          <ul className="bg-card divide-y overflow-hidden rounded-xl border">
-            {value.items.map((post) => (
-              <PostItem
-                key={post.id}
-                canApprove={canApprove}
-                channels={channels}
-                choosing={choosing}
-                post={post}
-                tags={tags}
-                workspaceId={workspaceId}
-              />
-            ))}
-          </ul>
+          <Rows context={context} rows={rows} />
           {Option.isSome(next) && more > 0 ? (
             <PostPages
-              canApprove={canApprove}
-              channels={channels}
-              choosing={choosing}
+              after={last === undefined ? after : postPlace(last)}
+              articles={articles}
+              context={context}
               cursor={next}
               depth={depth + 1}
-              emptyAction={null}
+              emptyActions={emptyActions}
               filters={filters}
               more={more - 1}
-              tags={tags}
-              workspaceId={workspaceId}
               onMore={onMore}
               onPosts={onPosts}
             />
@@ -261,6 +364,100 @@ const PostPages = ({
   });
 };
 
+// The articles alone (Type, Article): no post is asked for.
+const ArticleRows = ({
+  articles,
+  context,
+  emptyActions,
+  filters,
+}: {
+  readonly articles: readonly ArticleSummary[];
+  readonly context: RowsContext;
+  readonly emptyActions: EmptyActions;
+  readonly filters: PostListFilters;
+}) => {
+  const rows = pageRows({
+    after: undefined,
+    articles,
+    more: false,
+    posts: [],
+    sort: filters.sort,
+  });
+
+  return rows.length === 0 ? (
+    <EmptyList
+      actions={emptyActions}
+      filters={filters}
+      workspaceId={context.workspaceId}
+    />
+  ) : (
+    <Rows context={context} rows={rows} />
+  );
+};
+
+// The list's rows, once every article and the websites are read: the
+// pages place the articles among their posts, or show them alone.
+const ListRows = ({
+  context,
+  emptyActions,
+  filters,
+  more,
+  onMore,
+  onPosts,
+}: {
+  readonly context: Omit<RowsContext, "sites">;
+  readonly emptyActions: EmptyActions;
+  readonly filters: PostListFilters;
+  readonly more: number;
+  readonly onMore: () => void;
+  readonly onPosts: (depth: number, posts: readonly Post[]) => void;
+}) => {
+  const articlesQuery = workspaceArticles(context.workspaceId);
+  const sitesQuery = workspaceSites(context.workspaceId);
+  const articles = useAtomValue(articlesQuery);
+  const sites = useAtomValue(sitesQuery);
+  const reloadArticles = useAtomRefresh(articlesQuery);
+  const reloadSites = useAtomRefresh(sitesQuery);
+
+  return AsyncResult.match(AsyncResult.all([articles, sites]), {
+    onFailure: () => (
+      <PostListFailed
+        onRetry={() => {
+          reloadArticles();
+          reloadSites();
+        }}
+      />
+    ),
+    onInitial: () => <LoadingList />,
+    onSuccess: ({ value: [{ items }, websites] }) => {
+      const kept = listedArticles(filters, items);
+      const full = { ...context, sites: websites };
+
+      return filters.type === "article" ? (
+        <ArticleRows
+          articles={kept}
+          context={full}
+          emptyActions={emptyActions}
+          filters={filters}
+        />
+      ) : (
+        <PostPages
+          after={undefined}
+          articles={kept}
+          context={full}
+          cursor={Option.none()}
+          depth={0}
+          emptyActions={emptyActions}
+          filters={filters}
+          more={more}
+          onMore={onMore}
+          onPosts={onPosts}
+        />
+      );
+    },
+  });
+};
+
 // Whether the member may do anything to several posts at once.
 const choosesPosts = (permissions: readonly Permission[]): boolean =>
   permissions.includes("post:update") ||
@@ -268,13 +465,13 @@ const choosesPosts = (permissions: readonly Permission[]): boolean =>
   permissions.includes("post:approve");
 
 const LoadedList = ({
-  emptyAction,
+  emptyActions,
   filters,
   permissions,
   workspaceId,
 }: {
-  /** The empty list's next step: New post, for a member who may write. */
-  readonly emptyAction: ReactNode;
+  /** The empty list's next steps, for a member who may write. */
+  readonly emptyActions: EmptyActions;
   readonly filters: PostListFilters;
   readonly permissions: readonly Permission[];
   readonly workspaceId: string;
@@ -394,17 +591,17 @@ const LoadedList = ({
         views={views}
         onChange={handleFilters}
       />
-      <PostPages
-        canApprove={permissions.includes("post:approve")}
-        channels={channels}
-        choosing={choosing}
-        cursor={Option.none()}
-        depth={0}
-        emptyAction={emptyAction}
+      <ListRows
+        context={{
+          canApprove: permissions.includes("post:approve"),
+          channels,
+          choosing,
+          tags,
+          workspaceId,
+        }}
+        emptyActions={emptyActions}
         filters={filters}
         more={shown}
-        tags={tags}
-        workspaceId={workspaceId}
         onMore={handleMore}
         onPosts={handlePosts}
       />
@@ -433,8 +630,8 @@ const LoadedList = ({
 
 /**
  * The posts page's actions, in the panel's header (DESIGN.md, "The
- * frame"), whatever its layout: Import posts and New post, for members
- * who may.
+ * frame"), whatever its layout: Import posts, New post and New article,
+ * for members who may.
  */
 export const PostsActions = ({
   canCreate,
@@ -467,6 +664,15 @@ export const PostsActions = ({
         >
           <PlusIcon aria-hidden />
           {t("newPost")}
+        </Link>
+      ) : null}
+      {canCreate ? (
+        <Link
+          href={workspaceHref(workspaceId, "/articles/new")}
+          className={buttonVariants({ size: "sm", variant: "ghost" })}
+        >
+          <PlusIcon aria-hidden />
+          {t("newArticle")}
         </Link>
       ) : null}
     </PageActions>
@@ -509,16 +715,24 @@ export const PostList = ({
       />
       {hydrated ? (
         <LoadedList
-          emptyAction={
-            canCreate ? (
+          emptyActions={{
+            newArticle: canCreate ? (
+              <Link
+                href={workspaceHref(workspaceId, "/articles/new")}
+                className={buttonVariants()}
+              >
+                {t("newArticle")}
+              </Link>
+            ) : null,
+            newPost: canCreate ? (
               <Link
                 href={workspaceHref(workspaceId, "/posts/new")}
                 className={buttonVariants()}
               >
                 {t("newPost")}
               </Link>
-            ) : null
-          }
+            ) : null,
+          }}
           filters={filtersOf(new URLSearchParams(query))}
           permissions={permissions}
           workspaceId={workspaceId}

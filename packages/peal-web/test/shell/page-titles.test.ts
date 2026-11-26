@@ -11,10 +11,11 @@ const app = fileURLToPath(
   new URL("../../src/app/[locale]/(app)", import.meta.url)
 );
 
-// Drafts and Approvals open their tabs of Posts, Calendar its calendar
-// layout, and Invitations opens Members, the addresses they had kept
-// working.
+// Drafts and Approvals open their tabs of Posts, Articles its Type filter,
+// Calendar its calendar layout, and Invitations opens Members, the
+// addresses they had kept working.
 const redirectsOnly = new Set([
+  "[workspaceId]/articles/page.tsx",
   "[workspaceId]/approvals/page.tsx",
   "[workspaceId]/calendar/page.tsx",
   "[workspaceId]/drafts/page.tsx",

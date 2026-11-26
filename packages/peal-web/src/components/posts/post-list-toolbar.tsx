@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BlocksIcon,
   CircleDashedIcon,
   CircleCheckBigIcon,
   ListOrderedIcon,
@@ -27,6 +28,7 @@ import { DisplayMenu } from "#components/lists/display-menu.tsx";
 import type { Layouts } from "#components/lists/display-menu.tsx";
 import { FilterMenu, useFilterMenu } from "#components/lists/filter-menu.tsx";
 import type { FilterProperty } from "#components/lists/filter-menu.tsx";
+import { PostsTypeSchema } from "#posts/articles-among-posts.ts";
 import {
   byTime,
   isViewStatus,
@@ -63,13 +65,17 @@ const valueOf = (
     return filters.channelId;
   }
 
+  if (property === "type") {
+    return filters.type;
+  }
+
   return property === "tag" ? filters.tagId : filters.queueId;
 };
 
 /**
  * The posts list's toolbar (DESIGN.md, "Filters and display"): `views`
- * at its start, then Filter (F) over status, outcome, channel, tag and
- * queue, Display (the order), and the page's `actions`; under it, a chip
+ * at its start, then Filter (F) over type, status, outcome, channel, tag
+ * and queue, Display (the order), and the page's `actions`; under it, a chip
  * for each filter and Clear. A chip for a channel, tag or queue the
  * workspace no longer has says so, never "every". An outcome goes with
  * finished posts only, so choosing one chooses them too.
@@ -106,6 +112,15 @@ export const PostListToolbar = ({
   const menu = useFilterMenu();
 
   const properties: (FilterProperty & { readonly id: PostProperty })[] = [
+    {
+      icon: BlocksIcon,
+      id: "type",
+      label: t("type"),
+      values: PostsTypeSchema.literals.map((type) => ({
+        id: type,
+        label: t("typeValue", { type }),
+      })),
+    },
     {
       icon: CircleDashedIcon,
       id: "status",
@@ -208,6 +223,10 @@ export const PostListToolbar = ({
       );
     }
 
+    if (property === "type") {
+      return t("typeValue", { type: value });
+    }
+
     return queues.find(({ id }) => id === value)?.name ?? t("unknownQueue");
   };
 
@@ -217,6 +236,7 @@ export const PostListToolbar = ({
     queue: t("queue"),
     status: t("status"),
     tag: t("tag"),
+    type: t("type"),
   };
 
   const icons = {
@@ -225,10 +245,11 @@ export const PostListToolbar = ({
     queue: ListOrderedIcon,
     status: CircleDashedIcon,
     tag: TagIcon,
+    type: BlocksIcon,
   } satisfies Readonly<Record<PostProperty, LucideIcon>>;
 
   const chips = (
-    ["status", "outcome", "channel", "tag", "queue"] as const
+    ["type", "status", "outcome", "channel", "tag", "queue"] as const
   ).flatMap((property) => {
     const value = valueOf(filters, property);
 
@@ -247,6 +268,7 @@ export const PostListToolbar = ({
     queue: valuesOf(filters.queueId),
     status: valuesOf(filters.status),
     tag: valuesOf(filters.tagId),
+    type: valuesOf(filters.type),
   };
 
   return (
