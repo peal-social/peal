@@ -84,6 +84,7 @@ export const DrizzleTagStore = Layer.effect(
               sql`${posts.tagIds} @> ARRAY[${tagId}]::uuid[]`
             )
           );
+
           const now = yield* DateTime.now;
 
           if (filed.length > 0) {

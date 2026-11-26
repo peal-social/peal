@@ -2,7 +2,15 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { assert, describe, it, layer } from "@effect/vitest";
-import { DateTime, Deferred, Duration, Effect, Fiber, Layer, Option } from "effect";
+import {
+  DateTime,
+  Deferred,
+  Duration,
+  Effect,
+  Fiber,
+  Layer,
+  Option,
+} from "effect";
 import { SqlClient } from "effect/sql";
 import { TestClock } from "effect/testing";
 
@@ -22,6 +30,7 @@ import {
 } from "#publishing/domain/post.ts";
 import { QueueIdSchema } from "#publishing/domain/queue-id.ts";
 import { TagIdSchema } from "#publishing/domain/tag-id.ts";
+import { WordPressOptions } from "#publishing/domain/wordpress-options.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
 import { DrizzleQueueStore } from "#publishing/infrastructure/drizzle-queue-store.ts";
 import { DrizzleTagStore } from "#publishing/infrastructure/drizzle-tag-store.ts";
@@ -71,9 +80,9 @@ const writes = {
     still: ["update(postTargets): the content digest"],
   },
   "publishing/infrastructure/drizzle-post-repository.ts": {
-    // amendText, setExternalId, setTags, update; markEdited, markRemoved,
-    // updateTarget; setTargets' delete and insert.
-    moving: 9,
+    // amendText, setExternalId, setTags, update; amendOptions, markEdited,
+    // markRemoved, updateTarget; setTargets' delete and insert.
+    moving: 10,
     still: [
       "update(posts): setExecution, the job's id, which no answer shows",
       "update(postTargets): markFirstComment, which no answer shows",
@@ -179,13 +188,13 @@ describe("the statements that write posts", () => {
 // that holds it.
 // The helpers that lock targets inside a function that holds the post's
 // row already, by the function that holds it.
-const underTheirCallersLock: Readonly<Record<string, string>> = {
-  cancelTargets: "cancel and unschedule, after lockPost",
-  draftScheduled: "scheduling a draft, given the locked post (`current`)",
-  dropAndAsk: "removing a target, after lockPost",
-  missAll: "claimPostRun, after posts.lock",
-  saveBackToDraft: "every way back to draft, under the post's lock",
-};
+const underTheirCallersLock = new Map([
+  ["cancelTargets", "cancel and unschedule, after lockPost"],
+  ["draftScheduled", "scheduling a draft, given the locked post (`current`)"],
+  ["dropAndAsk", "removing a target, after lockPost"],
+  ["missAll", "claimPostRun, after posts.lock"],
+  ["saveBackToDraft", "every way back to draft, under the post's lock"],
+]);
 
 describe("the use cases that lock a target", () => {
   it("lock its post first", async () => {
@@ -204,11 +213,13 @@ describe("the use cases that lock a target", () => {
       for (const match of text.matchAll(/lockTargets?\(/gu)) {
         const before = text.slice(0, match.index);
         const scope = before.slice(before.lastIndexOf("function*"));
-        const holder = /^function\* (\w+)/u.exec(scope)?.[1] ?? "";
+
+        const holder =
+          /^function\* (?<name>\w+)/u.exec(scope)?.groups?.["name"] ?? "";
 
         if (
           !/posts\.lock\(|lockInWorkspace\(|lockPost\(/u.test(scope) &&
-          underTheirCallersLock[holder] === undefined
+          !underTheirCallersLock.has(holder)
         ) {
           alone.push(`${path.relative(source, file)}:${String(match.index)}`);
         }
@@ -298,7 +309,14 @@ layer(StorageTest)("a post's updated_at", (storage) => {
           postId,
           Option.some(PostExternalIdSchema.make("record-1"))
         ),
-        posts.amendText(postId, 0, target.channelId, "Own text"),
+        posts.amendText(postId, 0, target.channelId, {
+          body: Option.none(),
+          text: "Own text",
+        }),
+        posts.amendOptions(
+          target.id,
+          new WordPressOptions({ platform: "wordpress", title: "Own title" })
+        ),
         posts.setTargets(postId, [target]),
         posts.updateTarget(
           yield* Effect.fromResult(
@@ -397,8 +415,8 @@ layer(StorageTest)("a post's updated_at", (storage) => {
 
         yield* sql`UPDATE publishing.posts SET tag_ids = ARRAY[${tagId}]::uuid[] WHERE id = ${postId}`;
 
-        const locked = yield* Deferred.make<void>();
-        const release = yield* Deferred.make<void>();
+        const locked = yield* Deferred.make<boolean>();
+        const release = yield* Deferred.make<boolean>();
 
         // Another transaction holds the post's row, as a draft's scheduling
         // does while a platform answers.
@@ -407,7 +425,7 @@ layer(StorageTest)("a post's updated_at", (storage) => {
             posts
               .lock(postId)
               .pipe(
-                Effect.andThen(Deferred.succeed(locked, undefined)),
+                Effect.andThen(Deferred.succeed(locked, true)),
                 Effect.andThen(Deferred.await(release))
               )
           )
@@ -431,7 +449,7 @@ layer(StorageTest)("a post's updated_at", (storage) => {
         yield* TestClock.setTime(
           DateTime.toEpochMillis(at("1970-01-01T00:06:20.000Z"))
         );
-        yield* Deferred.succeed(release, undefined);
+        yield* Deferred.succeed(release, true);
         yield* Fiber.join(holder);
         yield* Fiber.join(deleting);
 

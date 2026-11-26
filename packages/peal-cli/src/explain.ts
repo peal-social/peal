@@ -245,6 +245,8 @@ const brokenRule = (violation: ContentViolation): string =>
       "its rich text holds a node or a mark Peal does not take, or more than Peal keeps",
     bodyNotTaken: () =>
       "only a website takes a rich text, and only on the post's first part",
+    optionsNotTaken: () =>
+      "only a website's options change once its post is live; elsewhere only the text does",
     aspectRatioUnsupported: ({ height, maximum, minimum, width }) =>
       `it is ${String(width)}×${String(height)}, and the platform takes a width over height from ${String(minimum)} to ${String(maximum)}`,
     empty: () => "the post would go out with no text and no media",

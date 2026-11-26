@@ -3940,11 +3940,21 @@ export const studioGroupsLive = (studio: Studio) =>
               return yield* new LivePostNotChangeable({ reason: refusal });
             }
 
+            // The text, when given, and a website's options, whole.
+            const texted =
+              payload.text === undefined
+                ? post
+                : withTextOn(post, part, target.channelId, payload.text);
+
             yield* savePost(studio, {
-              ...withTextOn(post, part, target.channelId, payload.text),
+              ...texted,
               targets: post.targets.map((found) =>
                 found.id === target.id
-                  ? { ...found, editedAt: studioNow }
+                  ? {
+                      ...found,
+                      editedAt: studioNow,
+                      options: payload.options ?? found.options,
+                    }
                   : found
               ),
             });

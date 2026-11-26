@@ -1,4 +1,4 @@
-import type { DateTime } from "effect";
+import type { DateTime, Types } from "effect";
 import { Array as Arr, Effect, Option, Schema } from "effect";
 import {
   InvalidTimeZone,
@@ -13,12 +13,15 @@ import {
 } from "peal-contract";
 import type {
   ChannelOptions as OptionsInput,
+  LivePostEdit,
   NewPost as NewPostInput,
   PostContent as ContentInput,
   PostTiming,
 } from "peal-contract";
 
 import type { KeyedRequest } from "#publishing/application/idempotency-keys.ts";
+import { invalidBody } from "#publishing/application/live-post-changes.ts";
+import type { TextEditRequest } from "#publishing/application/live-post-changes.ts";
 import type { Placement } from "#publishing/application/placement.ts";
 import type { PresetAsk } from "#publishing/application/post-presets.ts";
 import type { SendPostRequest } from "#publishing/application/post-scheduling.ts";
@@ -34,6 +37,7 @@ import { richOverride } from "#publishing/domain/rich-override.ts";
 import { SignatureIdSchema } from "#publishing/domain/signature-id.ts";
 import { TagIdSchema } from "#publishing/domain/tag-id.ts";
 import type { TagId } from "#publishing/domain/tag-id.ts";
+import { TargetOptionsSchema } from "#publishing/domain/target-options.ts";
 import { maxOverrideMedia } from "#publishing/domain/text-override.ts";
 import type { TextOverride } from "#publishing/domain/text-override.ts";
 import {
@@ -197,6 +201,46 @@ export const contentFrom = (input: ContentInput) =>
     }
 
     return withRichOverrides(yield* decodeContent(input).pipe(Effect.orDie));
+  });
+
+const decodeTargetOptions = Schema.decodeUnknownEffect(TargetOptionsSchema);
+
+/**
+ * An edit of a live post as a request gives it: its rich text checked
+ * against the allow-list as a post's are (`invalidBody` where it does not
+ * decode, which the use case names on the target's channel), its options
+ * decoded.
+ */
+export const liveEditFrom = (input: LivePostEdit) =>
+  Effect.gen(function* decodingEdit() {
+    const edit: Types.Mutable<TextEditRequest> = { part: input.part ?? 0 };
+
+    if (input.text !== undefined) {
+      edit.text = input.text;
+    }
+
+    if (input.options !== undefined) {
+      edit.options = yield* decodeTargetOptions(input.options).pipe(
+        Effect.orDie
+      );
+    }
+
+    if (input.body !== undefined) {
+      const taken =
+        invalidBodiesOf([{ overrides: [{ body: input.body, channelId: "" }] }])
+          .length === 0;
+
+      edit.body = taken
+        ? Option.getOrElse(
+            decodeBody(input.body),
+            (): typeof invalidBody => invalidBody
+          )
+        : invalidBody;
+    }
+
+    const read: TextEditRequest = edit;
+
+    return read;
   });
 
 /** The options a request gives on some channels, with their ids decoded. */

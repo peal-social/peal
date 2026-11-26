@@ -1735,7 +1735,8 @@
         "optionInvalid": "{channel} : {reason}",
         "forbiddenCharacters": "{channel} : le texte ne peut pas contenir {characters}.",
         "bodyInvalid": "{channel} : son texte enrichi contient ce que Peal n’envoie pas, ou est trop long.",
-        "bodyNotTaken": "{channel} : seul un site web accepte un texte enrichi, sur la première partie de la publication."
+        "bodyNotTaken": "{channel} : seul un site web accepte un texte enrichi, sur la première partie de la publication.",
+        "optionsNotTaken": "{channel} : une fois la publication en ligne, seules les options d’un site web changent. Modifiez son texte seul."
       },
       "channelDetail": "{handle} sur {platform}",
       "placementLabel": "Quand la publication part",

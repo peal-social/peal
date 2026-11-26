@@ -579,6 +579,11 @@ and no socket, for tests.
   `posts-updated-at.yml`, a workspace at a time, so every sync by change
   reads each post once more and no customer acts (the runbook's "Past
   posts' own ids and updatedAt").
+  Edits of live websites did too: a pending change holding a
+  website's rich text or options (`live_post_changes.body`, `options`),
+  which the release before fails `notSupported` without clearing them:
+  roll back past it only once none is pending (the runbook's "Past edits
+  of live websites").
 
 ### Product analytics
 

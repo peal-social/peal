@@ -8,9 +8,10 @@ import {
   LivePostNotChangeable,
   PostContentInvalid,
   PostNotFound,
+  UnknownMedia,
   forWorkspace,
 } from "peal-contract";
-import type { Member, Permission } from "peal-contract";
+import type { ChannelOptions, Member, Permission } from "peal-contract";
 
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { livePostChangePermission } from "#publishing/domain/live-post-change.ts";
@@ -69,7 +70,8 @@ const sentOn = Effect.fn("test.sentOn")(function* sentOn(
   client: Effect.Success<ReturnType<typeof clientAs>>,
   workspaceId: WorkspaceId,
   channelIds: readonly string[],
-  text: string
+  text: string,
+  options: readonly ChannelOptions[] = []
 ) {
   const post = yield* client.posts.create({
     headers: { ...forWorkspace(workspaceId) },
@@ -77,6 +79,7 @@ const sentOn = Effect.fn("test.sentOn")(function* sentOn(
     payload: {
       channelIds: [...channelIds],
       content: { media: [], overrides: [], text },
+      options: [...options],
       when: { _tag: "now" },
     },
     query: {},
@@ -530,6 +533,139 @@ describe("the editing endpoint", () => {
             { channelId: mastodon, text: "Live, corrected" },
           ]);
           assert.strictEqual(after.content.text, "Live with a typo");
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "names a rich text off the allow-list, and one a social network does not take",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* rich() {
+          const workspaceId = yield* freshId;
+          const editor = yield* clientAs(yield* freshId, workspaceId, "editor");
+          const mastodon = yield* connect(workspaceId, "mastodon");
+          const sent = yield* sentOn(editor, workspaceId, [mastodon], "Live");
+          const [target] = sent.targets;
+
+          assert(target !== undefined);
+
+          const edit = (body: { readonly content: readonly unknown[] }) =>
+            editor.posts
+              .editTarget({
+                headers: forWorkspace(workspaceId),
+                params: { postId: sent.id, targetId: target.id },
+                payload: { body: { content: body.content, type: "doc" } },
+                query: {},
+              })
+              .pipe(Effect.flip);
+
+          const offList = yield* edit({ content: [{ type: "script" }] });
+
+          const notTaken = yield* edit({
+            content: [
+              { content: [{ text: "Rich", type: "text" }], type: "paragraph" },
+            ],
+          });
+
+          assert.isTrue(offList instanceof PostContentInvalid);
+          assert.isTrue(notTaken instanceof PostContentInvalid);
+          assert.deepStrictEqual(
+            offList instanceof PostContentInvalid ? offList.violations : [],
+            [{ _tag: "bodyInvalid", channelId: mastodon }]
+          );
+          assert.deepStrictEqual(
+            notTaken instanceof PostContentInvalid
+              ? notTaken.violations.map(({ _tag }) => _tag)
+              : [],
+            ["bodyNotTaken"]
+          );
+        })
+      ),
+    timeout
+  );
+
+  it.effect(
+    "edits a website's options, and answers a file not the workspace's as UnknownMedia",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* website() {
+          const workspaceId = yield* freshId;
+          const editor = yield* clientAs(yield* freshId, workspaceId, "editor");
+          const wordpress = yield* connect(workspaceId, "wordpress");
+
+          const sent = yield* sentOn(
+            editor,
+            workspaceId,
+            [wordpress],
+            "Live on the site",
+            [
+              {
+                channelId: wordpress,
+                options: { platform: "wordpress", title: "Before" },
+              },
+            ]
+          );
+
+          const [target] = sent.targets;
+
+          assert(target !== undefined);
+
+          const params = { postId: sent.id, targetId: target.id };
+
+          const unknown = yield* editor.posts
+            .editTarget({
+              headers: forWorkspace(workspaceId),
+              params,
+              payload: {
+                options: {
+                  coverMediaId: "00000000-0000-7000-8000-00000000a0fd",
+                  platform: "wordpress",
+                  title: "With a cover",
+                },
+              },
+              query: {},
+            })
+            .pipe(Effect.flip);
+
+          assert.instanceOf(unknown, UnknownMedia);
+
+          const change = yield* editor.posts.editTarget({
+            headers: forWorkspace(workspaceId),
+            params,
+            payload: { options: { platform: "wordpress", title: "After" } },
+            query: {},
+          });
+
+          assert.strictEqual(change.kind, "edit");
+
+          yield* eventually(
+            "the edit is done",
+            editor.posts
+              .changes({
+                headers: forWorkspace(workspaceId),
+                params: { postId: sent.id },
+              })
+              .pipe(
+                Effect.map(({ items }) =>
+                  items.some(({ status }) => status === "done")
+                )
+              )
+          );
+
+          const after = yield* editor.posts.get({
+            headers: forWorkspace(workspaceId),
+            params: { postId: sent.id },
+          });
+
+          assert.deepStrictEqual(after.targets[0]?.options, {
+            platform: "wordpress",
+            title: "After",
+          });
+          assert.notStrictEqual(after.targets[0]?.editedAt ?? null, null);
         })
       ),
     timeout

@@ -377,6 +377,7 @@ if typing.TYPE_CHECKING:
         ContentViolation_OptionMissing,
         ContentViolation_OptionTooLong,
         ContentViolation_OptionsForOtherPlatform,
+        ContentViolation_OptionsNotTaken,
         ContentViolation_OptionsWithoutChannel,
         ContentViolation_OverrideWithoutChannel,
         ContentViolation_PartsNeedReconnect,
@@ -420,6 +421,7 @@ if typing.TYPE_CHECKING:
     from .content_violation_option_missing import ContentViolationOptionMissing
     from .content_violation_option_too_long import ContentViolationOptionTooLong
     from .content_violation_options_for_other_platform import ContentViolationOptionsForOtherPlatform
+    from .content_violation_options_not_taken import ContentViolationOptionsNotTaken
     from .content_violation_options_without_channel import ContentViolationOptionsWithoutChannel
     from .content_violation_override_without_channel import ContentViolationOverrideWithoutChannel
     from .content_violation_parts_need_reconnect import ContentViolationPartsNeedReconnect
@@ -1561,6 +1563,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ContentViolationOptionMissing": ".content_violation_option_missing",
     "ContentViolationOptionTooLong": ".content_violation_option_too_long",
     "ContentViolationOptionsForOtherPlatform": ".content_violation_options_for_other_platform",
+    "ContentViolationOptionsNotTaken": ".content_violation_options_not_taken",
     "ContentViolationOptionsWithoutChannel": ".content_violation_options_without_channel",
     "ContentViolationOverrideWithoutChannel": ".content_violation_override_without_channel",
     "ContentViolationPartsNeedReconnect": ".content_violation_parts_need_reconnect",
@@ -1601,6 +1604,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ContentViolation_OptionMissing": ".content_violation",
     "ContentViolation_OptionTooLong": ".content_violation",
     "ContentViolation_OptionsForOtherPlatform": ".content_violation",
+    "ContentViolation_OptionsNotTaken": ".content_violation",
     "ContentViolation_OptionsWithoutChannel": ".content_violation",
     "ContentViolation_OverrideWithoutChannel": ".content_violation",
     "ContentViolation_PartsNeedReconnect": ".content_violation",
@@ -2750,6 +2754,7 @@ __all__ = [
     "ContentViolationOptionMissing",
     "ContentViolationOptionTooLong",
     "ContentViolationOptionsForOtherPlatform",
+    "ContentViolationOptionsNotTaken",
     "ContentViolationOptionsWithoutChannel",
     "ContentViolationOverrideWithoutChannel",
     "ContentViolationPartsNeedReconnect",
@@ -2790,6 +2795,7 @@ __all__ = [
     "ContentViolation_OptionMissing",
     "ContentViolation_OptionTooLong",
     "ContentViolation_OptionsForOtherPlatform",
+    "ContentViolation_OptionsNotTaken",
     "ContentViolation_OptionsWithoutChannel",
     "ContentViolation_OverrideWithoutChannel",
     "ContentViolation_PartsNeedReconnect",

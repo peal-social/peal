@@ -727,6 +727,7 @@ module Peal
     autoload :ContentViolationOptionMissing, ::File.join(__dir__, "peal/types/content_violation_option_missing")
     autoload :ContentViolationOptionTooLong, ::File.join(__dir__, "peal/types/content_violation_option_too_long")
     autoload :ContentViolationOptionsForOtherPlatform, ::File.join(__dir__, "peal/types/content_violation_options_for_other_platform")
+    autoload :ContentViolationOptionsNotTaken, ::File.join(__dir__, "peal/types/content_violation_options_not_taken")
     autoload :ContentViolationOptionsWithoutChannel, ::File.join(__dir__, "peal/types/content_violation_options_without_channel")
     autoload :ContentViolationOverrideWithoutChannel, ::File.join(__dir__, "peal/types/content_violation_override_without_channel")
     autoload :ContentViolationPartsNeedReconnect, ::File.join(__dir__, "peal/types/content_violation_parts_need_reconnect")

@@ -386,34 +386,37 @@ export const DrizzleWorkspacePostStore = Layer.effect(
       function* clearAuthor(userId: string) {
         // Both show in the posts' answers: they move. The rows first,
         // then the clock (`moved`), in one transaction.
-        yield* client.withTransaction(
-          Effect.gen(function* clearing() {
-            const theirs = yield* lockedPosts(
-              db,
-              or(eq(posts.authorId, userId), eq(posts.scheduledBy, userId))
-            );
-            const now = yield* DateTime.now;
-
-            if (theirs.length === 0) {
-              return;
-            }
-
-            yield* db
-              .update(posts)
-              .set({ authorId: null, updatedAt: moved(now) })
-              .where(
-                and(inArray(posts.id, theirs), eq(posts.authorId, userId))
+        yield* client
+          .withTransaction(
+            Effect.gen(function* clearing() {
+              const theirs = yield* lockedPosts(
+                db,
+                or(eq(posts.authorId, userId), eq(posts.scheduledBy, userId))
               );
 
-            // Nor that they scheduled any: how it was scheduled stays.
-            yield* db
-              .update(posts)
-              .set({ scheduledBy: null, updatedAt: moved(now) })
-              .where(
-                and(inArray(posts.id, theirs), eq(posts.scheduledBy, userId))
-              );
-          })
-        ).pipe(Effect.mapError(failed));
+              const now = yield* DateTime.now;
+
+              if (theirs.length === 0) {
+                return;
+              }
+
+              yield* db
+                .update(posts)
+                .set({ authorId: null, updatedAt: moved(now) })
+                .where(
+                  and(inArray(posts.id, theirs), eq(posts.authorId, userId))
+                );
+
+              // Nor that they scheduled any: how it was scheduled stays.
+              yield* db
+                .update(posts)
+                .set({ scheduledBy: null, updatedAt: moved(now) })
+                .where(
+                  and(inArray(posts.id, theirs), eq(posts.scheduledBy, userId))
+                );
+            })
+          )
+          .pipe(Effect.mapError(failed));
 
         // Nor that they started a rule that repeats one: the next run ends
         // it, as its starter is gone.

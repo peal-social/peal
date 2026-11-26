@@ -135,7 +135,9 @@
   `publishingTools`) is not destructive, idempotent and `openWorld`: it
   names one channel by `channelId` or `targetId`, exactly one, checks
   `post:publish` before it reads the post, and says the change is public
-  at once and which platforms take it. Their refusals have their words in
+  at once and which platforms take it. It takes `text`, and a website's
+  `body` and `options`, one at least, read as the API reads them
+  (`liveEditFrom`). Their refusals have their words in
   `refusals.ts` (`livePostRefusals`). Instants are
   `Schema.DateTimeUtcFromString` in tool parameters. The tools whose
   write the API's connection journal keeps are `contentTools`

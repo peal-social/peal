@@ -1,6 +1,6 @@
 # Reference
 ## posts
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L58-L92">calendar</a>(...) -> typing.List[Post]</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L60-L94">calendar</a>(...) -> typing.List[Post]</code></summary>
 <dl>
 <dd>
 
@@ -82,7 +82,7 @@ client.posts.calendar(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L94-L193">list</a>(...) -> PostPage</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L96-L195">list</a>(...) -> PostPage</code></summary>
 <dl>
 <dd>
 
@@ -281,7 +281,7 @@ client.posts.list()
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L195-L302">create</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L197-L304">create</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -468,7 +468,7 @@ client.posts.create(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L304-L368">bulk</a>(...) -> BulkResult</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L306-L370">bulk</a>(...) -> BulkResult</code></summary>
 <dl>
 <dd>
 
@@ -660,7 +660,7 @@ client.posts.import_(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L414-L502">validate</a>(...) -> PostValidation</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L416-L504">validate</a>(...) -> PostValidation</code></summary>
 <dl>
 <dd>
 
@@ -822,7 +822,7 @@ client.posts.validate(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L504-L533">get</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L506-L535">get</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -895,7 +895,7 @@ client.posts.get(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L535-L624">update</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L537-L626">update</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -994,7 +994,7 @@ client.posts.update(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L626-L663">outcome</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L628-L665">outcome</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -1075,7 +1075,7 @@ client.posts.outcome(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L665-L696">attempts</a>(...) -> typing.List[PublicationAttempt]</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L667-L698">attempts</a>(...) -> typing.List[PublicationAttempt]</code></summary>
 <dl>
 <dd>
 
@@ -1148,7 +1148,7 @@ client.posts.attempts(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L698-L732">set_tags</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L700-L734">set_tags</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -1232,7 +1232,7 @@ client.posts.set_tags(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L734-L771">set_external_id</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L736-L773">set_external_id</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -1314,7 +1314,7 @@ client.posts.set_external_id(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L773-L802">duplicate</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L775-L804">duplicate</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -1387,7 +1387,7 @@ client.posts.duplicate(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L804-L852">schedule</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L806-L854">schedule</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -1489,7 +1489,7 @@ client.posts.schedule(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L854-L891">reschedule</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L856-L893">reschedule</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -1572,7 +1572,7 @@ client.posts.reschedule(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L893-L935">enqueue</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L895-L937">enqueue</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -1661,7 +1661,7 @@ client.posts.enqueue(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L937-L966">unschedule</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L939-L968">unschedule</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -1734,7 +1734,7 @@ client.posts.unschedule(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L968-L1000">repost</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L970-L1002">repost</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -1816,7 +1816,7 @@ client.posts.repost(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1002-L1036">remove_target</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1004-L1038">remove_target</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -1898,7 +1898,7 @@ client.posts.remove_target(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1038-L1080">confirm</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1040-L1082">confirm</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -1991,7 +1991,7 @@ client.posts.confirm(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1082-L1116">leave_out_rest</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1084-L1118">leave_out_rest</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -2073,7 +2073,7 @@ client.posts.leave_out_rest(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1118-L1159">unpublish_target</a>(...) -> LivePostChange</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1120-L1161">unpublish_target</a>(...) -> LivePostChange</code></summary>
 <dl>
 <dd>
 
@@ -2163,7 +2163,7 @@ client.posts.unpublish_target(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1161-L1211">edit_target</a>(...) -> LivePostChange</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1163-L1225">edit_target</a>(...) -> LivePostChange</code></summary>
 <dl>
 <dd>
 
@@ -2175,7 +2175,7 @@ client.posts.unpublish_target(
 <dl>
 <dd>
 
-Replaces the text of one part of the post (`part`, from 0, the post itself by default) on one channel's platform, for everyone: only the text changes, never the media, the options or the time. The change is public at once. Peal edits on Mastodon and Google Business Profile; the capabilities' `livePost.edit` say where, and `editBlockedBy` why not elsewhere. The text is checked as that channel's text is when a post is scheduled (PostContentInvalid, a Mastodon content warning counted), and must not be empty. The request is accepted (202) and a job makes the edit, one call at a time with the channel's other calls; a call that fails is tried again as a deletion is, after which the change is `failed` with its `code` (`postGone` when the platform no longer has the post, `pollNotEditable` for a Mastodon post with a poll, which the edit would remove, `permissionDenied` for a Mastodon channel to reconnect) and may be asked again. `wait` waits up to that many seconds (60 at most) for it to end. Once done, the text is that part's own text on that channel in Peal (the other channels keep theirs), the target has its `editedAt`, and Peal keeps no earlier text. Refused (LivePostNotChangeable) before anything is called where it is not live there, was deleted, Peal has no id for that part, the platform does not let Peal edit it, another change of it is pending, the channel cannot be used, or your posts need an approval (`approvalRequired`: an approver makes the edit). Webhooks hear `post.edited` or `post.edit_failed`. Needs post:publish; an OAuth client needs the scope workspace:publish.
+Replaces the text of one part of the post (`part`, from 0, the post itself by default) on one channel's platform, for everyone: on a social network or a chat, only the text changes, never the media, the options or the time (a `body` there is PostContentInvalid `bodyNotTaken`, and `options` `optionsNotTaken`). On a website, the edit replaces what the site shows, as the post's text (`text`, which replaces a rich text there with plain paragraphs: send `body` to keep its formatting) or a rich text (`body`), and its options (`options`, its platform's, whole), each kept when left out; the site status and the date never change (`siteStatus` left out is the target's, another is PostContentInvalid `optionInvalid`), and a file the site has already is not sent again. The change is public at once. The capabilities' `livePost.edit` say where Peal edits, and `editBlockedBy` why not elsewhere. The text, the body and the options are checked as that channel's are when a post is scheduled (PostContentInvalid, a Mastodon content warning counted; a website's title needed), the text must not be empty, and the files must be the workspace's and ready (UnknownMedia). The request is accepted (202) and a job makes the edit, one call at a time with the channel's other calls; a call that fails is tried again as a deletion is, after which the change is `failed` with its `code` (`postGone` when the platform no longer has the post, `pollNotEditable` for a Mastodon post with a poll, which the edit would remove, `permissionDenied` for a Mastodon channel to reconnect) and may be asked again. `wait` waits up to that many seconds (60 at most) for it to end. Once done, the text (or the body) is that part's own text on that channel in Peal (the other channels keep theirs), a website's new options are its target's, the target has its `editedAt`, and Peal keeps no earlier text. Refused (LivePostNotChangeable) before anything is called where it is not live there, was deleted, Peal has no id for that part, the platform does not let Peal edit it, another change of it is pending, the channel cannot be used, or your posts need an approval (`approvalRequired`: an approver makes the edit). Webhooks hear `post.edited` or `post.edit_failed`. Needs post:publish; an OAuth client needs the scope workspace:publish.
 </dd>
 </dl>
 </dd>
@@ -2201,7 +2201,6 @@ client = Peal(
 client.posts.edit_target(
     post_id="postId",
     target_id="targetId",
-    text="text",
 )
 
 ```
@@ -2234,14 +2233,6 @@ client.posts.edit_target(
 <dl>
 <dd>
 
-**text:** `str` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
 **wait:** `typing.Optional[str]` 
     
 </dd>
@@ -2250,7 +2241,31 @@ client.posts.edit_target(
 <dl>
 <dd>
 
+**body:** `typing.Optional[RichText]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**options:** `typing.Optional[TargetOptions]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **part:** `typing.Optional[int]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**text:** `typing.Optional[str]` 
     
 </dd>
 </dl>
@@ -2270,7 +2285,7 @@ client.posts.edit_target(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1213-L1242">unpublish</a>(...) -> PostUnpublish</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1227-L1256">unpublish</a>(...) -> PostUnpublish</code></summary>
 <dl>
 <dd>
 
@@ -2343,7 +2358,7 @@ client.posts.unpublish(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1244-L1273">changes</a>(...) -> LivePostChanges</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1258-L1287">changes</a>(...) -> LivePostChanges</code></summary>
 <dl>
 <dd>
 
@@ -2416,7 +2431,7 @@ client.posts.changes(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1275-L1304">cancel</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/peal/posts/client.py#L1289-L1318">cancel</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 

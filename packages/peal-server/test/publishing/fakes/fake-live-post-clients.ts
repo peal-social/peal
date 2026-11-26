@@ -22,7 +22,6 @@ import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { PostTarget } from "#publishing/domain/post-target.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
-import { isSocialPlatform } from "#shared/domain/platform.ts";
 import { TokenExpired } from "#shared/domain/token-expired.ts";
 import type { TokenRejected } from "#shared/domain/token-rejected.ts";
 
@@ -250,11 +249,8 @@ export const RepositoryCredentials = Layer.effect(
             onSome: (
               channel
             ): Effect.Effect<PublishingAccount, CredentialFailure> => {
+              // A website's channel is a post's channel like any other.
               const { platform, status } = channel;
-
-              if (!isSocialPlatform(platform)) {
-                return disconnected();
-              }
 
               if (status._tag === "disabled") {
                 return Effect.fail(

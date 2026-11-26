@@ -268,7 +268,9 @@
   their words in `src/live-post-refusals.ts`, typed by the contract.
   `peal posts edit` (`commands/posts-edit.ts`) replaces a part's text on
   one channel (`--channel`, resolved as `unpublish` resolves it, `--text`,
-  `--part`, `--wait`), without asking: the edit is the user's own text.
+  `--part`, `--wait`), and a website's rich text and options (`--body`,
+  `--options`, JSON read before any call), one of the three at least,
+  without asking: the edit is the user's own text.
 - A post's own id, its caller's: `peal post --external-id`, `peal drafts
   save --external-id` (or `--clear-external-id`; without either, a draft
   keeps its own), `peal posts external-id <post> <id>` (or `--clear`, one

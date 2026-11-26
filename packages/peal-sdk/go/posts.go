@@ -420,16 +420,20 @@ var (
 	livePostEditFieldPostID   = big.NewInt(1 << 0)
 	livePostEditFieldTargetID = big.NewInt(1 << 1)
 	livePostEditFieldWait     = big.NewInt(1 << 2)
-	livePostEditFieldPart     = big.NewInt(1 << 3)
-	livePostEditFieldText     = big.NewInt(1 << 4)
+	livePostEditFieldBody     = big.NewInt(1 << 3)
+	livePostEditFieldOptions  = big.NewInt(1 << 4)
+	livePostEditFieldPart     = big.NewInt(1 << 5)
+	livePostEditFieldText     = big.NewInt(1 << 6)
 )
 
 type LivePostEdit struct {
-	PostID   string  `json:"-" url:"-"`
-	TargetID string  `json:"-" url:"-"`
-	Wait     *string `json:"-" url:"wait,omitempty"`
-	Part     *int    `json:"part,omitempty" url:"-"`
-	Text     string  `json:"text" url:"-"`
+	PostID   string         `json:"-" url:"-"`
+	TargetID string         `json:"-" url:"-"`
+	Wait     *string        `json:"-" url:"wait,omitempty"`
+	Body     *RichText      `json:"body,omitempty" url:"-"`
+	Options  *TargetOptions `json:"options,omitempty" url:"-"`
+	Part     *int           `json:"part,omitempty" url:"-"`
+	Text     *string        `json:"text,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -465,6 +469,20 @@ func (l *LivePostEdit) SetWait(wait *string) {
 	l.require(livePostEditFieldWait)
 }
 
+// SetBody sets the Body field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *LivePostEdit) SetBody(body *RichText) {
+	l.Body = body
+	l.require(livePostEditFieldBody)
+}
+
+// SetOptions sets the Options field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *LivePostEdit) SetOptions(options *TargetOptions) {
+	l.Options = options
+	l.require(livePostEditFieldOptions)
+}
+
 // SetPart sets the Part field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (l *LivePostEdit) SetPart(part *int) {
@@ -474,7 +492,7 @@ func (l *LivePostEdit) SetPart(part *int) {
 
 // SetText sets the Text field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (l *LivePostEdit) SetText(text string) {
+func (l *LivePostEdit) SetText(text *string) {
 	l.Text = text
 	l.require(livePostEditFieldText)
 }
@@ -2424,6 +2442,7 @@ type ContentViolation struct {
 	AltTextTooLong          *ContentViolationAltTextTooLong
 	BodyInvalid             *ContentViolationBodyInvalid
 	BodyNotTaken            *ContentViolationBodyNotTaken
+	OptionsNotTaken         *ContentViolationOptionsNotTaken
 
 	rawJSON json.RawMessage
 }
@@ -2715,6 +2734,13 @@ func (c *ContentViolation) GetBodyNotTaken() *ContentViolationBodyNotTaken {
 	return c.BodyNotTaken
 }
 
+func (c *ContentViolation) GetOptionsNotTaken() *ContentViolationOptionsNotTaken {
+	if c == nil {
+		return nil
+	}
+	return c.OptionsNotTaken
+}
+
 func (c *ContentViolation) UnmarshalJSON(data []byte) error {
 	var unmarshaler struct {
 		Type string `json:"_tag"`
@@ -2967,6 +2993,12 @@ func (c *ContentViolation) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		c.BodyNotTaken = value
+	case "optionsNotTaken":
+		value := new(ContentViolationOptionsNotTaken)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		c.OptionsNotTaken = value
 	}
 	c.rawJSON = json.RawMessage(data)
 	return nil
@@ -3096,6 +3128,9 @@ func (c ContentViolation) MarshalJSON() ([]byte, error) {
 	if c.BodyNotTaken != nil {
 		return internal.MarshalJSONWithExtraProperty(c.BodyNotTaken, "_tag", "bodyNotTaken")
 	}
+	if c.OptionsNotTaken != nil {
+		return internal.MarshalJSONWithExtraProperty(c.OptionsNotTaken, "_tag", "optionsNotTaken")
+	}
 	if len(c.rawJSON) > 0 {
 		return c.rawJSON, nil
 	}
@@ -3143,6 +3178,7 @@ type ContentViolationVisitor interface {
 	VisitAltTextTooLong(*ContentViolationAltTextTooLong) error
 	VisitBodyInvalid(*ContentViolationBodyInvalid) error
 	VisitBodyNotTaken(*ContentViolationBodyNotTaken) error
+	VisitOptionsNotTaken(*ContentViolationOptionsNotTaken) error
 }
 
 func (c *ContentViolation) Accept(visitor ContentViolationVisitor) error {
@@ -3265,6 +3301,9 @@ func (c *ContentViolation) Accept(visitor ContentViolationVisitor) error {
 	}
 	if c.BodyNotTaken != nil {
 		return visitor.VisitBodyNotTaken(c.BodyNotTaken)
+	}
+	if c.OptionsNotTaken != nil {
+		return visitor.VisitOptionsNotTaken(c.OptionsNotTaken)
 	}
 	return fmt.Errorf("type %T does not define a non-empty union type", c)
 }
@@ -3393,6 +3432,9 @@ func (c *ContentViolation) validate() error {
 	}
 	if c.BodyNotTaken != nil {
 		fields = append(fields, "bodyNotTaken")
+	}
+	if c.OptionsNotTaken != nil {
+		fields = append(fields, "optionsNotTaken")
 	}
 	if len(fields) == 0 {
 		if c.Type != "" {
@@ -6003,6 +6045,124 @@ func (c *ContentViolationOptionsForOtherPlatform) MarshalJSON() ([]byte, error) 
 }
 
 func (c *ContentViolationOptionsForOtherPlatform) String() string {
+	if c == nil {
+		return "<nil>"
+	}
+	if len(c.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(c.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(c); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", c)
+}
+
+var (
+	contentViolationOptionsNotTakenFieldChannelID = big.NewInt(1 << 0)
+	contentViolationOptionsNotTakenFieldPart      = big.NewInt(1 << 1)
+	contentViolationOptionsNotTakenFieldPlatform  = big.NewInt(1 << 2)
+)
+
+type ContentViolationOptionsNotTaken struct {
+	ChannelID string   `json:"channelId" url:"channelId"`
+	Part      *int     `json:"part,omitempty" url:"part,omitempty"`
+	Platform  Platform `json:"platform" url:"platform"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (c *ContentViolationOptionsNotTaken) GetChannelID() string {
+	if c == nil {
+		return ""
+	}
+	return c.ChannelID
+}
+
+func (c *ContentViolationOptionsNotTaken) GetPart() *int {
+	if c == nil {
+		return nil
+	}
+	return c.Part
+}
+
+func (c *ContentViolationOptionsNotTaken) GetPlatform() Platform {
+	if c == nil {
+		return ""
+	}
+	return c.Platform
+}
+
+func (c *ContentViolationOptionsNotTaken) GetExtraProperties() map[string]interface{} {
+	if c == nil {
+		return nil
+	}
+	return c.extraProperties
+}
+
+func (c *ContentViolationOptionsNotTaken) require(field *big.Int) {
+	next := new(big.Int)
+	if c.explicitFields != nil {
+		next.Set(c.explicitFields)
+	}
+	next.Or(next, field)
+	c.explicitFields = next
+}
+
+// SetChannelID sets the ChannelID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationOptionsNotTaken) SetChannelID(channelID string) {
+	c.ChannelID = channelID
+	c.require(contentViolationOptionsNotTakenFieldChannelID)
+}
+
+// SetPart sets the Part field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationOptionsNotTaken) SetPart(part *int) {
+	c.Part = part
+	c.require(contentViolationOptionsNotTakenFieldPart)
+}
+
+// SetPlatform sets the Platform field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *ContentViolationOptionsNotTaken) SetPlatform(platform Platform) {
+	c.Platform = platform
+	c.require(contentViolationOptionsNotTakenFieldPlatform)
+}
+
+func (c *ContentViolationOptionsNotTaken) UnmarshalJSON(data []byte) error {
+	type unmarshaler ContentViolationOptionsNotTaken
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*c = ContentViolationOptionsNotTaken(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *c)
+	if err != nil {
+		return err
+	}
+	c.extraProperties = extraProperties
+	c.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (c *ContentViolationOptionsNotTaken) MarshalJSON() ([]byte, error) {
+	type embed ContentViolationOptionsNotTaken
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*c),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (c *ContentViolationOptionsNotTaken) String() string {
 	if c == nil {
 		return "<nil>"
 	}

@@ -49,6 +49,7 @@ class ContentViolation extends JsonSerializableType
      *   |'altTextTooLong'
      *   |'bodyInvalid'
      *   |'bodyNotTaken'
+     *   |'optionsNotTaken'
      *   |'_unknown'
      * ) $type
      */
@@ -96,6 +97,7 @@ class ContentViolation extends JsonSerializableType
      *   |ContentViolationAltTextTooLong
      *   |ContentViolationBodyInvalid
      *   |ContentViolationBodyNotTaken
+     *   |ContentViolationOptionsNotTaken
      *   |mixed
      * ) $value
      */
@@ -144,6 +146,7 @@ class ContentViolation extends JsonSerializableType
      *   |'altTextTooLong'
      *   |'bodyInvalid'
      *   |'bodyNotTaken'
+     *   |'optionsNotTaken'
      *   |'_unknown'
      * ),
      *   value: (
@@ -187,6 +190,7 @@ class ContentViolation extends JsonSerializableType
      *   |ContentViolationAltTextTooLong
      *   |ContentViolationBodyInvalid
      *   |ContentViolationBodyNotTaken
+     *   |ContentViolationOptionsNotTaken
      *   |mixed
      * ),
      * } $values
@@ -675,6 +679,18 @@ class ContentViolation extends JsonSerializableType
         return new ContentViolation([
             'type' => 'bodyNotTaken',
             'value' => $bodyNotTaken,
+        ]);
+    }
+
+    /**
+     * @param ContentViolationOptionsNotTaken $optionsNotTaken
+     * @return ContentViolation
+     */
+    public static function optionsNotTaken(ContentViolationOptionsNotTaken $optionsNotTaken): ContentViolation
+    {
+        return new ContentViolation([
+            'type' => 'optionsNotTaken',
+            'value' => $optionsNotTaken,
         ]);
     }
 
@@ -1559,6 +1575,28 @@ class ContentViolation extends JsonSerializableType
     }
 
     /**
+     * @return bool
+     */
+    public function isOptionsNotTaken(): bool
+    {
+        return $this->value instanceof ContentViolationOptionsNotTaken && $this->type === 'optionsNotTaken';
+    }
+
+    /**
+     * @return ContentViolationOptionsNotTaken
+     */
+    public function asOptionsNotTaken(): ContentViolationOptionsNotTaken
+    {
+        if (!($this->value instanceof ContentViolationOptionsNotTaken && $this->type === 'optionsNotTaken')) {
+            throw new Exception(
+                "Expected optionsNotTaken; got " . $this->type . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
      * @return string
      */
     public function __toString(): string
@@ -1738,6 +1776,10 @@ class ContentViolation extends JsonSerializableType
                 $value = $this->asBodyNotTaken()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
+            case 'optionsNotTaken':
+                $value = $this->asOptionsNotTaken()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
             case '_unknown':
             default:
                 if (is_null($this->value)) {
@@ -1893,6 +1935,9 @@ class ContentViolation extends JsonSerializableType
                 break;
             case 'bodyNotTaken':
                 $args['value'] = ContentViolationBodyNotTaken::jsonDeserialize($data);
+                break;
+            case 'optionsNotTaken':
+                $args['value'] = ContentViolationOptionsNotTaken::jsonDeserialize($data);
                 break;
             case '_unknown':
             default:

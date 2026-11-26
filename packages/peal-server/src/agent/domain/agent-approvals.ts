@@ -69,6 +69,10 @@ export const approvalRefusals = {
   parameters:
     "Peal cannot show the person every parameter of this call, so nothing was asked of them: call the tool again with only the parameters its schema describes.",
   post: "Peal could not read this post to show the person all that goes out of it, so nothing was asked of them: check its id with get_post, or tell them to do it in Peal's web app.",
+  noText:
+    "An edit of a published post gives its new text (text), so nothing was asked of the person: call the tool again with it.",
+  richText:
+    "This post is a rich text on that channel (a website's), which Peal cannot show the person, and a new text would replace it with plain paragraphs, so nothing was asked of them: tell them to edit it in Peal's web app or through the API.",
   queue:
     "Peal found no such queue to show the person, so nothing was asked of them: name one list_queues answers, or leave it out for the workspace's default queue.",
   queueChannels:
@@ -388,6 +392,30 @@ const postAsked = (
 };
 
 // The text the call itself sends: a reply, or a published post's new text.
+// An edit of a published post the card shows whole: its new text, never
+// over a website's rich text, which the card cannot show and the text
+// would flatten into plain paragraphs, public at once.
+const editAsked = (
+  asked: CallParameters,
+  post: Option.Option<PublishablePost>,
+  channelIds: readonly string[]
+): Result.Result<void, string> => {
+  if (asked.text === undefined) {
+    return Result.fail(approvalRefusals.noText);
+  }
+
+  const rich =
+    (asked.part ?? 0) === 0 &&
+    Option.exists(post, ({ content }) =>
+      content.overrides.some(
+        ({ body, channelId }) =>
+          body !== undefined && channelIds.includes(channelId)
+      )
+    );
+
+  return rich ? Result.fail(approvalRefusals.richText) : Result.void;
+};
+
 const sentText = (tool: string, asked: CallParameters): string | null =>
   tool === "reply_to_comment" ||
   tool === "reply_to_location_review" ||
@@ -417,6 +445,10 @@ export const approvalOf = (
     const channelIds = Option.isSome(post)
       ? yield* postChannels(tool, asked, post.value, sources)
       : [];
+
+    if (tool === "edit_published_post") {
+      yield* editAsked(asked, post, channelIds);
+    }
 
     const queue =
       tool === "queue_post" ? (yield* queueNamed(asked, sources)).name : null;

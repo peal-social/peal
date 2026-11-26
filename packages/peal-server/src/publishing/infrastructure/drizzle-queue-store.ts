@@ -172,6 +172,7 @@ export const DrizzleQueueStore = Layer.effect(
             db,
             and(eq(posts.workspaceId, workspaceId), eq(posts.queueId, queueId))
           );
+
           const now = yield* DateTime.now;
 
           if (placed.length > 0) {

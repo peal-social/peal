@@ -1,6 +1,7 @@
 import { Context } from "effect";
 import type { DateTime, Effect, Option } from "effect";
 
+import type { LiveTextEdit } from "#publishing/domain/live-post-edit.ts";
 import type { PostExternalIdTaken } from "#publishing/domain/post-external-id-taken.ts";
 import type { PostExternalId } from "#publishing/domain/post-external-id.ts";
 import type { PostStatusName } from "#publishing/domain/post-status.ts";
@@ -9,6 +10,7 @@ import type { PostTarget } from "#publishing/domain/post-target.ts";
 import type { Post } from "#publishing/domain/post.ts";
 import type { PostingMonth } from "#publishing/domain/posting-month.ts";
 import type { TagId } from "#publishing/domain/tag-id.ts";
+import type { TargetOptions } from "#publishing/domain/target-options.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type {
   ChannelId,
@@ -180,17 +182,26 @@ export class PostRepository extends Context.Service<
       editedAt: DateTime.Utc
     ) => Effect.Effect<boolean, DatabaseError>;
     /**
-     * Makes `text` the channel's own text on the part at `index` of the
-     * post (`withTextOn`), and writes nothing else of it, whatever its
-     * status: the post as it now is, none when it is gone. Run under the
-     * post's lock.
+     * Makes the edit's text the channel's own text on the part at `index`
+     * of the post, or, on a website's first part, its rich text with the
+     * body's images (`withEditOn`), and writes nothing else of it,
+     * whatever its status: the post as it now is, none when it is gone.
+     * Run under the post's lock.
      */
     readonly amendText: (
       postId: PostId,
       index: number,
       channelId: ChannelId,
-      text: string
+      edit: LiveTextEdit
     ) => Effect.Effect<Option.Option<Post>, DatabaseError>;
+    /**
+     * Makes `options` the target's options, whole, and writes nothing
+     * else of it, as `markEdited` writes its time alone.
+     */
+    readonly amendOptions: (
+      targetId: PostTargetId,
+      options: TargetOptions
+    ) => Effect.Effect<void, DatabaseError>;
     /**
      * Files the post under these tags, instead of those it had. Nothing
      * else of the post is written, whatever its status.

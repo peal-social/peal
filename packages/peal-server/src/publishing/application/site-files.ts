@@ -1,5 +1,4 @@
-import { Context } from "effect";
-import type { Effect } from "effect";
+import { Context, Effect, Layer } from "effect";
 
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
@@ -36,4 +35,15 @@ export class SiteFiles extends Context.Service<
       mediaId: MediaAssetId
     ) => Effect.Effect<void, DatabaseError>;
   }
->()("peal-server/publishing/application/SiteFiles") {}
+>()("peal-server/publishing/application/SiteFiles") {
+  /** Keeps nothing: every file is sent, where no site is called. */
+  static readonly none = Layer.succeed(
+    SiteFiles,
+    SiteFiles.of({
+      featuredRefused: () => Effect.void,
+      forget: () => Effect.void,
+      record: () => Effect.void,
+      sent: () => Effect.succeed(new Map()),
+    })
+  );
+}
