@@ -11,15 +11,20 @@ import {
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import type { HttpClient, HttpClientError } from "effect/http";
 
+import { ArticleJournal } from "#articles/application/article-journal.ts";
+import type { SiteFile } from "#articles/application/article-journal.ts";
+import { ArticleStore } from "#articles/application/article-store.ts";
+import type { SiteToken } from "#articles/application/site-credentials.ts";
+import type {
+  SitePublishRequest,
+  SiteSearch,
+} from "#articles/application/site-publisher.ts";
+import { articleMarkdown } from "#articles/domain/article-markdown.ts";
+import { articleRefusalCodes } from "#articles/domain/article-refusals.ts";
+import { articleMediaOf } from "#articles/domain/article.ts";
+import type { Article } from "#articles/domain/article.ts";
 import type { SiteAdapter } from "#articles/infrastructure/platforms/site-adapter.ts";
 import { MediaForPublishing } from "#publishing/application/media-for-publishing.ts";
-import type {
-  SiteCallJournal,
-  SiteFile,
-  SiteFileJournal,
-} from "#shared/application/site-call-journal.ts";
-import type { SiteSearch } from "#shared/application/site-search.ts";
-import type { SiteToken } from "#shared/application/site-token.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
@@ -30,10 +35,6 @@ import type {
   UnconfirmedReason,
 } from "#shared/domain/publish-result.ts";
 import { RateLimited } from "#shared/domain/rate-limited.ts";
-import type { OutgoingArticle } from "#shared/domain/rich-text/outgoing-article.ts";
-import { articleMarkdown } from "#shared/domain/rich-text/rich-body-markdown.ts";
-import { siteArticleMediaOf } from "#shared/domain/rich-text/site-article-content.ts";
-import { siteRefusalCodes } from "#shared/domain/rich-text/site-refusal-codes.ts";
 import { TokenRejected } from "#shared/domain/token-rejected.ts";
 import {
   devtoErrorOf,
@@ -58,7 +59,7 @@ import { retryAfterOf } from "#shared/infrastructure/platforms/retry-after.ts";
 // the article shows goes to `POST /api/images` (one a request, the
 // `image` field of a multipart form), which answers the address DEV
 // serves it at; the article is made with one `POST /api/articles`, the
-// commit: `title`, `body_markdown` (written by `rich-body-markdown.ts`),
+// commit: `title`, `body_markdown` (written by `article-markdown.ts`),
 // `description`, `tags`, `main_image`, and `published` (false for a
 // draft; true with a future `published_at`, which DEV publishes itself
 // then). DEV takes the title and the description as plain text, and
@@ -172,7 +173,7 @@ const refusalOf = Effect.fnUntraced(function* refusalOf(
 const guardRefusalOf = (refused: OutboundRequestRefused) =>
   refused.reason === "lookupFailed"
     ? new PlatformUnavailable()
-    : new BadRequest({ code: siteRefusalCodes.channelDisconnected });
+    : new BadRequest({ code: articleRefusalCodes.channelDisconnected });
 
 const execute = (
   client: Client,
@@ -235,7 +236,7 @@ const isoOf = (instant: DateTime.Utc) => DateTime.formatIso(instant);
 
 // What the article says, as DEV takes it, its files where DEV has them.
 const contentOf = (
-  article: OutgoingArticle,
+  article: Article,
   addresses: ReadonlyMap<MediaAssetId, string>
 ): ArticleFields => {
   const { content } = article;
@@ -255,15 +256,18 @@ const contentOf = (
 
 // When DEV is to publish it itself, as "scheduled there": none for a
 // draft or an article published at once.
-const plannedAt = (article: OutgoingArticle) =>
-  article.content.siteStatus === "draft"
-    ? Option.none<DateTime.Utc>()
-    : article.publishAt;
+const plannedAt = (article: Article) => {
+  const { content, state } = article;
+
+  return content.siteStatus === "future" && state._tag !== "draft"
+    ? Option.some(state.schedule.at)
+    : Option.none<DateTime.Utc>();
+};
 
 // How it lands: a draft, published now, or at its time, by DEV itself. A
 // time gone by is left out: DEV refuses one more than 15 minutes past
 // (`future_or_current_published_at`), and publishes it now without one.
-const statusOf = (article: OutgoingArticle, now: DateTime.Utc) => {
+const statusOf = (article: Article, now: DateTime.Utc) => {
   if (article.content.siteStatus === "draft") {
     return { published: false };
   }
@@ -309,6 +313,8 @@ const signed = (
 export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
   hosts: DevToHosts
 ) {
+  const store = yield* ArticleStore;
+  const journal = yield* ArticleJournal;
   const library = yield* MediaForPublishing;
   const api = yield* publicHttpClient;
 
@@ -395,7 +401,7 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
   // Sends one file of the article: the address DEV serves it at.
   const upload = Effect.fn("DevToArticles.upload")(function* upload(
     token: SiteToken,
-    article: OutgoingArticle,
+    article: Article,
     mediaId: MediaAssetId
   ) {
     const described = yield* library.describe(article.workspaceId, mediaId);
@@ -447,18 +453,17 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
   // reused, the others sent now; with `upload` false, those known only.
   const filesOf = Effect.fn("DevToArticles.filesOf")(function* filesOf(
     token: SiteToken,
-    article: OutgoingArticle,
-    journal: SiteFileJournal,
+    article: Article,
     { send }: { readonly send: boolean }
   ) {
-    const sent = yield* journal.filesSent.pipe(
-      Effect.mapError(() => new PlatformUnavailable())
-    );
+    const sent = yield* journal
+      .filesSent(article.id)
+      .pipe(Effect.mapError(() => new PlatformUnavailable()));
 
     const addresses = new Map<MediaAssetId, string>();
     let complete = true;
 
-    for (const mediaId of new Set(siteArticleMediaOf(article.content))) {
+    for (const mediaId of new Set(articleMediaOf(article.content))) {
       const known = sent.get(mediaId);
 
       if (known !== undefined) {
@@ -476,7 +481,7 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
       const file: SiteFile = { id: 0, sourceUrl: uploaded.url };
 
       yield* journal
-        .fileSent(mediaId, file)
+        .fileSent(article.id, mediaId, file)
         .pipe(Effect.mapError(() => new PlatformUnavailable()));
 
       addresses.set(mediaId, file.sourceUrl);
@@ -490,11 +495,10 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
   // published within the call's window when it is published.
   const lookUp = Effect.fn("DevToArticles.lookUp")(function* lookUp(
     token: SiteToken,
-    article: OutgoingArticle,
-    journal: SiteFileJournal,
+    article: Article,
     startedAt: DateTime.Utc
   ) {
-    const { addresses, complete } = yield* filesOf(token, article, journal, {
+    const { addresses, complete } = yield* filesOf(token, article, {
       send: false,
     });
 
@@ -553,8 +557,11 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
       }
     }
 
-    const recorded = yield* journal
-      .recordedOn(candidates.map((post) => String(post.id)))
+    const recorded = yield* store
+      .recordedOn(
+        article.channelId,
+        candidates.map((post) => String(post.id))
+      )
       .pipe(Effect.orDie);
 
     const unclaimed = candidates.filter(
@@ -595,12 +602,11 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
 
   const lookedUp = (
     token: SiteToken,
-    article: OutgoingArticle,
-    journal: SiteFileJournal,
+    article: Article,
     startedAt: DateTime.Utc,
     reason: UnconfirmedReason
   ) =>
-    lookUp(token, article, journal, startedAt).pipe(
+    lookUp(token, article, startedAt).pipe(
       Effect.map((search): PublishResult =>
         search._tag === "found"
           ? search.result
@@ -618,13 +624,11 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
     );
 
   const publish = Effect.fn("DevToArticles.publish")(function* publish(
-    article: OutgoingArticle,
-    journal: SiteCallJournal,
+    request: SitePublishRequest,
+    article: Article,
     token: SiteToken
   ) {
-    const { addresses } = yield* filesOf(token, article, journal, {
-      send: true,
-    });
+    const { addresses } = yield* filesOf(token, article, { send: true });
 
     const fields: ArticleFields = {
       ...contentOf(article, addresses),
@@ -632,7 +636,7 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
     };
 
     // From here a run that stops looks for the post, never makes it.
-    const committedAt = yield* journal.committing.pipe(
+    const committedAt = yield* request.committing.pipe(
       Effect.mapError(() => new PlatformUnavailable())
     );
 
@@ -656,13 +660,7 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
     );
 
     if (Option.isNone(response) || response.value.status >= 500) {
-      return yield* lookedUp(
-        token,
-        article,
-        journal,
-        committedAt,
-        "noResponse"
-      );
+      return yield* lookedUp(token, article, committedAt, "noResponse");
     }
 
     if (response.value.status !== 201 && response.value.status !== 200) {
@@ -675,13 +673,7 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
 
     return Option.isSome(post)
       ? published(post.value)
-      : yield* lookedUp(
-          token,
-          article,
-          journal,
-          committedAt,
-          "unreadableResponse"
-        );
+      : yield* lookedUp(token, article, committedAt, "unreadableResponse");
   });
 
   // A change of the article on DEV, its status left as it stands.
@@ -706,14 +698,11 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
     );
 
   const update = Effect.fn("DevToArticles.update")(function* update(
-    article: OutgoingArticle,
-    journal: SiteFileJournal,
+    article: Article,
     platformPostId: string,
     token: SiteToken
   ) {
-    const { addresses } = yield* filesOf(token, article, journal, {
-      send: true,
-    });
+    const { addresses } = yield* filesOf(token, article, { send: true });
 
     const response = yield* put(
       token,
@@ -729,6 +718,7 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
   // DEV deletes no article: unpublished, it is a draft there again. One
   // gone already is done.
   const remove = Effect.fn("DevToArticles.remove")(function* remove(
+    _article: Article,
     platformPostId: string,
     token: SiteToken
   ) {
@@ -740,12 +730,12 @@ export const devtoSiteAdapter = Effect.fnUntraced(function* devtoSiteAdapter(
   });
 
   const adapter: SiteAdapter = {
-    find: (request, article, journal, token) =>
-      lookUp(token, article, journal, request.startedAt),
+    find: (request, article, token) =>
+      lookUp(token, article, request.startedAt),
     publish,
     remove,
-    resume: (request, article, journal, token) =>
-      lookedUp(token, article, journal, request.startedAt, "interrupted"),
+    resume: (request, article, token) =>
+      lookedUp(token, article, request.startedAt, "interrupted"),
     update,
   };
 

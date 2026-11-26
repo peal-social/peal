@@ -2,16 +2,20 @@ import { DateTime, Duration, Effect, Option, Schema } from "effect";
 import { HttpClientRequest, HttpClientResponse } from "effect/http";
 import type { HttpClient, HttpClientError } from "effect/http";
 
+import { ArticleJournal } from "#articles/application/article-journal.ts";
+import type { SiteFile } from "#articles/application/article-journal.ts";
+import { ArticleStore } from "#articles/application/article-store.ts";
+import type { SiteToken } from "#articles/application/site-credentials.ts";
+import type {
+  SitePublishRequest,
+  SiteSearch,
+} from "#articles/application/site-publisher.ts";
+import { articleHtml, escapeHtml } from "#articles/domain/article-html.ts";
+import { articleRefusalCodes } from "#articles/domain/article-refusals.ts";
+import { articleMediaOf } from "#articles/domain/article.ts";
+import type { Article } from "#articles/domain/article.ts";
 import type { SiteAdapter } from "#articles/infrastructure/platforms/site-adapter.ts";
 import { MediaForPublishing } from "#publishing/application/media-for-publishing.ts";
-import type {
-  SiteCallJournal,
-  SiteCallRequest,
-  SiteFile,
-  SiteFileJournal,
-} from "#shared/application/site-call-journal.ts";
-import type { SiteSearch } from "#shared/application/site-search.ts";
-import type { SiteToken } from "#shared/application/site-token.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
@@ -23,13 +27,6 @@ import type {
   UnconfirmedReason,
 } from "#shared/domain/publish-result.ts";
 import { RateLimited } from "#shared/domain/rate-limited.ts";
-import type { OutgoingArticle } from "#shared/domain/rich-text/outgoing-article.ts";
-import {
-  articleHtml,
-  escapeHtml,
-} from "#shared/domain/rich-text/rich-body-html.ts";
-import { siteArticleMediaOf } from "#shared/domain/rich-text/site-article-content.ts";
-import { siteRefusalCodes } from "#shared/domain/rich-text/site-refusal-codes.ts";
 import { TokenRejected } from "#shared/domain/token-rejected.ts";
 import type { OutboundRequestRefused } from "#shared/infrastructure/platforms/outbound-request-refused.ts";
 import {
@@ -193,7 +190,7 @@ const sentJson = <A, I>(schema: Schema.Codec<A, I>, ok: readonly number[]) =>
 const guardRefusalOf = (refused: OutboundRequestRefused) =>
   refused.reason === "lookupFailed"
     ? new PlatformUnavailable()
-    : new BadRequest({ code: siteRefusalCodes.channelDisconnected });
+    : new BadRequest({ code: articleRefusalCodes.channelDisconnected });
 
 // The site's answer; a failure to reach it is the site being down.
 const execute = (
@@ -234,7 +231,7 @@ interface PostFields {
  * takes a title as HTML and keeps it unfiltered for a user who may post
  * any HTML.
  */
-const siteTitle = (article: OutgoingArticle) =>
+const siteTitle = (article: Article) =>
   escapeHtml(article.content.title.trim());
 
 const signed = (
@@ -297,6 +294,8 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
         answered ? { _fields: postFields } : {}
       );
 
+    const store = yield* ArticleStore;
+    const journal = yield* ArticleJournal;
     const library = yield* MediaForPublishing;
     const api = yield* publicHttpClient;
     const uploads = yield* publicHttpClientWith({ timeout: uploadTimeout });
@@ -305,7 +304,7 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
     const upload = Effect.fn("WordPressArticles.upload")(function* upload(
       client: Client,
       token: SiteToken,
-      article: OutgoingArticle,
+      article: Article,
       mediaId: MediaAssetId
     ) {
       const described = yield* library.describe(article.workspaceId, mediaId);
@@ -405,8 +404,7 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
     // Everything the post is made of, its files sent first.
     const fieldsOf = Effect.fn("WordPressArticles.fieldsOf")(function* fieldsOf(
       token: SiteToken,
-      article: OutgoingArticle,
-      journal: SiteFileJournal,
+      article: Article,
       // What the call is: the new post (its status sent, an empty term
       // list left out), a change of a post just made (an empty list left
       // out too), or a change on the site (the lists sent whole).
@@ -420,11 +418,11 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
 
       // A file the site took for the article already, in an attempt
       // before or for an earlier version, is not sent again.
-      const sent = yield* journal.filesSent.pipe(
-        Effect.mapError(() => new PlatformUnavailable())
-      );
+      const sent = yield* journal
+        .filesSent(article.id)
+        .pipe(Effect.mapError(() => new PlatformUnavailable()));
 
-      for (const mediaId of new Set(siteArticleMediaOf(content))) {
+      for (const mediaId of new Set(articleMediaOf(content))) {
         const known = sent.get(mediaId);
 
         const file =
@@ -436,7 +434,7 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
             })),
             Effect.tap((uploaded) =>
               journal
-                .fileSent(mediaId, uploaded)
+                .fileSent(article.id, mediaId, uploaded)
                 .pipe(Effect.mapError(() => new PlatformUnavailable()))
             )
           ));
@@ -489,10 +487,12 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
         return fields;
       }
 
-      if (content.siteStatus !== "draft" && Option.isSome(article.publishAt)) {
+      const { state } = article;
+
+      if (content.siteStatus === "future" && state._tag !== "draft") {
         return {
           ...fields,
-          date_gmt: isoGmt(article.publishAt.value),
+          date_gmt: isoGmt(state.schedule.at),
           status: "future",
         };
       }
@@ -505,8 +505,7 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
     // no other of the channel's articles. None, or several, settle nothing.
     const lookUp = Effect.fn("WordPressArticles.lookUp")(function* lookUp(
       token: SiteToken,
-      article: OutgoingArticle,
-      journal: SiteFileJournal,
+      article: Article,
       startedAt: DateTime.Utc
     ) {
       const me = yield* execute(
@@ -571,8 +570,11 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
         }
       }
 
-      const recorded = yield* journal
-        .recordedOn(titled.map((post) => String(post.id)))
+      const recorded = yield* store
+        .recordedOn(
+          article.channelId,
+          titled.map((post) => String(post.id))
+        )
         .pipe(Effect.orDie);
 
       const unclaimed = titled.filter((post) => !recorded.has(String(post.id)));
@@ -595,12 +597,11 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
     // Found among the user's posts, or not known.
     const lookedUp = (
       token: SiteToken,
-      article: OutgoingArticle,
-      journal: SiteFileJournal,
+      article: Article,
       startedAt: DateTime.Utc,
       reason: UnconfirmedReason
     ) =>
-      lookUp(token, article, journal, startedAt).pipe(
+      lookUp(token, article, startedAt).pipe(
         Effect.map((search): PublishResult =>
           search._tag === "found"
             ? search.result
@@ -619,14 +620,14 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
       );
 
     const publish = Effect.fn("WordPressArticles.publish")(function* publish(
-      article: OutgoingArticle,
-      journal: SiteCallJournal,
+      request: SitePublishRequest,
+      article: Article,
       token: SiteToken
     ) {
-      const fields = yield* fieldsOf(token, article, journal, "create");
+      const fields = yield* fieldsOf(token, article, "create");
 
       // From here a run that stops looks for the post, never makes it.
-      const committedAt = yield* journal.committing.pipe(
+      const committedAt = yield* request.committing.pipe(
         Effect.mapError(() => new PlatformUnavailable())
       );
 
@@ -652,13 +653,7 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
         );
 
       if (Option.isNone(response) || response.value.status >= 500) {
-        return yield* lookedUp(
-          token,
-          article,
-          journal,
-          committedAt,
-          "noResponse"
-        );
+        return yield* lookedUp(token, article, committedAt, "noResponse");
       }
 
       if (response.value.status !== 200 && response.value.status !== 201) {
@@ -673,35 +668,27 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
         // Made without the cover the site lost: the cover goes once
         // more, over the post just made, never as another. Should that
         // fail, the post stands without it.
-        yield* coverAgain(token, article, journal, String(post.value.id), {
+        yield* coverAgain(token, article, String(post.value.id), {
           newPost: true,
         }).pipe(Effect.ignore);
       }
 
       return Option.isSome(post)
         ? published(post.value)
-        : yield* lookedUp(
-            token,
-            article,
-            journal,
-            committedAt,
-            "unreadableResponse"
-          );
+        : yield* lookedUp(token, article, committedAt, "unreadableResponse");
     });
 
     const resume = (
-      request: SiteCallRequest,
-      article: OutgoingArticle,
-      journal: SiteFileJournal,
+      request: SitePublishRequest,
+      article: Article,
       token: SiteToken
-    ) => lookedUp(token, article, journal, request.startedAt, "interrupted");
+    ) => lookedUp(token, article, request.startedAt, "interrupted");
 
     const find = (
-      request: SiteCallRequest,
-      article: OutgoingArticle,
-      journal: SiteFileJournal,
+      request: SitePublishRequest,
+      article: Article,
       token: SiteToken
-    ) => lookUp(token, article, journal, request.startedAt);
+    ) => lookUp(token, article, request.startedAt);
 
     const removePost = Effect.fn("WordPressArticles.remove")(function* remove(
       platformPostId: string,
@@ -742,12 +729,11 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
     // of its featured image.
     const changePost = (
       token: SiteToken,
-      article: OutgoingArticle,
-      journal: SiteFileJournal,
+      article: Article,
       platformPostId: string,
       call: "newPostChange" | "change"
     ) =>
-      fieldsOf(token, article, journal, call).pipe(
+      fieldsOf(token, article, call).pipe(
         Effect.flatMap((fields) =>
           execute(
             api,
@@ -770,8 +756,7 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
     const coverAgain = Effect.fn("WordPressArticles.coverAgain")(
       function* coverAgain(
         token: SiteToken,
-        article: OutgoingArticle,
-        journal: SiteFileJournal,
+        article: Article,
         platformPostId: string,
         { newPost }: { readonly newPost: boolean }
       ) {
@@ -782,20 +767,19 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
         }
 
         yield* journal
-          .forgetFile(cover)
+          .forgetFile(article.id, cover)
           .pipe(Effect.mapError(() => new PlatformUnavailable()));
 
         const again = yield* changePost(
           token,
           article,
-          journal,
           platformPostId,
           newPost ? "newPostChange" : "change"
         );
 
         if (lostCover(again.fields, again.post)) {
           yield* journal
-            .featuredRefused(cover)
+            .featuredRefused(article.id, cover)
             .pipe(Effect.mapError(() => new PlatformUnavailable()));
         }
       }
@@ -804,38 +788,34 @@ export const wordpressSiteAdapter = Effect.fnUntraced(
     const updatePost = Effect.fn("WordPressArticles.updatePost")(
       function* updatePost(
         token: SiteToken,
-        article: OutgoingArticle,
-        journal: SiteFileJournal,
+        article: Article,
         platformPostId: string
       ) {
         const first = yield* changePost(
           token,
           article,
-          journal,
           platformPostId,
           "change"
         );
 
         if (lostCover(first.fields, first.post)) {
-          yield* coverAgain(token, article, journal, platformPostId, {
-            newPost: false,
-          });
+          yield* coverAgain(token, article, platformPostId, { newPost: false });
         }
       }
     );
 
     // What it says, never how it stands: the site keeps its status.
     const update = (
-      article: OutgoingArticle,
-      journal: SiteFileJournal,
+      article: Article,
       platformPostId: string,
       token: SiteToken
-    ) => updatePost(token, article, journal, platformPostId);
+    ) => updatePost(token, article, platformPostId);
 
     const adapter: SiteAdapter = {
       find,
       publish,
-      remove: removePost,
+      remove: (_article, platformPostId, token) =>
+        removePost(platformPostId, token),
       resume,
       update,
     };

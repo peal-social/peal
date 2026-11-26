@@ -1,10 +1,10 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Option, Schema } from "effect";
 
+import { ArticleBodySchema } from "#articles/domain/article-body.ts";
+import type { ArticleBody } from "#articles/domain/article-body.ts";
+import { articleMarkdown } from "#articles/domain/article-markdown.ts";
 import { MediaAssetIdSchema } from "#shared/domain/ids.ts";
-import { articleMarkdown } from "#shared/domain/rich-text/rich-body-markdown.ts";
-import { ArticleBodySchema } from "#shared/domain/rich-text/rich-body.ts";
-import type { ArticleBody } from "#shared/domain/rich-text/rich-body.ts";
 
 const decode = Schema.decodeUnknownOption(ArticleBodySchema);
 

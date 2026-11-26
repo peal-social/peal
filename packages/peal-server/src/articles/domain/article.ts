@@ -10,18 +10,9 @@ import {
   PlatformPostIdSchema,
   UnconfirmedReasonSchema,
 } from "#shared/domain/publish-result.ts";
-import {
-  bodyMediaOf,
-  bodyTextLength,
-} from "#shared/domain/rich-text/rich-body.ts";
-import { siteArticleMediaOf } from "#shared/domain/rich-text/site-article-content.ts";
-import {
-  maxTermLength,
-  siteRules,
-} from "#shared/domain/rich-text/site-rules.ts";
-import type { SiteRules } from "#shared/domain/rich-text/site-rules.ts";
 import { Schedule } from "#shared/domain/schedule.ts";
 
+import { bodyMediaOf, bodyTextLength } from "./article-body.ts";
 import { ArticleContent } from "./article-content.ts";
 import { ArticleStoredFailureReasonSchema } from "./article-failure.ts";
 import type { ArticleSettlement } from "./article-failure.ts";
@@ -32,6 +23,8 @@ import type {
   ArticleAction,
   ArticleStateName,
 } from "./invalid-article-transition.ts";
+import { maxTermLength, siteRules } from "./site-rules.ts";
+import type { SiteRules } from "./site-rules.ts";
 
 /** The longest excerpt. */
 export const maxExcerptLength = 1000;
@@ -174,7 +167,14 @@ export const articleViolations = (
 /** Every file of the library the article shows: its cover, then its body's. */
 export const articleMediaOf = (
   content: ArticleContent
-): readonly MediaAssetId[] => siteArticleMediaOf(content);
+): readonly MediaAssetId[] => {
+  const cover = Option.toArray(content.coverMediaId);
+
+  return [
+    ...cover,
+    ...bodyMediaOf(content.body).filter((id) => !cover.includes(id)),
+  ];
+};
 
 /**
  * When Peal sends the article: at its time, or at once when the site

@@ -15,6 +15,7 @@ import { DateTime, Effect, Layer, Option, Schema } from "effect";
 import { ArticleJournal } from "#articles/application/article-journal.ts";
 import type { ArticleCallStart } from "#articles/application/article-journal.ts";
 import { ArticleStore } from "#articles/application/article-store.ts";
+import { ArticleBodySchema } from "#articles/domain/article-body.ts";
 import {
   ArticleContent,
   SiteStatusSchema,
@@ -35,7 +36,6 @@ import {
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import type { MediaAssetId, WorkspaceId } from "#shared/domain/ids.ts";
-import { ArticleBodySchema } from "#shared/domain/rich-text/rich-body.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
 import { articleCalls, articleFiles, articles } from "./schema.ts";

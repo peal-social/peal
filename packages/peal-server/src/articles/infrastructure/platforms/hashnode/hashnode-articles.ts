@@ -1,16 +1,21 @@
 import { DateTime, Duration, Effect, Option, Schema } from "effect";
 import { HttpClientRequest } from "effect/http";
 
+import { ArticleJournal } from "#articles/application/article-journal.ts";
+import type { SiteFile } from "#articles/application/article-journal.ts";
+import { ArticleStore } from "#articles/application/article-store.ts";
+import type { SiteToken } from "#articles/application/site-credentials.ts";
+import type {
+  SitePublishRequest,
+  SiteSearch,
+} from "#articles/application/site-publisher.ts";
+import { articleMarkdown } from "#articles/domain/article-markdown.ts";
+import { articleRefusalCodes } from "#articles/domain/article-refusals.ts";
+import { articleMediaOf } from "#articles/domain/article.ts";
+import type { Article } from "#articles/domain/article.ts";
+import { hashnodeSlugOf } from "#articles/domain/site-rules.ts";
 import type { SiteAdapter } from "#articles/infrastructure/platforms/site-adapter.ts";
 import { MediaForPublishing } from "#publishing/application/media-for-publishing.ts";
-import type {
-  SiteCallJournal,
-  SiteCallRequest,
-  SiteFile,
-  SiteFileJournal,
-} from "#shared/application/site-call-journal.ts";
-import type { SiteSearch } from "#shared/application/site-search.ts";
-import type { SiteToken } from "#shared/application/site-token.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
@@ -21,11 +26,6 @@ import type {
   UnconfirmedReason,
 } from "#shared/domain/publish-result.ts";
 import { RateLimited } from "#shared/domain/rate-limited.ts";
-import type { OutgoingArticle } from "#shared/domain/rich-text/outgoing-article.ts";
-import { articleMarkdown } from "#shared/domain/rich-text/rich-body-markdown.ts";
-import { siteArticleMediaOf } from "#shared/domain/rich-text/site-article-content.ts";
-import { siteRefusalCodes } from "#shared/domain/rich-text/site-refusal-codes.ts";
-import { hashnodeSlugOf } from "#shared/domain/rich-text/site-rules.ts";
 import { TokenRejected } from "#shared/domain/token-rejected.ts";
 import {
   hashnodeAnswerOf,
@@ -50,7 +50,7 @@ import {
 // (`confirmImageUpload`), which answers where Hashnode's CDN serves it;
 // the post is made with one `publishPost` (or `createDraft` for a draft
 // there), the commit: `title`, `contentMarkdown` (written by
-// `rich-body-markdown.ts`), `subtitle`, `coverImage`, `tags` by slug.
+// `article-markdown.ts`), `subtitle`, `coverImage`, `tags` by slug.
 // Hashnode's API cannot publish a post at a time (scheduling refuses
 // it, `siteStatusNotTaken`). It keeps no idempotency key: a post whose
 // answer was lost is looked for among the publication's latest posts (or
@@ -77,7 +77,7 @@ const commitRefusals: ReadonlySet<string> = new Set([
   "bad_user_input",
   "forbidden",
   "not_found",
-  siteRefusalCodes.sitePlanRequired,
+  articleRefusalCodes.sitePlanRequired,
 ]);
 
 // How far before the call a post made by it may say it was published.
@@ -234,7 +234,7 @@ const refusalOf = (
   }
 
   if (errors.some(isPlanRefusal)) {
-    return new BadRequest({ code: siteRefusalCodes.sitePlanRequired });
+    return new BadRequest({ code: articleRefusalCodes.sitePlanRequired });
   }
 
   const [first] = errors;
@@ -251,7 +251,7 @@ const refusalOf = (
 const guardRefusalOf = (refused: OutboundRequestRefused) =>
   refused.reason === "lookupFailed"
     ? new PlatformUnavailable()
-    : new BadRequest({ code: siteRefusalCodes.channelDisconnected });
+    : new BadRequest({ code: articleRefusalCodes.channelDisconnected });
 
 const webAddress = (link: string | null | undefined): string | undefined => {
   if (link === null || link === undefined || !URL.canParse(link)) {
@@ -275,13 +275,12 @@ const published = (
     : { _tag: "published", permalink, platformPostId };
 };
 
-const isDraft = (article: OutgoingArticle) =>
-  article.content.siteStatus === "draft";
+const isDraft = (article: Article) => article.content.siteStatus === "draft";
 
 // What the article says, as Hashnode takes it, its files where its CDN
 // serves them.
 const contentOf = (
-  article: OutgoingArticle,
+  article: Article,
   addresses: ReadonlyMap<MediaAssetId, string>
 ) => {
   const { content } = article;
@@ -327,6 +326,8 @@ const draftInput = (content: Content) => ({
 /** The calls to Hashnode, its API at `hosts`. */
 export const hashnodeSiteAdapter = Effect.fnUntraced(
   function* hashnodeSiteAdapter(hosts: HashnodeHosts) {
+    const store = yield* ArticleStore;
+    const journal = yield* ArticleJournal;
     const library = yield* MediaForPublishing;
     const api = yield* publicHttpClient;
     const uploads = yield* publicHttpClientWith({ timeout: uploadTimeout });
@@ -367,7 +368,7 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
     // Sends one file: the address Hashnode's CDN serves it at.
     const upload = Effect.fn("HashnodeArticles.upload")(function* upload(
       token: SiteToken,
-      article: OutgoingArticle,
+      article: Article,
       mediaId: MediaAssetId
     ) {
       const described = yield* library.describe(article.workspaceId, mediaId);
@@ -438,18 +439,17 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
     // when `send`, else left out.
     const filesOf = Effect.fn("HashnodeArticles.filesOf")(function* filesOf(
       token: SiteToken,
-      article: OutgoingArticle,
-      journal: SiteFileJournal,
+      article: Article,
       send: boolean
     ) {
-      const sent = yield* journal.filesSent.pipe(
-        Effect.mapError(() => new PlatformUnavailable())
-      );
+      const sent = yield* journal
+        .filesSent(article.id)
+        .pipe(Effect.mapError(() => new PlatformUnavailable()));
 
       const addresses = new Map<MediaAssetId, string>();
       let complete = true;
 
-      for (const mediaId of new Set(siteArticleMediaOf(article.content))) {
+      for (const mediaId of new Set(articleMediaOf(article.content))) {
         const known = sent.get(mediaId);
 
         if (known !== undefined) {
@@ -468,7 +468,7 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
         };
 
         yield* journal
-          .fileSent(mediaId, file)
+          .fileSent(article.id, mediaId, file)
           .pipe(Effect.mapError(() => new PlatformUnavailable()));
 
         addresses.set(mediaId, file.sourceUrl);
@@ -482,17 +482,10 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
     // window. Hashnode lists the latest first.
     const lookUp = Effect.fn("HashnodeArticles.lookUp")(function* lookUp(
       token: SiteToken,
-      article: OutgoingArticle,
-      journal: SiteFileJournal,
+      article: Article,
       startedAt: DateTime.Utc
     ) {
-      const { addresses, complete } = yield* filesOf(
-        token,
-        article,
-        journal,
-        false
-      );
-
+      const { addresses, complete } = yield* filesOf(token, article, false);
       const expected = contentOf(article, addresses);
       const since = DateTime.subtractDuration(startedAt, clockSlack);
       const until = DateTime.addDuration(startedAt, searchWindow);
@@ -528,8 +521,8 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
       const idOf = (post: Found) =>
         draft ? `${draftPrefix}${post.id}` : post.id;
 
-      const recorded = yield* journal
-        .recordedOn(matching.map(idOf))
+      const recorded = yield* store
+        .recordedOn(article.channelId, matching.map(idOf))
         .pipe(Effect.orDie);
 
       const unclaimed = matching.filter((post) => !recorded.has(idOf(post)));
@@ -551,12 +544,11 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
 
     const lookedUp = (
       token: SiteToken,
-      article: OutgoingArticle,
-      journal: SiteFileJournal,
+      article: Article,
       startedAt: DateTime.Utc,
       reason: UnconfirmedReason
     ) =>
-      lookUp(token, article, journal, startedAt).pipe(
+      lookUp(token, article, startedAt).pipe(
         Effect.map((search): PublishResult =>
           search._tag === "found"
             ? search.result
@@ -574,16 +566,16 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
       );
 
     const publish = Effect.fn("HashnodeArticles.publish")(function* publish(
-      article: OutgoingArticle,
-      journal: SiteCallJournal,
+      request: SitePublishRequest,
+      article: Article,
       token: SiteToken
     ) {
-      const { addresses } = yield* filesOf(token, article, journal, true);
+      const { addresses } = yield* filesOf(token, article, true);
       const content = contentOf(article, addresses);
       const draft = isDraft(article);
 
       // From here a run that stops looks for the post, never makes it.
-      const committedAt = yield* journal.committing.pipe(
+      const committedAt = yield* request.committing.pipe(
         Effect.mapError(() => new PlatformUnavailable())
       );
 
@@ -620,16 +612,15 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
 
       return Option.isSome(made)
         ? made.value
-        : yield* lookedUp(token, article, journal, committedAt, "noResponse");
+        : yield* lookedUp(token, article, committedAt, "noResponse");
     });
 
     const update = Effect.fn("HashnodeArticles.update")(function* update(
-      article: OutgoingArticle,
-      journal: SiteFileJournal,
+      article: Article,
       platformPostId: string,
       token: SiteToken
     ) {
-      const { addresses } = yield* filesOf(token, article, journal, true);
+      const { addresses } = yield* filesOf(token, article, true);
       const content = contentOf(article, addresses);
 
       yield* platformPostId.startsWith(draftPrefix)
@@ -654,6 +645,7 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
 
     // Removed from the publication; one gone already is done.
     const remove = Effect.fn("HashnodeArticles.remove")(function* remove(
+      _article: Article,
       platformPostId: string,
       token: SiteToken
     ) {
@@ -685,9 +677,8 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
     // since that call, the search waits, as Hashnode unavailable, and the
     // attempt is made again later.
     const find = Effect.fn("HashnodeArticles.find")(function* find(
-      request: SiteCallRequest,
-      article: OutgoingArticle,
-      journal: SiteFileJournal,
+      request: SitePublishRequest,
+      article: Article,
       token: SiteToken
     ) {
       const now = yield* DateTime.now;
@@ -697,15 +688,15 @@ export const hashnodeSiteAdapter = Effect.fnUntraced(
         return yield* new PlatformUnavailable();
       }
 
-      return yield* lookUp(token, article, journal, request.startedAt);
+      return yield* lookUp(token, article, request.startedAt);
     });
 
     const adapter: SiteAdapter = {
       find,
       publish,
       remove,
-      resume: (request, article, journal, token) =>
-        lookedUp(token, article, journal, request.startedAt, "interrupted"),
+      resume: (request, article, token) =>
+        lookedUp(token, article, request.startedAt, "interrupted"),
       update,
     };
 

@@ -1,6 +1,5 @@
 import { Match } from "effect";
 
-import type { ImageAddresses } from "./rich-body-html.ts";
 import type {
   ArticleBody,
   Block,
@@ -8,11 +7,12 @@ import type {
   ListItem,
   Mark,
   TextNode,
-} from "./rich-body.ts";
+} from "./article-body.ts";
+import type { ImageAddresses } from "./article-html.ts";
 
 // The one place an article's Markdown is written, for the sites that take
 // Markdown rather than HTML (DEV, Hashnode): from the body's document,
-// node by node, as `rich-body-html.ts` writes HTML. Every text a member
+// node by node, as `article-html.ts` writes HTML. Every text a member
 // typed stays text there:
 //
 // - the characters Markdown reads as syntax are escaped with a backslash;
