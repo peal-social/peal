@@ -908,3 +908,25 @@ stores what the release before cannot read:
    past this release; release a fix forward instead. Never change the
    rows by hand. The table `publishing.site_files` stays: the release
    before neither reads nor writes it.
+
+## Past posts' own ids and updatedAt
+
+The release that gives a post its caller's own id and says when it last
+changed adds two columns to `publishing.posts`, `external_id` and
+`updated_at` (with a default), a unique index on the first and an index
+on the second. The release before runs against them: it reads neither
+and writes neither, so while it runs
+
+- a post it makes has no external id, and it never refuses an id another
+  post has: it takes no `externalId` in a request at all;
+- a change it makes to a post leaves `updated_at` where it was, but for a
+  post it creates, which takes the default: a program that syncs with
+  `sort=updatedAsc` and `updatedSince` misses those changes;
+- a webhook event stored with `data.externalId` and still to deliver is
+  sent without it, as the release before writes a body from what it
+  decodes.
+
+Nothing to check before rolling back. Once this release is back, tell
+the programs that sync by change to read again from an instant before the
+roll-back (`updatedSince`), and give an external id again to a post made
+meanwhile that needs one (`posts.setExternalId`).

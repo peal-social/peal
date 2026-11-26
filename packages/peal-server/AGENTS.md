@@ -570,7 +570,12 @@ and no socket, for tests.
   release before cannot decode when it claims it, so the job stays
   `running` without anything sent until it goes stale: roll back past it
   only once no job on its way has one (the runbook's "Past edits rendered
-  whole").
+  whole"). Posts' own ids and `updatedAt` did too: the release before
+  reads neither column, makes posts without an id, refuses none, moves no
+  `updated_at` when it changes a post (a sync by change misses what it
+  changed) and sends a stored event's `data.externalId` no more: nothing
+  to check, and programs sync again from before the roll-back (the
+  runbook's "Past posts' own ids and updatedAt").
 
 ### Product analytics
 

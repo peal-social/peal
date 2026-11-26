@@ -14,7 +14,11 @@
   field, never rename or remove one; a change receivers could not read is a
   new `version` sent beside the old. They carry ids, states, codes, instants
   and permalinks, never a post's text, a file, a handle or a name: the
-  receiver reads those through the API. Keep
+  receiver reads those through the API. A post's external id, its
+  caller's own id, is an id: publishing's events (`post.scheduled`
+  through `post.edit_failed`) carry it as `data.externalId` when the post
+  has one, left out otherwise so an event of a post without one reads
+  byte for byte as before; the approval and boost events do not. Keep
   `fixtures/persisted/events/stored.json` decoding.
 - `analysedWebhookEvents` (`infrastructure/analysed-webhook-events.ts`),
   around `WebhookEvents.layer` in `webhooksWith`, tells product analytics

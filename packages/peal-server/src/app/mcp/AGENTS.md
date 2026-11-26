@@ -315,6 +315,13 @@
   (`SavedTools`; stopping takes post:schedule, so it is in
   `publishingTools` too), their refusals in `recycling-refusals.ts`;
   `list_posts` takes `recyclingId`. The CLI's are `peal recycling`.
+- A post's own id, its caller's: `create_post`, `create_posts`,
+  `create_draft`, `update_draft` (left out keeps it, null removes it) and
+  `validate_post` take `externalId` through the contract's schema;
+  `set_post_external_id` changes it on any post (idempotent, says nothing
+  to the platforms, a content tool); `list_posts` takes `externalId`,
+  `updatedSince` and the sorts by change. A refusal names the post that
+  has the id, for the model to read it rather than make another.
 - Feeds (`feeds-tools.ts`, area `automations`): `list_feeds` and `get_feed`
   (with its 50 newest items, never their text) read, open world, as they
   show what sites outside Peal wrote; `preview_feed` is changing (not

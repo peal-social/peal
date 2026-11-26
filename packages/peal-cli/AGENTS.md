@@ -269,6 +269,14 @@
   `peal posts edit` (`commands/posts-edit.ts`) replaces a part's text on
   one channel (`--channel`, resolved as `unpublish` resolves it, `--text`,
   `--part`, `--wait`), without asking: the edit is the user's own text.
+- A post's own id, its caller's: `peal post --external-id`, `peal drafts
+  save --external-id` (or `--clear-external-id`; without either, a draft
+  keeps its own), `peal posts external-id <post> <id>` (or `--clear`, one
+  of them, checked before any request), `peal posts list --external-id
+  --updated-since` with `--sort updatedAsc|updatedDesc`, and the
+  `external_id` column of `peal posts import`. `peal posts show` prints it.
+  The refusal names the post that has it (`PostExternalIdTaken` in
+  `src/explain.ts`).
 - `peal tags` (list, create, update, delete) keeps a workspace's tags, and
   `peal posts tag`, `peal posts list --tag`, `peal drafts save --tag` and
   `peal post --tag` file posts under them. Wherever a command takes a tag

@@ -1024,7 +1024,8 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
 - A CSV row is a post of one part with one text for all its channels: no
   column carries a thread's parts, texts by channel or options (an
   unknown column refuses the file), which go through `send` or `bulk`,
-  whose items take `followUps` like any post.
+  whose items take `followUps` like any post. Its `external_id` is the
+  post's own id, as `send` takes it.
 - Several posts in one request (`PostBatches`: `posts.bulk`, 50 at most,
   `create_posts`; `posts.import`, 100 CSV rows) are each one
   `PostScheduling.send`, in its own transaction, in order, one at a time:
@@ -1061,13 +1062,67 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   workspace keeps (`weekStatements`, whose plans
   `post-attention.test.ts` reads among years of posts).
 - `PostSearch` (`posts.list`, `list_posts`, `peal posts list`) pages by
-  keyset on `(scheduled_at, id)` or on `id`, which orders by creation
-  (UUIDv7), never by offset; a cursor is opaque (`PostPositionSchema`) and
-  continues its own sort only. Publishing stores no platform: the platform
+  keyset on `(scheduled_at, id)`, on `(updated_at, id)` (`updatedAsc`,
+  `updatedDesc`, on `posts_workspace_updated`) or on `id`, which orders by
+  creation (UUIDv7), never by offset; a cursor is opaque
+  (`PostPositionSchema`, persisted for as long as clients keep cursors:
+  optional keys only, as `updatedAt`) and continues its own sort only.
+  `updatedAsc` holds back the posts changed in the last `updateSettle`
+  (5 seconds) before the request's instant (`asOf`), so a sync that walks
+  it from the last `updatedAt` it read reads a change late, maybe twice,
+  never not at all, as long as no transaction takes longer than that
+  between its write and its commit (none calls a platform inside one).
+  `updatedSince` keeps the posts changed at or after an instant, in any
+  order. Publishing stores no platform: the platform
   filter asks `WorkspaceChannels` about `PostRepository.channelsUsed`, so a
   disconnected channel's posts are not found by platform. `posts.calendar` (a
   range of 62 days) stays for calendars. Add a filter to `PostFilter`,
   `pageConditions`, the contract's query, `list_posts` and the CLI together.
+- `posts.updated_at` is when what a post's answer shows last changed: the
+  post's own columns and its targets' (status, failure, address, parts
+  live, options, `edited_at`, `removed_at`, a target dropped or added).
+  A statement that writes a column an answer shows moves it, through
+  `infrastructure/post-updates.ts`: `moved(now)` in a write of `posts`,
+  `movePosts` after a write of `post_targets`, as
+  `GREATEST(updated_at + 1 ms, now)`, so it goes forward with each change
+  even when two transactions read the clock in the other order than they
+  commit. What no answer shows leaves it (`setExecution`,
+  `markFirstComment`, the content digest).
+  `test/publishing/infrastructure/post-updates.test.ts` reads every
+  `.update(posts)`, `.update(postTargets)`, `.insert(postTargets)` and
+  `.delete(postTargets)` under `src/` and fails on one in neither of its
+  lists: a new one moves the post or says why not. No trigger keeps it:
+  the migrations hold none. Its default (the insert's instant in whole
+  milliseconds, as cursors hold them) covers rows from before and an
+  insert of the release before. A view of a post needs it (`FreshPost`):
+  the repository's reads carry it, and a write's answer is stamped by one
+  read after the write (`PostFreshness`, `freshPostViews` in
+  `api/post-view.ts`). `createdAt` is read from the id (`createdAtOf`).
+- A post's external id (`Post.externalId`, `posts.external_id`,
+  `domain/post-external-id.ts`) is its caller's own id for it: 1 to 255
+  characters, compared exactly, unique in a workspace among posts that are
+  not cancelled (the partial unique index `posts_workspace_external_id`),
+  a second refused `PostExternalIdTaken` naming the post that has it
+  (409, `postId` null for an earlier row of the same file). A cancelled
+  post and a deleted draft free it. It is given by `send` (so `create`,
+  each item of `bulk`, a row of `import`, its `external_id` column) and a
+  draft's create; a draft's update keeps it when the request says
+  nothing, null removes it; `PostExternalIds.set` (`posts.setExternalId`,
+  `set_post_external_id`, `peal posts external-id`, post:update) changes it
+  whatever the status, as tags are, written on its own
+  (`PostRepository.setExternalId`, never `update`). It is claimed in the
+  transaction that gives it (`claimExternalId`: a transaction advisory
+  lock on the workspace and the id, then the post that has it), so
+  requests sent together make one post; `send` checks it after the
+  idempotency replay (a retry under its key answers its post, never a
+  conflict with it) and before the queue. Copies never take it
+  (`copyOf`, recycling, feeds). Checks answer it as
+  `externalIdTakenBy` (`PostChecks`), and the import refuses a row whose
+  id an earlier row gives (`idRepeats`). Webhook events of publishing
+  name it as `data.externalId` when the post has one (`postNamed`); the
+  approval and boost events do not. It is the caller's content: exported
+  with the post, erased with it, never logged nor sent to product
+  analytics.
 
 - The approval gate holds on every way of making a post: `send`, each
   post of a batch and each row of an import go through
@@ -1240,8 +1295,8 @@ publishing's schema, naming nobody: each goes with its workspace
   (`onQueue`: `QueueStore.lock`, the queue read again, `nextFreeSlot` from
   `received`, the post's own slot left out), then every rule of a time
   chosen by hand applies, `roomInMonth` in the slot's month (never a later
-  one). Lock order, always: the idempotency key's claim, the queue, the
-  post's row, then the month and what the gate takes; `enqueue` locks the
+  one). Lock order, always: the idempotency key's claim, a post's
+  external id (`claimExternalId`), the queue, the post's row, then the month and what the gate takes; `enqueue` locks the
   queue before the post, as a queue's deletion holds the queue and then
   writes its posts. A request naming no channel and no set goes to the
   queue's (`queueChannelsDropped` for those disconnected since).
