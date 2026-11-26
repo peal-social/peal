@@ -1,10 +1,16 @@
 "use client";
 
-import { ArrowRightIcon, MenuIcon, StarIcon } from "lucide-react";
+import { ArrowRightIcon, MenuIcon, StarIcon, XIcon } from "lucide-react";
 import { useId } from "react";
 
 import type { Cta, Place } from "../lib/site/measurement/events";
 import { cn } from "../lib/utils";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionPanel,
+  AccordionTrigger,
+} from "./accordion";
 import { Button, buttonVariants } from "./button";
 import { FanOutArt } from "./fan-out-art";
 import { MenuPreview } from "./menu-preview";
@@ -22,6 +28,7 @@ import { PealMark } from "./peal-mark";
 import { Separator } from "./separator";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -38,11 +45,10 @@ interface SiteLink {
 }
 
 /**
- * A row of a mega menu: an icon or a brand's mark, a title, and a one-line
- * description where the title alone does not say enough.
+ * A row of a mega menu: an icon or a brand's mark and a name. What the
+ * page holds is the preview card's to say, from the row's intro.
  */
 interface SiteMenuLink {
-  readonly description?: string | undefined;
   /** What a menu's preview card says about the page, beside its art. */
   readonly intro?:
     | { readonly body: string; readonly headline: string }
@@ -165,43 +171,23 @@ const RowIcon = ({ link }: { readonly link: SiteMenuLink }) => {
   );
 };
 
-// Every row has its icon or mark in a 32 px tile; a name alone, such as a
-// platform's, sits beside it without a description.
-const MenuRow = ({ link }: { readonly link: SiteMenuLink }) =>
-  link.description === undefined ? (
-    <NavigationMenuLink
-      href={link.href}
-      data-preview-key={link.href}
-      className="items-center"
-    >
-      <RowIcon link={link} />
-      <span className="text-foreground font-medium">{link.title}</span>
-    </NavigationMenuLink>
-  ) : (
-    <NavigationMenuLink
-      href={link.href}
-      data-preview-key={link.href}
-      className="items-start"
-    >
-      <RowIcon link={link} />
-      <span className="flex min-w-0 flex-col gap-0.5">
-        <span className="text-foreground font-medium">{link.title}</span>
-        <span className="text-muted-foreground text-[13px] leading-snug">
-          {link.description}
-        </span>
-      </span>
-    </NavigationMenuLink>
-  );
+// Every row has its icon or mark in a 32 px tile and its name beside it,
+// on one line: a cell is as wide as its longest name.
+const MenuRow = ({ link }: { readonly link: SiteMenuLink }) => (
+  <NavigationMenuLink
+    href={link.href}
+    data-preview-key={link.href}
+    className="items-center"
+  >
+    <RowIcon link={link} />
+    <span className="text-foreground font-medium whitespace-nowrap">
+      {link.title}
+    </span>
+  </NavigationMenuLink>
+);
 
-const groupWidth = (group: SiteMenuGroup) => {
-  if (group.columns === 2) {
-    return "w-[26rem]";
-  }
-
-  return group.links.every((link) => link.description === undefined)
-    ? "w-52"
-    : "w-72";
-};
+const groupWidth = (group: SiteMenuGroup) =>
+  group.columns === 2 ? "w-[26rem]" : "min-w-52";
 
 const MenuGroup = ({ group }: { readonly group: SiteMenuGroup }) => {
   const id = useId();
@@ -354,7 +340,7 @@ const MenuPanel = ({ menu }: { readonly menu: SiteMenu }) => {
             ? []
             : menu.groups.flatMap((group) =>
                 group.links.map((link) => ({
-                  body: link.intro?.body ?? link.description ?? "",
+                  body: link.intro?.body ?? "",
                   headline: link.intro?.headline ?? link.title,
                   key: link.href,
                 }))
@@ -419,11 +405,86 @@ const DiscordLink = ({
   </a>
 );
 
+// A drawer row of a menu: its icon or mark, muted, and its name, 44 px tall
+// for a finger.
+const DrawerRow = ({ link }: { readonly link: SiteMenuLink }) => {
+  const Icon = siteIcons[link.icon ?? "globe"];
+
+  return (
+    <a
+      href={link.href}
+      className="hover:bg-accent focus-visible:ring-ring/50 -mx-2 flex min-h-11 items-center gap-2.5 rounded-md px-2 text-sm outline-none focus-visible:ring-3"
+    >
+      {link.mark === undefined ? (
+        <Icon
+          aria-hidden="true"
+          strokeWidth={1.75}
+          className="text-muted-foreground size-4 shrink-0"
+        />
+      ) : (
+        <Mark mark={link.mark} className="text-muted-foreground shrink-0" />
+      )}
+      {link.title}
+    </a>
+  );
+};
+
+// What a menu holds in the drawer: its groups under their labels, then its
+// small link, such as the one comparing every platform.
+const DrawerMenu = ({ menu }: { readonly menu: SiteMenu }) => (
+  <div className="flex flex-col gap-4">
+    {menu.groups.map((group) => (
+      <div key={group.label} className="flex flex-col gap-1">
+        <p className="text-muted-foreground text-xs">
+          <GroupLabel group={group} />
+        </p>
+        <ul
+          className={
+            group.columns === 2 ? "grid grid-cols-2 gap-x-4" : "flex flex-col"
+          }
+        >
+          {group.links.map((link) => (
+            <li key={link.href}>
+              <DrawerRow link={link} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+    {menu.footer === undefined ? null : (
+      <a
+        href={menu.footer.href}
+        className="text-foreground inline-flex w-fit items-center gap-1 text-[13px] font-medium hover:underline hover:underline-offset-4"
+      >
+        {menu.footer.label}
+        <ArrowRightIcon
+          aria-hidden="true"
+          strokeWidth={1.75}
+          className="size-3.5"
+        />
+      </a>
+    )}
+  </div>
+);
+
+// A top-level line of the drawer: a menu's toggle or a page's link.
+const drawerLine =
+  "text-foreground hover:bg-accent/60 focus-visible:ring-ring/50 flex min-h-13 items-center px-4 text-[15px] font-medium outline-none focus-visible:ring-3 focus-visible:ring-inset";
+
+/**
+ * The header below 1024 px (DESIGN.md, Site): a sheet over the whole
+ * window on a phone, its top bar where the header's is, with the mark and
+ * a close button in the menu button's place. Each menu is a section that
+ * opens and closes on its own toggle, all closed at first; Pricing and Docs
+ * are plain lines. The way into the app stays at the foot while the menus
+ * scroll.
+ */
 const MobileMenu = ({
   discord,
   drawer,
   getStarted,
   github: repository,
+  home,
   items,
   label,
   signIn,
@@ -431,129 +492,114 @@ const MobileMenu = ({
   <Sheet side="right">
     <SheetTrigger
       render={
-        <Button variant="ghost" size="icon" className="ms-auto lg:hidden" />
+        <Button variant="ghost" size="icon" className="-me-2 lg:hidden" />
       }
     >
       <MenuIcon aria-hidden="true" strokeWidth={1.75} />
       <span className="sr-only">{drawer.open}</span>
     </SheetTrigger>
-    <SheetContent closeLabel={drawer.close} className="gap-0 overflow-y-auto">
-      <SheetHeader className="border-b">
-        <SheetTitle>{drawer.title}</SheetTitle>
+    <SheetContent className="gap-0 data-[side=right]:w-full data-[side=right]:sm:max-w-sm">
+      <SheetHeader className="h-14 shrink-0 flex-row items-center justify-between gap-4 border-b px-4 py-0">
+        <SheetTitle className="sr-only">{drawer.title}</SheetTitle>
+        <a
+          href={home.href}
+          aria-label={home.label}
+          className="text-foreground focus-visible:ring-ring/50 -ms-1 flex items-center gap-2 rounded-md px-1 text-[15px] font-semibold tracking-tight outline-none focus-visible:ring-3"
+        >
+          <PealMark className="size-6" />
+          {home.name}
+        </a>
+        <SheetClose
+          render={<Button variant="ghost" size="icon" className="-me-2" />}
+        >
+          <XIcon aria-hidden="true" strokeWidth={1.75} />
+          <span className="sr-only">{drawer.close}</span>
+        </SheetClose>
       </SheetHeader>
-      <nav aria-label={label} className="flex flex-col gap-6 p-4">
-        {items.map((item) =>
-          item.kind === "link" ? (
-            <a
-              key={item.href}
-              href={item.href}
-              data-measure-cta={item.measure}
-              data-measure-place={
-                item.measure === undefined ? undefined : "drawer"
-              }
-              aria-current={item.current === true ? "page" : undefined}
-              className="text-foreground text-[15px] font-semibold"
-            >
-              {item.label}
-            </a>
-          ) : (
-            <section key={item.value} className="flex flex-col gap-3">
-              <h2 className="text-foreground text-[15px] font-semibold">
+      <nav
+        aria-label={label}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+      >
+        <Accordion multiple>
+          {items.map((item) =>
+            item.kind === "link" ? (
+              <a
+                key={item.href}
+                href={item.href}
+                data-measure-cta={item.measure}
+                data-measure-place={
+                  item.measure === undefined ? undefined : "drawer"
+                }
+                aria-current={item.current === true ? "page" : undefined}
+                className={cn(drawerLine, "border-b")}
+              >
                 {item.label}
-              </h2>
-              {item.footer === undefined ? null : (
-                <a
-                  href={item.footer.href}
-                  className="text-muted-foreground order-last text-[13px]"
-                >
-                  {item.footer.label}
-                </a>
-              )}
-              {item.groups.map((group) => (
-                <div key={group.label} className="flex flex-col gap-1">
-                  <p className="text-muted-foreground text-xs">
-                    <GroupLabel group={group} />
-                  </p>
-                  <ul
-                    className={
-                      group.columns === 2 ? "grid grid-cols-2" : "flex flex-col"
-                    }
-                  >
-                    {group.links.map((link) => {
-                      const Icon = siteIcons[link.icon ?? "globe"];
-
-                      return (
-                        <li key={link.href}>
-                          <a
-                            href={link.href}
-                            className="hover:bg-accent -mx-2 flex items-center gap-2 rounded-md px-2 py-1.5"
-                          >
-                            {link.mark === undefined ? (
-                              <Icon
-                                aria-hidden="true"
-                                strokeWidth={1.75}
-                                className="text-muted-foreground size-4"
-                              />
-                            ) : (
-                              <Mark
-                                mark={link.mark}
-                                className="text-muted-foreground"
-                              />
-                            )}
-                            {link.title}
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </section>
-          )
-        )}
+              </a>
+            ) : (
+              <AccordionItem
+                key={item.value}
+                value={item.value}
+                className="last:border-b"
+              >
+                <AccordionTrigger className={cn(drawerLine, "py-0")}>
+                  {item.label}
+                </AccordionTrigger>
+                <AccordionPanel contentClassName="text-foreground mx-4 border-t-0 pt-0 pb-5 leading-normal">
+                  <DrawerMenu menu={item} />
+                </AccordionPanel>
+              </AccordionItem>
+            )
+          )}
+        </Accordion>
       </nav>
-      <div className="mt-auto flex flex-col gap-2 border-t p-4">
-        <div className="flex items-center gap-1">
-          {repository === undefined ? null : (
-            <RepositoryLink
-              repository={repository}
-              className="-ms-2.5"
-              place="drawer"
-            />
-          )}
-          {repository === undefined || discord === undefined ? null : (
-            <Separator orientation="vertical" className="h-5 self-center!" />
-          )}
-          {discord === undefined ? null : (
-            <DiscordLink discord={discord} place="drawer" />
-          )}
-        </div>
-        {signIn === undefined ? null : (
-          <a
-            href={signIn.href}
-            data-measure-cta={signIn.measure}
-            data-measure-place={
-              signIn.measure === undefined ? undefined : "drawer"
-            }
-            className={buttonVariants({
-              className: "w-full",
-              variant: "outline",
-            })}
-          >
-            {signIn.label}
-          </a>
+      <div className="flex shrink-0 flex-col gap-3 border-t p-4">
+        {repository === undefined && discord === undefined ? null : (
+          <div className="flex items-center gap-1">
+            {repository === undefined ? null : (
+              <RepositoryLink
+                repository={repository}
+                className="-ms-2.5"
+                place="drawer"
+              />
+            )}
+            {repository === undefined || discord === undefined ? null : (
+              <Separator orientation="vertical" className="h-5 self-center!" />
+            )}
+            {discord === undefined ? null : (
+              <DiscordLink discord={discord} place="drawer" />
+            )}
+          </div>
         )}
-        {getStarted === undefined ? null : (
-          <a
-            href={getStarted.href}
-            data-measure-cta={getStarted.measure}
-            data-measure-place={
-              getStarted.measure === undefined ? undefined : "drawer"
-            }
-            className={buttonVariants({ className: "w-full" })}
-          >
-            {getStarted.label}
-          </a>
+        {signIn === undefined && getStarted === undefined ? null : (
+          <div className="flex gap-2">
+            {signIn === undefined ? null : (
+              <a
+                href={signIn.href}
+                data-measure-cta={signIn.measure}
+                data-measure-place={
+                  signIn.measure === undefined ? undefined : "drawer"
+                }
+                className={buttonVariants({
+                  className: "flex-1",
+                  variant: "outline",
+                })}
+              >
+                {signIn.label}
+              </a>
+            )}
+            {getStarted === undefined ? null : (
+              <a
+                href={getStarted.href}
+                data-measure-cta={getStarted.measure}
+                data-measure-place={
+                  getStarted.measure === undefined ? undefined : "drawer"
+                }
+                className={buttonVariants({ className: "flex-1" })}
+              >
+                {getStarted.label}
+              </a>
+            )}
+          </div>
         )}
       </div>
     </SheetContent>
@@ -653,7 +699,22 @@ const SiteHeader = (props: SiteHeaderProps) => {
             </a>
           )}
         </div>
-        <MobileMenu {...props} />
+        {/* Below 1024 px, Get started stays one tap away beside the menu. */}
+        <div className="ms-auto flex items-center gap-1 lg:hidden">
+          {getStarted === undefined ? null : (
+            <a
+              href={getStarted.href}
+              data-measure-cta={getStarted.measure}
+              data-measure-place={
+                getStarted.measure === undefined ? undefined : "header"
+              }
+              className={buttonVariants()}
+            >
+              {getStarted.label}
+            </a>
+          )}
+          <MobileMenu {...props} />
+        </div>
       </div>
     </header>
   );

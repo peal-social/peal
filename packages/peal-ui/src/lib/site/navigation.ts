@@ -22,6 +22,7 @@ import {
   siteEntries,
   telegramMark,
 } from "./platforms";
+import { statusApiOf } from "./status";
 
 // The header's and the footer's props for a page of peal.social (the
 // site's or the blog's), from its language, its links and the app's
@@ -44,9 +45,19 @@ export type FooterDocument = "privacy" | "terms";
 
 export const repository = "https://github.com/peal-social/peal";
 
-/** Every docs page a menu links to, by its path below the docs' root. */
+/**
+ * Every docs page a menu links to, by its path below the docs' root. Each
+ * product lists what it does as plain names, AI first; the hover preview
+ * says what each one is.
+ */
 export const studioRows: readonly Row[] = [
-  { icon: "pen", name: "composer", target: { docs: "guides/posts" } },
+  { icon: "bot-message", name: "aiAgent", target: { docs: "guides/agent" } },
+  {
+    icon: "wand",
+    name: "assistant",
+    target: { docs: "guides/posts/assistant" },
+  },
+  { icon: "pen", name: "publishing", target: { docs: "guides/posts" } },
   {
     icon: "calendar",
     name: "calendar",
@@ -63,6 +74,7 @@ export const studioRows: readonly Row[] = [
     name: "analytics",
     target: { docs: "guides/engage/analytics" },
   },
+  { icon: "megaphone", name: "ads", target: { docs: "guides/engage/ads" } },
 ];
 
 export const developerRows: readonly Row[] = [
@@ -149,10 +161,10 @@ const menuLinks = (
       ? []
       : [
           {
-            ...t.links[row.name],
             href,
             icon: row.icon,
             intro: intros[row.name],
+            title: t.links[row.name],
           },
         ];
   });
@@ -205,19 +217,19 @@ const navItems = (
       ? []
       : [
           {
-            ...t.links.discord,
             href: settings.discord,
             intro: t.intros.discord,
             mark: discordMark,
+            title: t.links.discord,
           },
         ];
 
   // The blog is a page of the site, in the page's language.
   const blog = {
-    ...t.links.blog,
     href: pages.blog,
     icon: "newspaper" as const,
     intro: t.intros.blog,
+    title: t.links.blog,
   };
 
   const docs = settings.docs("");
@@ -369,7 +381,7 @@ export const footerProps = (
 
       return href === undefined
         ? []
-        : [{ href, label: messages.nav.links[row.name].title }];
+        : [{ href, label: messages.nav.links[row.name] }];
     });
 
   const socials: SiteFooterColumn = {
@@ -395,14 +407,20 @@ export const footerProps = (
     { href: settings.app("withdraw"), label: t.withdraw },
   ]);
 
+  // The status page has its own place, at the foot of the mark's cell.
   const resources: SiteFooterColumn = {
     label: messages.nav.resources,
     links: present([
       { href: settings.docs(""), label: messages.nav.docs },
       { href: pages.blog, label: messages.nav.blog },
-      ...titled(resourceRows),
+      ...titled(resourceRows.filter((row) => row.name !== "status")),
     ]),
   };
+
+  const statusRow = resourceRows.find((row) => row.name === "status");
+
+  const statusHref =
+    statusRow === undefined ? undefined : hrefOf(statusRow.target, settings);
 
   // Cookie settings opens the consent notice where the page measures
   // (`<peal-consent>` intercepts the click), and otherwise leads to the
@@ -430,7 +448,7 @@ export const footerProps = (
 
   return {
     captions: {
-      start: `© ${new Date().getFullYear()} ${messages.nav.brand}`,
+      start: `© ${new Date().getFullYear()} ${messages.nav.brand}. ${t.rights}`,
     },
     columns: columns.filter((column) => column.links.length > 0),
     home: {
@@ -448,5 +466,14 @@ export const footerProps = (
         lang: code,
       })),
     },
+    status:
+      statusHref === undefined
+        ? undefined
+        : {
+            api: statusApiOf(statusHref),
+            href: statusHref,
+            label: messages.nav.links.status,
+            states: t.status,
+          },
   };
 };

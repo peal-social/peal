@@ -1305,7 +1305,7 @@ says so in its centre, across and down the space the panel leaves under
 its toolbar:
 
 - A **`pixel-icon`**: the page's own icon (the sidebar's lucide icon)
-  drawn as still pixel art, as the site draws its tiles (peal-ui's
+  drawn as still pixel art (peal-ui's
   `PixelFigure`, 5 px cells): 80 px square, in the blue and lavender
   tints with blue on the brightest cells. It never moves, and screen
   readers skip it.
@@ -1709,17 +1709,29 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   GitHub mark with the star count (Geist Mono, hidden when unknown), a
   vertical divider, the Discord mark alone (an icon-only button with its
   `aria-label`), Log in (a ghost button) and Get started (the primary
-  button). Below 1024 px the middle and right collapse into a menu button
-  that opens a drawer from the right, with the same items.
+  button). Below 1024 px the middle and right collapse into a menu button,
+  with Get started kept beside it. The button opens a drawer from the
+  right, over the whole window on a phone and 24 rem wide from 640 px: its
+  top bar, 56 px, holds the mark and "Peal" and a close button where the
+  header has them, so the header seems to stay. Below it each menu is a
+  line (15 px, 500, 52 px tall) that opens and closes its section with a
+  chevron, all closed at first, several open at once; Pricing and Docs
+  are plain lines; rules separate the lines. An open section lists its
+  groups as the menu does, each row a 16 px icon or mark in muted text and
+  its name, 44 px tall, then the menu's small link. The lines scroll; the
+  foot stays: GitHub and Discord, then Log in and Get started side by
+  side.
 - **Mega menu.** One floating panel (the shadow of a popover), white, with
   the 8 px radius. Its links are grouped under a small label (12 px,
-  muted), in bordered cells side by side. A row is a 16 px lucide icon in
-  a bordered 32 px tile, a title (14 px, 500) and a one-line description
-  (13 px, muted), with the `accent` hover; a row that names a brand, such
-  as a platform, has its 16 px mark in the same tile and its name alone.
-  A group's label may name a product, in ink and 500, followed by whom
-  it is for in muted text: Products has "PealCreative for marketing teams"
-  and "PealAPI for developers and agents".
+  muted), in bordered cells side by side, each as wide as its longest
+  name. A row is a 16 px lucide icon, or a brand's 16 px mark, in a
+  bordered 32 px tile, and its name (14 px, 500, on one line), with the
+  `accent` hover. A row has no description: what the page holds is the
+  preview card's to say. Names are short plain nouns for what a product
+  does ("Publishing", "Inbox", "Webhooks"). A group's label may name a product, in ink and 500, followed
+  by whom it is for in muted text: Products has "PealCreative for
+  marketing teams" and "PealAPI for developers and agents", each listing
+  its AI features first.
   Cells side by side are as tall as each other; cells stacked in one
   column share its height, the last one taking what is left. A featured card
   closes the panel on the right, as tall as its content, never stretched
@@ -1730,8 +1742,8 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   featured card (all three do): a `muted` cell holding a brand field
   without rails, as tall as the rows beside it, with pixel art, then an
   intro: a headline (a sentence, 15 px, 600) and a line or two (13 px,
-  muted) about what the page holds, written for the card and never the
-  row's own description. The card is not a link and takes no hover or
+  muted) about what the page holds, which the row's name alone does not
+  say. The card is not a link and takes no hover or
   focus; screen readers skip it, since the rows are the links. Its height
   stays that of its longest intro, so it never jumps between rows. The art
   is the icon of the row the pointer rests on or focus is in, rasterised
@@ -1760,7 +1772,13 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   peal-ui's brand marks the same way: their owners' one-colour marks,
   and for Google Business Profile, which Google publishes in colour only,
   a one-colour mark made from Google's file alone (its outline with its
-  "G" cut out).
+  "G" cut out). The AI clients of the hero's Connect menu show each
+  product's own logo in its brand's colours, never its maker's: a
+  one-colour mark in its owner's colour (Claude's orange, Muse's blue,
+  ChatGPT's Blossom, Cursor and Grok Bot's head in their black), and
+  otherwise its own icon, 16 px in the same tile (OpenAI Dots' dot,
+  Claude Duet's tile, OpenClaw's mascot, Hermes Agent's portrait): the
+  one place the site shows a brand's colours.
 - **Section counter.** Every section of a page below its hero opens with
   its number and name in Geist Mono, 12 px, muted, `0.04em`: `[ 01 / 03 ]
   · Product`. Sections are counted in order, and the total is the page's.
@@ -1768,8 +1786,9 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   a faint pixel field behind it (5 px cells in the blue and lavender
   tints, `#E8ECFD` and `#EDE7FF`, where smooth noise rises, thinning
   toward the middle, still), and, centred, an eyebrow in Geist Mono,
-  12 px, muted, `// [icon] Label \\`, the section headline with its
-  second sentence muted, and a lead. No word of the headline is coloured.
+  12 px, muted, `// [icon] Label \\`, the section headline (a second
+  sentence muted where one says something) and, where it adds a fact, a
+  lead. No word of the headline is coloured.
 - **Feature cells.** Bordered cells in two columns on the rails: a 16 px
   icon and a label (13 px, muted), a paragraph at the lead's size whose
   first phrase is ink and 600 and the rest muted, an optional link in
@@ -1871,10 +1890,28 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   once. On a phone the art is a still 35 px cookie beside the title, and
   the card alone leaves, after the same 700 ms. Screen readers skip the
   art and the readout, and hear "Saved" once an answer is written.
-- **Hero.** On the page's background and grid: the headline (one plain
-  claim, no slogan), the primary and outline buttons
-  on the left, a lead of two short sentences in muted text on the right,
-  then the stage. Behind it, the pixel glow in its hero layout.
+- **Hero.** On the page's background and grid, everything on the centre
+  line: the headline (one plain claim, no slogan) in two balanced lines
+  from 640 px, the claim and then whom it is for; under it a lead of one
+  sentence in ink and 500 ("Connect your agents now and run your
+  marketing on autopilot."), whose key words take the agent's shimmer in
+  the mark's colours: blue, with a lavender light passing along them and
+  starting again without end (`text-shimmer-brand`), still and blue with
+  reduced motion;
+  then Start for free, the primary button, ink, whose border, 2 px and
+  blue, carries a long light of the mark's lavender and yellow that runs
+  round it every 2 seconds without end (`border-shimmer`); its fill
+  lightens on hover as the primary button's does, and its border is
+  blue and still with reduced motion. Beside it Connect Peal, an outline
+  button with the marks of three AI clients in ink before its label and
+  a chevron after it. Connect Peal opens a menu: each MCP client with its
+  mark in a bordered 28 px tile and an arrow pointing out, leading to the
+  docs' MCP page, then, under a separator, an item that copies a setup
+  prompt for any agent (the skill the site serves) and says "Copied" for
+  two seconds, the menu still open.
+  The words sit in a band like the closing one: the pixel glow in its
+  band layout around them and a rule under the band. The stage follows
+  below the rule, on the plain page.
 - **Pixel glow.** The brand field's glows drawn in pixels on the page's
   own background (peal-ui's `PixelGlow`): blue, lavender and yellow,
   where the banners place them, rasterised onto 5 px cells and
@@ -1884,10 +1921,10 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   drifts slowly, each cell twinkles on its own beat so the edges shimmer,
   and a blurred copy under the pixels makes them glow; 24 frames a
   second, only while on screen, and still with reduced motion. Its
-  `band` layout frames centred text; its `hero` layout keeps the top
-  left, where the headline is, clear.
-- **Hero stage.** Under the home page's headline (left, with its
-  buttons) and lead (right), one bordered `background` panel:
+  `band` layout frames centred text (the hero and the closing band); its
+  `hero` layout keeps the top left clear, for the emails' art.
+- **Hero stage.** Under the home page's centred headline, lead and
+  buttons, one bordered `background` panel:
   ui-sdk's tabs as a segmented switch across its top, on `muted`, one
   segment per product with the mark in a 20 px tile (white for
   PealCreative, ink for PealAPI, as the app's switch draws its modes); the
@@ -1922,8 +1959,8 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   by side, each with a mock from the app (the composer's previews, one
   row per platform with its count and chip; the page a reviewer opens
   from a review link), then four tiles in a row (two on a phone), each
-  still pixel art of its icon, the icon and a title (15 px, 600) and a
-  line, linking to its docs page.
+  its icon in pixel art (`PixelIconArt`, as the FAQ's, 80 px tall), the
+  icon and a title (15 px, 600) and a line, linking to its docs page.
 - **Product rows.** Under PealAPI's opening: one bordered row per part,
   its title (an icon, 15 px, 600), a paragraph and a link to its docs
   page on the left (5 of 12 columns), and on the right its code (a code
@@ -1988,12 +2025,20 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   behind it: a headline and a muted line, centred, the primary button
   and an outline one.
 - **FAQ.** Its counter as a section opener's, then a band on the grid,
-  as tall as an opener, in two cells: on the left, quiet pixel art
-  filling the cell (an icon rasterised onto 5 px cells in the blue and
-  lavender tints, `#E8ECFD` and `#EDE7FF`, with lavender on the brightest
-  cells, so it reads as texture) behind a small mono label, `// [icon] FAQ
-  \\`, on `background`; on the right, the section headline with its second
-  sentence in muted text, and a lead. Blue stays for links and selection,
+  as tall as an opener, in two cells: on the left, on the page's own
+  background, the FAQ's icon in pixel art (`PixelIconArt`: 5 px square
+  cells, 34 across, dithered), flat: no glow. A stroke is the mark's
+  blue, its edges the blue tint and lavender. The first time it is on
+  screen it decodes from scrambled pixels, left to right, in under a
+  second. While it stays there a slow field flows through it, two waves
+  crossing, so bands travel along its strokes: brighter to a yellow
+  crest, dimmer to lavender (never fainter, so the icon always reads).
+  The dither at the bands' edges shifts three times a second, and a few
+  dim pixels light at the strokes' edges as a crest passes. It runs at
+  24 frames a second, and stops off screen. Still, drawn at once, with
+  reduced motion. A small mono label sits
+  over its middle, `// [icon] FAQ \\`, on `background`; on the right, the
+  section headline alone. Blue stays for links and selection,
   never a headline's accent word. Then a row per group: its title (15 px, 600) in the left cell and its questions in the right, as ui-sdk's
   accordion: full-width rows between hairlines, the question at 16 px, 500,
   a chevron at the end that turns as it opens, and the answer in muted
@@ -2002,13 +2047,21 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   768 px the cells stack and the art becomes a strip 96 px tall. The
   questions are also the page's FAQPage JSON-LD.
 - **Footer**, on `background` under a full-width rule: the mark and the
-  language menu in a first cell, then a bordered cell per column of
+  language menu in a first cell, with the status page's link (lucide's
+  activity icon and "Status") at its foot, as far from the cell's bottom
+  as the mark is from its top. Once the page has read the status page's
+  checks, the icon takes a post state's dot colour (green when every
+  check passes, amber when some fail, red when all do) and beats like a
+  heart, two beats and a rest (still with reduced motion), and its
+  meaning is its tooltip and what screen readers hear after "Status";
+  until then, or when it cannot read them, it stays muted. Then a
+  bordered cell per column of
   links, in this order: PealCreative, PealAPI (each product's docs pages),
-  Resources (the docs, the blog, the changelog, self-hosting, status,
+  Resources (the docs, the blog, the changelog, self-hosting,
   security), Socials (Peal's accounts, Discord and GitHub) and Company
   (pricing, cookie settings, which opens the consent notice where the
   site measures, then the Policies menu). A caption row at
-  the foot: `© <year> Peal` alone. The Policies menu is Company's last entry, a quiet text
+  the foot: `© <year> Peal. All rights reserved.` alone. The Policies menu is Company's last entry, a quiet text
   trigger with a chevron, in the links' type, that opens upward the
   privacy policy, the terms and the contract's functions (cancel,
   withdraw), each a link, repeated in a `<noscript>`.
@@ -2020,8 +2073,8 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   `<noscript>` repeats the links as a row for a reader without
   JavaScript.
 - **Hero art.** The home page's hero shows the product, in its stage,
-  over the pixel glow, and no other art: the turning cube it once held is
-  gone. Pixel art stays in the menu previews, the section openers, the
+  under the band of pixel glow, and no other art: the turning cube it
+  once held is gone. Pixel art stays in the menu previews, the section openers, the
   FAQ, the feature tiles, the consent notice, and the pixel glow of the
   hero and the closing band. Outside the site, the same glow is in the
   header and the foot of Peal's emails (see [Email](#email)).

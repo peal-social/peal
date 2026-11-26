@@ -7,7 +7,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   googleBusinessProfilePaths,
+  grokBotPaths,
   linkedin,
+  muse,
+  openaiBlossom,
   slackPaths,
 } from "../src/lib/brand-marks.ts";
 
@@ -30,6 +33,26 @@ describe("the brand marks outside simple-icons", () => {
     );
 
     expect(filePaths).toStrictEqual([...slackPaths]);
+  });
+
+  it("draws OpenAI's Blossom from OpenAI's black file", () => {
+    expect(fileOf("openai-blossom.svg")).toContain(`d="${openaiBlossom.path}"`);
+  });
+
+  it("makes Grok Bot's mark from x.ai's drawing alone: its head, eyes cut out", () => {
+    const file = fileOf("grok-bot.svg");
+
+    expect(file).toContain(
+      `class="grok-bot-mark__head" d="${grokBotPaths.head}"`
+    );
+
+    for (const eye of grokBotPaths.eyes) {
+      expect(file).toContain(`class="grok-bot-mark__eye" d="${eye}"`);
+    }
+  });
+
+  it("draws Muse's mark from Muse's own file", () => {
+    expect(fileOf("muse.svg")).toContain(`d="${muse.path}"`);
   });
 
   it("makes Google Business Profile's one-colour mark from Google's file alone", () => {

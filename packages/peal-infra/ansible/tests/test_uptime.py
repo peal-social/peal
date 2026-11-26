@@ -193,6 +193,22 @@ def test_the_status_page_s_brand_comes_from_the_repository() -> None:
     assert sources["apple-touch-icon.png"] == (packages / "peal-web" / "src" / "app" / "apple-icon.png").resolve()
 
 
+def test_the_public_sites_may_read_the_status_page_s_checks(rendered: Path) -> None:
+    """peal.social's footer colours its status icon from the checks' last
+    results: the public environments' sites may read them from a page,
+    and no other origin may."""
+    status = (rendered / "peal-uptime" / "caddy" / "status.caddy").read_text()
+    sites = [environment["hostnames"]["site"] for environment in ENVIRONMENTS.values() if environment.get("public", False)]
+    readers = re.search(r"header_regexp origin Origin \^https://\((?P<sites>[^)]*)\)\$", status)
+
+    assert "path /api/v1/endpoints/statuses" in status
+    assert "Access-Control-Allow-Origin {re.origin.0}" in status
+    assert readers is not None
+    assert readers.group("sites").split("|") == [re.escape(site) for site in sites]
+    assert sites
+    assert "sandbox" not in readers.group("sites")
+
+
 def test_the_status_page_s_gatus_is_the_one_caddy_serves(rendered: Path) -> None:
     services = _compose(rendered)["services"]
     status = (rendered / "peal-uptime" / "caddy" / "status.caddy").read_text()

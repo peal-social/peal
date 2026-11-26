@@ -18,6 +18,7 @@ import { faqGroups } from "../src/faq.ts";
 import {
   apiCode,
   apiRows,
+  clientIcons,
   heroCode,
   heroTabs,
   productPair,
@@ -199,4 +200,12 @@ describe("the home page", () => {
       }
     }
   );
+});
+
+describe("the hero's Connect menu", () => {
+  it.each(clientIcons)("serves %s, an icon it names", (icon) => {
+    expect(existsSync(path.join(import.meta.dirname, "../public", icon))).toBe(
+      true
+    );
+  });
 });
