@@ -252,6 +252,7 @@ const publishingOver = <E, R, E2, R2, E3, R3, H, R4, R5, R6, E7, R7, E8, R8>(
         DrizzleQueueStore,
         DrizzleRecyclingStore,
         DrizzleSignatureStore,
+        DrizzleSiteFiles,
         DrizzleTagStore,
         DrizzleWorkspacePostStore,
         LoggedChannelHealth,
@@ -689,11 +690,20 @@ export const FollowUpPlatformsLive = RoutedFollowUpPublisher.pipe(
 
 /**
  * What the gates delete the posts members unpublish with, and edit those
- * they edit, with the channels' tokens and the edits' texts.
+ * they edit, with the channels' tokens and the edits' texts, a website's
+ * through its adapter with the files its target's site took. Needs the
+ * articles' posts on the sites (RecordedArticles), which the composition
+ * root provides, until the cutover.
  */
 export const LivePostPlatformsLive = LivePostClientsLive.pipe(
   Layer.provide(
-    Layer.mergeAll(ChannelAccessCredentials, LivePostEdits.layer, SiteCallsLive)
+    Layer.mergeAll(
+      ChannelAccessCredentials,
+      LivePostEdits.layer,
+      SiteCallsLive,
+      DrizzleSiteFiles,
+      DrizzleRecordedPosts
+    )
   )
 );
 

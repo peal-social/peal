@@ -1,0 +1,81 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "4bbd4a5b-d935-4758-811b-62ff3f99ac0f",
+  "prevIds": [
+    "956a7817-8357-45ce-8b47-e653e607639a"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "publishing",
+        "live_post_changes",
+        "body"
+      ],
+      "writes": [
+        "s|col|publishing.live_post_changes.body",
+        "n|col|publishing.live_post_changes.body",
+        "e|col|publishing.live_post_changes.body"
+      ],
+      "reads": [
+        "n|tbl|publishing.live_post_changes",
+        "n|sch|publishing"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "publishing",
+        "live_post_changes",
+        "options"
+      ],
+      "writes": [
+        "s|col|publishing.live_post_changes.options",
+        "n|col|publishing.live_post_changes.options",
+        "e|col|publishing.live_post_changes.options"
+      ],
+      "reads": [
+        "n|tbl|publishing.live_post_changes",
+        "n|sch|publishing"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "live_post_changes",
+        "name": "body",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "publishing",
+        "table": "live_post_changes",
+        "name": "options",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

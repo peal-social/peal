@@ -167,6 +167,59 @@ describe("peal posts edit", () => {
   );
 
   it.effect(
+    "sends a website's options and rich text as the API takes them, and refuses an edit of nothing",
+    () =>
+      Effect.gen(function* website() {
+        const session = yield* signedIn();
+
+        yield* liveOnMastodon(session.studio);
+
+        assert.include(
+          yield* session.refused(editArgs("--channel", mastodonId)),
+          "Give --text, --body or --options"
+        );
+        assert.include(
+          yield* session.refused(
+            editArgs("--channel", mastodonId, "--options", "{not json")
+          ),
+          "--options are not a platform's options"
+        );
+        assert.include(
+          yield* session.refused(
+            editArgs("--channel", mastodonId, "--body", '{"type":"page"}')
+          ),
+          "--body is not a rich text's JSON document"
+        );
+        assert.deepStrictEqual(yield* changes(session.studio), []);
+
+        // The studio takes what it is sent: the server judges a
+        // platform's options.
+        yield* session.printed(
+          editArgs(
+            "--channel",
+            mastodonId,
+            "--options",
+            '{"platform":"wordpress","title":"Doors open at 7 pm"}',
+            "--body",
+            '{"type":"doc","content":[]}'
+          )
+        );
+
+        const target = (yield* Ref.get(session.studio.state)).posts
+          .find(({ id }) => id === finishedId)
+          ?.targets.find(({ id }) => id === failedTargetId);
+
+        assert.deepStrictEqual(target?.options, {
+          platform: "wordpress",
+          title: "Doors open at 7 pm",
+        });
+        assert.deepStrictEqual(yield* changes(session.studio), [
+          `edit:${failedTargetId}:0`,
+        ]);
+      }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect(
     "refuses a handle two of the post's channels share, naming both, before editing",
     () =>
       Effect.gen(function* ambiguous() {
