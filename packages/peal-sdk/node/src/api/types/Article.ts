@@ -4,7 +4,6 @@ import * as Peal from "../index.js";
 
 export interface Article {
     authorId: string | null;
-    body: Peal.ArticleBody;
     categories: string[];
     channelId: string;
     coverMediaId: string | null;
@@ -16,4 +15,5 @@ export interface Article {
     tags: string[];
     title: string;
     updatedAt: string;
+    body: Peal.ArticleBody;
 }

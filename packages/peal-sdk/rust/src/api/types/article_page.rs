@@ -3,7 +3,7 @@ pub use crate::prelude::*;
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
 pub struct ArticlePage {
     #[serde(default)]
-    pub items: Vec<Article>,
+    pub items: Vec<ArticleSummary>,
     #[serde(rename = "nextCursor")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub next_cursor: Option<String>,
@@ -18,12 +18,12 @@ impl ArticlePage {
 #[derive(Clone, PartialEq, Default, Debug)]
 #[non_exhaustive]
 pub struct ArticlePageBuilder {
-    items: Option<Vec<Article>>,
+    items: Option<Vec<ArticleSummary>>,
     next_cursor: Option<String>,
 }
 
 impl ArticlePageBuilder {
-    pub fn items(mut self, value: Vec<Article>) -> Self {
+    pub fn items(mut self, value: Vec<ArticleSummary>) -> Self {
         self.items = Some(value);
         self
     }

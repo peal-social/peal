@@ -7207,7 +7207,7 @@ async fn main() {
 </details>
 
 ## articles
-<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">list</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, status: Option&lt;Option&lt;ArticleStateName&gt;&gt;) -> Result&lt;ArticlePage, ApiError&gt;</code></summary>
+<details><summary><code>client.articles.<a href="/src/api/resources/articles/client.rs">list</a>(cursor: Option&lt;Option&lt;String&gt;&gt;, from: Option&lt;Option&lt;String&gt;&gt;, limit: Option&lt;Option&lt;String&gt;&gt;, status: Option&lt;Option&lt;ArticleStateName&gt;&gt;, to: Option&lt;Option&lt;String&gt;&gt;) -> Result&lt;ArticlePage, ApiError&gt;</code></summary>
 <dl>
 <dd>
 
@@ -7219,7 +7219,7 @@ async fn main() {
 <dl>
 <dd>
 
-Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given. Pass the page's `nextCursor` as `cursor` for the next. Needs post:read.
+Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given, and those scheduled from `from` (included) to `to` (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's `nextCursor` as `cursor`, with the same filters, for the next. Needs post:read.
 </dd>
 </dl>
 </dd>
@@ -7275,6 +7275,14 @@ async fn main() {
 <dl>
 <dd>
 
+**from:** `Option<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **limit:** `Option<String>` 
     
 </dd>
@@ -7284,6 +7292,14 @@ async fn main() {
 <dd>
 
 **status:** `Option<ArticleStateName>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `Option<String>` 
     
 </dd>
 </dl>

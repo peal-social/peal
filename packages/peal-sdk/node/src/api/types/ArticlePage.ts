@@ -3,6 +3,6 @@
 import * as Peal from "../index.js";
 
 export interface ArticlePage {
-    items: Peal.Article[];
+    items: Peal.ArticleSummary[];
     nextCursor: string | null;
 }

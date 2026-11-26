@@ -101,6 +101,7 @@ export * from "./ArticleStatePublished.js";
 export * from "./ArticleStatePublishing.js";
 export * from "./ArticleStateScheduled.js";
 export * from "./ArticleStateUnconfirmed.js";
+export * from "./ArticleSummary.js";
 export * from "./ArticleTime.js";
 export * from "./ArticleViolation.js";
 export * from "./ArticleViolationApprovalRequired.js";

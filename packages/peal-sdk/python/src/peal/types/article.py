@@ -15,7 +15,6 @@ class Article(UniversalBaseModel):
     author_id: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="authorId"), pydantic.Field(alias="authorId")
     ] = None
-    body: ArticleBody
     categories: typing.List[str]
     channel_id: typing_extensions.Annotated[str, FieldMetadata(alias="channelId"), pydantic.Field(alias="channelId")]
     cover_media_id: typing_extensions.Annotated[
@@ -31,6 +30,7 @@ class Article(UniversalBaseModel):
     tags: typing.List[str]
     title: str
     updated_at: typing_extensions.Annotated[str, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")]
+    body: ArticleBody
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

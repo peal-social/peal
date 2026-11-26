@@ -8,6 +8,8 @@ import * as Peal from "../../../../index.js";
  */
 export interface ListArticlesRequest {
     cursor?: string;
+    from?: string;
     limit?: string;
     status?: Peal.ArticleStateName;
+    to?: string;
 }

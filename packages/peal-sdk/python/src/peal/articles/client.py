@@ -35,20 +35,26 @@ class ArticlesClient:
         self,
         *,
         cursor: typing.Optional[str] = None,
+        from_: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
         status: typing.Optional[ArticleStateName] = None,
+        to: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ArticlePage:
         """
-        Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given. Pass the page's `nextCursor` as `cursor` for the next. Needs post:read.
+        Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given, and those scheduled from `from` (included) to `to` (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's `nextCursor` as `cursor`, with the same filters, for the next. Needs post:read.
 
         Parameters
         ----------
         cursor : typing.Optional[str]
 
+        from_ : typing.Optional[str]
+
         limit : typing.Optional[str]
 
         status : typing.Optional[ArticleStateName]
+
+        to : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -68,7 +74,9 @@ class ArticlesClient:
         )
         client.articles.list()
         """
-        _response = self._raw_client.list(cursor=cursor, limit=limit, status=status, request_options=request_options)
+        _response = self._raw_client.list(
+            cursor=cursor, from_=from_, limit=limit, status=status, to=to, request_options=request_options
+        )
         return _response.data
 
     def create(
@@ -508,20 +516,26 @@ class AsyncArticlesClient:
         self,
         *,
         cursor: typing.Optional[str] = None,
+        from_: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
         status: typing.Optional[ArticleStateName] = None,
+        to: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ArticlePage:
         """
-        Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given. Pass the page's `nextCursor` as `cursor` for the next. Needs post:read.
+        Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given, and those scheduled from `from` (included) to `to` (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's `nextCursor` as `cursor`, with the same filters, for the next. Needs post:read.
 
         Parameters
         ----------
         cursor : typing.Optional[str]
 
+        from_ : typing.Optional[str]
+
         limit : typing.Optional[str]
 
         status : typing.Optional[ArticleStateName]
+
+        to : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -550,7 +564,7 @@ class AsyncArticlesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.list(
-            cursor=cursor, limit=limit, status=status, request_options=request_options
+            cursor=cursor, from_=from_, limit=limit, status=status, to=to, request_options=request_options
         )
         return _response.data
 

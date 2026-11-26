@@ -6,11 +6,11 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
-from .article import Article
+from .article_summary import ArticleSummary
 
 
 class ArticlePage(UniversalBaseModel):
-    items: typing.List[Article]
+    items: typing.List[ArticleSummary]
     next_cursor: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="nextCursor"), pydantic.Field(alias="nextCursor")
     ] = None

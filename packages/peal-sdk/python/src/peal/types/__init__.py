@@ -143,6 +143,7 @@ if typing.TYPE_CHECKING:
     from .article_state_publishing import ArticleStatePublishing
     from .article_state_scheduled import ArticleStateScheduled
     from .article_state_unconfirmed import ArticleStateUnconfirmed
+    from .article_summary import ArticleSummary
     from .article_time import ArticleTime
     from .article_violation import (
         ArticleViolation,
@@ -1309,6 +1310,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ArticleState_Publishing": ".article_state",
     "ArticleState_Scheduled": ".article_state",
     "ArticleState_Unconfirmed": ".article_state",
+    "ArticleSummary": ".article_summary",
     "ArticleTime": ".article_time",
     "ArticleViolation": ".article_violation",
     "ArticleViolationApprovalRequired": ".article_violation_approval_required",
@@ -2480,6 +2482,7 @@ __all__ = [
     "ArticleState_Publishing",
     "ArticleState_Scheduled",
     "ArticleState_Unconfirmed",
+    "ArticleSummary",
     "ArticleTime",
     "ArticleViolation",
     "ArticleViolationApprovalRequired",

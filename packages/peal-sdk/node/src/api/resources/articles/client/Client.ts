@@ -29,7 +29,7 @@ export class ArticlesClient {
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given. Pass the page's `nextCursor` as `cursor` for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given, and those scheduled from `from` (included) to `to` (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's `nextCursor` as `cursor`, with the same filters, for the next. Needs post:read.
      *
      * @param {Peal.ListArticlesRequest} request
      * @param {ArticlesClient.RequestOptions} requestOptions - Request-specific configuration.
@@ -50,11 +50,13 @@ export class ArticlesClient {
     }
 
     private async __list(request: Peal.ListArticlesRequest = {}, requestOptions?: ArticlesClient.RequestOptions): Promise<core.WithRawResponse<Peal.ArticlePage>> {
-        const { cursor, limit, status } = request;
+        const { cursor, "from": from_, limit, status, to } = request;
         const _queryParams: Record<string, unknown> = {
             cursor,
+            from: from_,
             limit,
-            status: status != null ? status : undefined
+            status: status != null ? status : undefined,
+            to
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);

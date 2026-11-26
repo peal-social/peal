@@ -7658,7 +7658,7 @@ client.ads.audit_trail()
 </details>
 
 ## articles
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L34-L72">list</a>(...) -> ArticlePage</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L34-L80">list</a>(...) -> ArticlePage</code></summary>
 <dl>
 <dd>
 
@@ -7670,7 +7670,7 @@ client.ads.audit_trail()
 <dl>
 <dd>
 
-Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given. Pass the page's `nextCursor` as `cursor` for the next. Needs post:read.
+Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given, and those scheduled from `from` (included) to `to` (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's `nextCursor` as `cursor`, with the same filters, for the next. Needs post:read.
 </dd>
 </dl>
 </dd>
@@ -7717,6 +7717,14 @@ client.articles.list()
 <dl>
 <dd>
 
+**from:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **limit:** `typing.Optional[str]` 
     
 </dd>
@@ -7726,6 +7734,14 @@ client.articles.list()
 <dd>
 
 **status:** `typing.Optional[ArticleStateName]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `typing.Optional[str]` 
     
 </dd>
 </dl>
@@ -7745,7 +7761,7 @@ client.articles.list()
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L74-L148">create</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L82-L156">create</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -7887,7 +7903,7 @@ client.articles.create(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L150-L179">get</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L158-L187">get</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -7960,7 +7976,7 @@ client.articles.get(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L181-L209">delete</a>(...)</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L189-L217">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8033,7 +8049,7 @@ client.articles.delete(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L211-L281">update</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L219-L289">update</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -8119,7 +8135,7 @@ client.articles.update(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L283-L324">schedule</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L291-L332">schedule</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -8201,7 +8217,7 @@ client.articles.schedule(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L326-L355">unschedule</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L334-L363">unschedule</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -8274,7 +8290,7 @@ client.articles.unschedule(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L357-L386">retry</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L365-L394">retry</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -8347,7 +8363,7 @@ client.articles.retry(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L388-L417">unpublish</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L396-L425">unpublish</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 
@@ -8420,7 +8436,7 @@ client.articles.unpublish(
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L419-L489">update_on_site</a>(...) -> Article</code></summary>
+<details><summary><code>client.articles.<a href="src/peal/articles/client.py#L427-L497">update_on_site</a>(...) -> Article</code></summary>
 <dl>
 <dd>
 

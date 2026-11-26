@@ -3156,7 +3156,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"items\": [\n    {\n      \"authorId\": \"authorId\",\n      \"body\": {\n        \"content\": [],\n        \"type\": \"doc\"\n      },\n      \"categories\": [\n        \"categories\"\n      ],\n      \"channelId\": \"channelId\",\n      \"coverMediaId\": \"coverMediaId\",\n      \"createdAt\": \"createdAt\",\n      \"excerpt\": \"excerpt\",\n      \"id\": \"id\",\n      \"siteStatus\": \"publish\",\n      \"state\": {\n        \"_tag\": \"draft\"\n      },\n      \"tags\": [\n        \"tags\"\n      ],\n      \"title\": \"title\",\n      \"updatedAt\": \"updatedAt\"\n    }\n  ],\n  \"nextCursor\": \"nextCursor\"\n}",
+        "body": "{\n  \"items\": [\n    {\n      \"authorId\": \"authorId\",\n      \"categories\": [\n        \"categories\"\n      ],\n      \"channelId\": \"channelId\",\n      \"coverMediaId\": \"coverMediaId\",\n      \"createdAt\": \"createdAt\",\n      \"excerpt\": \"excerpt\",\n      \"id\": \"id\",\n      \"siteStatus\": \"publish\",\n      \"state\": {\n        \"_tag\": \"draft\"\n      },\n      \"tags\": [\n        \"tags\"\n      ],\n      \"title\": \"title\",\n      \"updatedAt\": \"updatedAt\"\n    }\n  ],\n  \"nextCursor\": \"nextCursor\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -3188,7 +3188,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"authorId\": \"authorId\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  },\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\"\n}",
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -3224,7 +3224,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"authorId\": \"authorId\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  },\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\"\n}",
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -3296,7 +3296,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"authorId\": \"authorId\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  },\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\"\n}",
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -3332,7 +3332,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"authorId\": \"authorId\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  },\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\"\n}",
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -3368,7 +3368,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"authorId\": \"authorId\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  },\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\"\n}",
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -3404,7 +3404,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"authorId\": \"authorId\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  },\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\"\n}",
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -3440,7 +3440,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"authorId\": \"authorId\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  },\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\"\n}",
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -3476,7 +3476,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"authorId\": \"authorId\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  },\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\"\n}",
+        "body": "{\n  \"authorId\": \"authorId\",\n  \"categories\": [\n    \"categories\"\n  ],\n  \"channelId\": \"channelId\",\n  \"coverMediaId\": \"coverMediaId\",\n  \"createdAt\": \"createdAt\",\n  \"excerpt\": \"excerpt\",\n  \"id\": \"id\",\n  \"siteStatus\": \"publish\",\n  \"state\": {\n    \"_tag\": \"draft\"\n  },\n  \"tags\": [\n    \"tags\"\n  ],\n  \"title\": \"title\",\n  \"updatedAt\": \"updatedAt\",\n  \"body\": {\n    \"content\": [\n      {\n        \"key\": \"value\"\n      }\n    ],\n    \"type\": \"doc\"\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }

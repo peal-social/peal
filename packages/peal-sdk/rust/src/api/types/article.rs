@@ -5,7 +5,6 @@ pub struct Article {
     #[serde(rename = "authorId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub author_id: Option<String>,
-    pub body: ArticleBody,
     #[serde(default)]
     pub categories: Vec<String>,
     #[serde(rename = "channelId")]
@@ -31,6 +30,7 @@ pub struct Article {
     #[serde(rename = "updatedAt")]
     #[serde(default)]
     pub updated_at: String,
+    pub body: ArticleBody,
 }
 
 impl Article {
@@ -43,7 +43,6 @@ impl Article {
 #[non_exhaustive]
 pub struct ArticleBuilder {
     author_id: Option<String>,
-    body: Option<ArticleBody>,
     categories: Option<Vec<String>>,
     channel_id: Option<String>,
     cover_media_id: Option<String>,
@@ -55,16 +54,12 @@ pub struct ArticleBuilder {
     tags: Option<Vec<String>>,
     title: Option<String>,
     updated_at: Option<String>,
+    body: Option<ArticleBody>,
 }
 
 impl ArticleBuilder {
     pub fn author_id(mut self, value: impl Into<String>) -> Self {
         self.author_id = Some(value.into());
-        self
-    }
-
-    pub fn body(mut self, value: ArticleBody) -> Self {
-        self.body = Some(value);
         self
     }
 
@@ -123,9 +118,13 @@ impl ArticleBuilder {
         self
     }
 
+    pub fn body(mut self, value: ArticleBody) -> Self {
+        self.body = Some(value);
+        self
+    }
+
     /// Consumes the builder and constructs a [`Article`].
     /// This method will fail if any of the following fields are not set:
-    /// - [`body`](ArticleBuilder::body)
     /// - [`categories`](ArticleBuilder::categories)
     /// - [`channel_id`](ArticleBuilder::channel_id)
     /// - [`created_at`](ArticleBuilder::created_at)
@@ -135,10 +134,10 @@ impl ArticleBuilder {
     /// - [`tags`](ArticleBuilder::tags)
     /// - [`title`](ArticleBuilder::title)
     /// - [`updated_at`](ArticleBuilder::updated_at)
+    /// - [`body`](ArticleBuilder::body)
     pub fn build(self) -> Result<Article, BuildError> {
         Ok(Article {
             author_id: self.author_id,
-            body: self.body.ok_or_else(|| BuildError::missing_field("body"))?,
             categories: self
                 .categories
                 .ok_or_else(|| BuildError::missing_field("categories"))?,
@@ -164,6 +163,7 @@ impl ArticleBuilder {
             updated_at: self
                 .updated_at
                 .ok_or_else(|| BuildError::missing_field("updated_at"))?,
+            body: self.body.ok_or_else(|| BuildError::missing_field("body"))?,
         })
     }
 }

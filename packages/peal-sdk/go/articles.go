@@ -185,14 +185,18 @@ func (g *GetArticlesRequest) SetArticleID(articleID string) {
 
 var (
 	listArticlesRequestFieldCursor = big.NewInt(1 << 0)
-	listArticlesRequestFieldLimit  = big.NewInt(1 << 1)
-	listArticlesRequestFieldStatus = big.NewInt(1 << 2)
+	listArticlesRequestFieldFrom   = big.NewInt(1 << 1)
+	listArticlesRequestFieldLimit  = big.NewInt(1 << 2)
+	listArticlesRequestFieldStatus = big.NewInt(1 << 3)
+	listArticlesRequestFieldTo     = big.NewInt(1 << 4)
 )
 
 type ListArticlesRequest struct {
 	Cursor *string           `json:"-" url:"cursor,omitempty"`
+	From   *string           `json:"-" url:"from,omitempty"`
 	Limit  *string           `json:"-" url:"limit,omitempty"`
 	Status *ArticleStateName `json:"-" url:"status,omitempty"`
+	To     *string           `json:"-" url:"to,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -214,6 +218,13 @@ func (l *ListArticlesRequest) SetCursor(cursor *string) {
 	l.require(listArticlesRequestFieldCursor)
 }
 
+// SetFrom sets the From field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListArticlesRequest) SetFrom(from *string) {
+	l.From = from
+	l.require(listArticlesRequestFieldFrom)
+}
+
 // SetLimit sets the Limit field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (l *ListArticlesRequest) SetLimit(limit *string) {
@@ -226,6 +237,13 @@ func (l *ListArticlesRequest) SetLimit(limit *string) {
 func (l *ListArticlesRequest) SetStatus(status *ArticleStateName) {
 	l.Status = status
 	l.require(listArticlesRequestFieldStatus)
+}
+
+// SetTo sets the To field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListArticlesRequest) SetTo(to *string) {
+	l.To = to
+	l.require(listArticlesRequestFieldTo)
 }
 
 var (
@@ -298,18 +316,18 @@ func (s *ScheduleArticlesRequest) MarshalJSON() ([]byte, error) {
 
 var (
 	articleFieldAuthorID     = big.NewInt(1 << 0)
-	articleFieldBody         = big.NewInt(1 << 1)
-	articleFieldCategories   = big.NewInt(1 << 2)
-	articleFieldChannelID    = big.NewInt(1 << 3)
-	articleFieldCoverMediaID = big.NewInt(1 << 4)
-	articleFieldCreatedAt    = big.NewInt(1 << 5)
-	articleFieldExcerpt      = big.NewInt(1 << 6)
-	articleFieldID           = big.NewInt(1 << 7)
-	articleFieldSiteStatus   = big.NewInt(1 << 8)
-	articleFieldState        = big.NewInt(1 << 9)
-	articleFieldTags         = big.NewInt(1 << 10)
-	articleFieldTitle        = big.NewInt(1 << 11)
-	articleFieldUpdatedAt    = big.NewInt(1 << 12)
+	articleFieldCategories   = big.NewInt(1 << 1)
+	articleFieldChannelID    = big.NewInt(1 << 2)
+	articleFieldCoverMediaID = big.NewInt(1 << 3)
+	articleFieldCreatedAt    = big.NewInt(1 << 4)
+	articleFieldExcerpt      = big.NewInt(1 << 5)
+	articleFieldID           = big.NewInt(1 << 6)
+	articleFieldSiteStatus   = big.NewInt(1 << 7)
+	articleFieldState        = big.NewInt(1 << 8)
+	articleFieldTags         = big.NewInt(1 << 9)
+	articleFieldTitle        = big.NewInt(1 << 10)
+	articleFieldUpdatedAt    = big.NewInt(1 << 11)
+	articleFieldBody         = big.NewInt(1 << 12)
 )
 
 // articleNullableFields maps the wire names of Article's nullable fields (required or optional) to their field bits.
@@ -321,7 +339,6 @@ var articleNullableFields = map[string]*big.Int{
 
 type Article struct {
 	AuthorID     *string           `json:"authorId,omitempty" url:"authorId,omitempty"`
-	Body         *ArticleBody      `json:"body" url:"body"`
 	Categories   []string          `json:"categories" url:"categories"`
 	ChannelID    string            `json:"channelId" url:"channelId"`
 	CoverMediaID *string           `json:"coverMediaId,omitempty" url:"coverMediaId,omitempty"`
@@ -333,6 +350,7 @@ type Article struct {
 	Tags         []string          `json:"tags" url:"tags"`
 	Title        string            `json:"title" url:"title"`
 	UpdatedAt    string            `json:"updatedAt" url:"updatedAt"`
+	Body         *ArticleBody      `json:"body" url:"body"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -346,13 +364,6 @@ func (a *Article) GetAuthorID() *string {
 		return nil
 	}
 	return a.AuthorID
-}
-
-func (a *Article) GetBody() *ArticleBody {
-	if a == nil {
-		return nil
-	}
-	return a.Body
 }
 
 func (a *Article) GetCategories() []string {
@@ -432,6 +443,13 @@ func (a *Article) GetUpdatedAt() string {
 	return a.UpdatedAt
 }
 
+func (a *Article) GetBody() *ArticleBody {
+	if a == nil {
+		return nil
+	}
+	return a.Body
+}
+
 func (a *Article) GetExtraProperties() map[string]interface{} {
 	if a == nil {
 		return nil
@@ -453,13 +471,6 @@ func (a *Article) require(field *big.Int) {
 func (a *Article) SetAuthorID(authorID *string) {
 	a.AuthorID = authorID
 	a.require(articleFieldAuthorID)
-}
-
-// SetBody sets the Body field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (a *Article) SetBody(body *ArticleBody) {
-	a.Body = body
-	a.require(articleFieldBody)
 }
 
 // SetCategories sets the Categories field and marks it as non-optional;
@@ -537,6 +548,13 @@ func (a *Article) SetTitle(title string) {
 func (a *Article) SetUpdatedAt(updatedAt string) {
 	a.UpdatedAt = updatedAt
 	a.require(articleFieldUpdatedAt)
+}
+
+// SetBody sets the Body field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *Article) SetBody(body *ArticleBody) {
+	a.Body = body
+	a.require(articleFieldBody)
 }
 
 func (a *Article) UnmarshalJSON(data []byte) error {
@@ -916,8 +934,8 @@ var articlePageNullableFields = map[string]*big.Int{
 }
 
 type ArticlePage struct {
-	Items      []*Article `json:"items" url:"items"`
-	NextCursor *string    `json:"nextCursor,omitempty" url:"nextCursor,omitempty"`
+	Items      []*ArticleSummary `json:"items" url:"items"`
+	NextCursor *string           `json:"nextCursor,omitempty" url:"nextCursor,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -926,7 +944,7 @@ type ArticlePage struct {
 	rawJSON         json.RawMessage
 }
 
-func (a *ArticlePage) GetItems() []*Article {
+func (a *ArticlePage) GetItems() []*ArticleSummary {
 	if a == nil {
 		return nil
 	}
@@ -958,7 +976,7 @@ func (a *ArticlePage) require(field *big.Int) {
 
 // SetItems sets the Items field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (a *ArticlePage) SetItems(items []*Article) {
+func (a *ArticlePage) SetItems(items []*ArticleSummary) {
 	a.Items = items
 	a.require(articlePageFieldItems)
 }
@@ -2066,6 +2084,282 @@ func (a *ArticleStateUnconfirmed) MarshalJSON() ([]byte, error) {
 }
 
 func (a *ArticleStateUnconfirmed) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+var (
+	articleSummaryFieldAuthorID     = big.NewInt(1 << 0)
+	articleSummaryFieldCategories   = big.NewInt(1 << 1)
+	articleSummaryFieldChannelID    = big.NewInt(1 << 2)
+	articleSummaryFieldCoverMediaID = big.NewInt(1 << 3)
+	articleSummaryFieldCreatedAt    = big.NewInt(1 << 4)
+	articleSummaryFieldExcerpt      = big.NewInt(1 << 5)
+	articleSummaryFieldID           = big.NewInt(1 << 6)
+	articleSummaryFieldSiteStatus   = big.NewInt(1 << 7)
+	articleSummaryFieldState        = big.NewInt(1 << 8)
+	articleSummaryFieldTags         = big.NewInt(1 << 9)
+	articleSummaryFieldTitle        = big.NewInt(1 << 10)
+	articleSummaryFieldUpdatedAt    = big.NewInt(1 << 11)
+)
+
+// articleSummaryNullableFields maps the wire names of ArticleSummary's nullable fields (required or optional) to their field bits.
+var articleSummaryNullableFields = map[string]*big.Int{
+	"authorId":     articleSummaryFieldAuthorID,
+	"coverMediaId": articleSummaryFieldCoverMediaID,
+	"excerpt":      articleSummaryFieldExcerpt,
+}
+
+type ArticleSummary struct {
+	AuthorID     *string           `json:"authorId,omitempty" url:"authorId,omitempty"`
+	Categories   []string          `json:"categories" url:"categories"`
+	ChannelID    string            `json:"channelId" url:"channelId"`
+	CoverMediaID *string           `json:"coverMediaId,omitempty" url:"coverMediaId,omitempty"`
+	CreatedAt    string            `json:"createdAt" url:"createdAt"`
+	Excerpt      *string           `json:"excerpt,omitempty" url:"excerpt,omitempty"`
+	ID           string            `json:"id" url:"id"`
+	SiteStatus   ArticleSiteStatus `json:"siteStatus" url:"siteStatus"`
+	State        *ArticleState     `json:"state" url:"state"`
+	Tags         []string          `json:"tags" url:"tags"`
+	Title        string            `json:"title" url:"title"`
+	UpdatedAt    string            `json:"updatedAt" url:"updatedAt"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *ArticleSummary) GetAuthorID() *string {
+	if a == nil {
+		return nil
+	}
+	return a.AuthorID
+}
+
+func (a *ArticleSummary) GetCategories() []string {
+	if a == nil {
+		return nil
+	}
+	return a.Categories
+}
+
+func (a *ArticleSummary) GetChannelID() string {
+	if a == nil {
+		return ""
+	}
+	return a.ChannelID
+}
+
+func (a *ArticleSummary) GetCoverMediaID() *string {
+	if a == nil {
+		return nil
+	}
+	return a.CoverMediaID
+}
+
+func (a *ArticleSummary) GetCreatedAt() string {
+	if a == nil {
+		return ""
+	}
+	return a.CreatedAt
+}
+
+func (a *ArticleSummary) GetExcerpt() *string {
+	if a == nil {
+		return nil
+	}
+	return a.Excerpt
+}
+
+func (a *ArticleSummary) GetID() string {
+	if a == nil {
+		return ""
+	}
+	return a.ID
+}
+
+func (a *ArticleSummary) GetSiteStatus() ArticleSiteStatus {
+	if a == nil {
+		return ""
+	}
+	return a.SiteStatus
+}
+
+func (a *ArticleSummary) GetState() *ArticleState {
+	if a == nil {
+		return nil
+	}
+	return a.State
+}
+
+func (a *ArticleSummary) GetTags() []string {
+	if a == nil {
+		return nil
+	}
+	return a.Tags
+}
+
+func (a *ArticleSummary) GetTitle() string {
+	if a == nil {
+		return ""
+	}
+	return a.Title
+}
+
+func (a *ArticleSummary) GetUpdatedAt() string {
+	if a == nil {
+		return ""
+	}
+	return a.UpdatedAt
+}
+
+func (a *ArticleSummary) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *ArticleSummary) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetAuthorID sets the AuthorID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleSummary) SetAuthorID(authorID *string) {
+	a.AuthorID = authorID
+	a.require(articleSummaryFieldAuthorID)
+}
+
+// SetCategories sets the Categories field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleSummary) SetCategories(categories []string) {
+	a.Categories = categories
+	a.require(articleSummaryFieldCategories)
+}
+
+// SetChannelID sets the ChannelID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleSummary) SetChannelID(channelID string) {
+	a.ChannelID = channelID
+	a.require(articleSummaryFieldChannelID)
+}
+
+// SetCoverMediaID sets the CoverMediaID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleSummary) SetCoverMediaID(coverMediaID *string) {
+	a.CoverMediaID = coverMediaID
+	a.require(articleSummaryFieldCoverMediaID)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleSummary) SetCreatedAt(createdAt string) {
+	a.CreatedAt = createdAt
+	a.require(articleSummaryFieldCreatedAt)
+}
+
+// SetExcerpt sets the Excerpt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleSummary) SetExcerpt(excerpt *string) {
+	a.Excerpt = excerpt
+	a.require(articleSummaryFieldExcerpt)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleSummary) SetID(id string) {
+	a.ID = id
+	a.require(articleSummaryFieldID)
+}
+
+// SetSiteStatus sets the SiteStatus field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleSummary) SetSiteStatus(siteStatus ArticleSiteStatus) {
+	a.SiteStatus = siteStatus
+	a.require(articleSummaryFieldSiteStatus)
+}
+
+// SetState sets the State field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleSummary) SetState(state *ArticleState) {
+	a.State = state
+	a.require(articleSummaryFieldState)
+}
+
+// SetTags sets the Tags field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleSummary) SetTags(tags []string) {
+	a.Tags = tags
+	a.require(articleSummaryFieldTags)
+}
+
+// SetTitle sets the Title field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleSummary) SetTitle(title string) {
+	a.Title = title
+	a.require(articleSummaryFieldTitle)
+}
+
+// SetUpdatedAt sets the UpdatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *ArticleSummary) SetUpdatedAt(updatedAt string) {
+	a.UpdatedAt = updatedAt
+	a.require(articleSummaryFieldUpdatedAt)
+}
+
+func (a *ArticleSummary) UnmarshalJSON(data []byte) error {
+	type unmarshaler ArticleSummary
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = ArticleSummary(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, articleSummaryNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		a.require(presentFields)
+	}
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *ArticleSummary) MarshalJSON() ([]byte, error) {
+	type embed ArticleSummary
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *ArticleSummary) String() string {
 	if a == nil {
 		return "<nil>"
 	}
