@@ -2,9 +2,8 @@
 title: Data processing agreement
 description: What Peal does, as a processor, with the personal data an organisation handles through the hosted service (GDPR Article 28).
 draft: false
+effective: 2026-11-23
 ---
-
-Effective date: 23 November 2026
 
 ## Summary
 

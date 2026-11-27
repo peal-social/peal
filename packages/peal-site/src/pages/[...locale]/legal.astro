@@ -1,0 +1,138 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getEntry } from "astro:content";
+import { getRelativeLocaleUrl } from "astro:i18n";
+
+import { localePaths, pageLocale } from "../../i18n/locales.ts";
+import { messages } from "../../i18n/messages.ts";
+import Base from "../../layouts/base.astro";
+import { legalIndex } from "../../legal-page.ts";
+import { legalDocuments } from "../../legal.ts";
+import type { LegalDocument } from "../../legal.ts";
+
+// Every legal document: the three most people look for in cells of their
+// own, then the others in groups (DESIGN.md, Site).
+
+export const getStaticPaths = (() => localePaths()) satisfies GetStaticPaths;
+
+const locale = pageLocale(Astro.currentLocale);
+
+const t = messages(locale).legalPage;
+
+const entries = new Map(
+  await Promise.all(
+    legalDocuments.map(
+      async (document) =>
+        [document, await getEntry("legal", `${locale}/${document}`)] as const
+    )
+  )
+);
+
+const summary = (document: LegalDocument) => {
+  const entry = entries.get(document);
+
+  if (entry === undefined) {
+    throw new Error(
+      `No legal document at src/content/legal/${locale}/${document}.md: each one needs a version in every locale.`
+    );
+  }
+
+  return { description: entry.data.description, title: entry.data.title };
+};
+
+const { featured, groups } = legalIndex(
+  t,
+  (document) => getRelativeLocaleUrl(locale, document),
+  summary
+);
+
+// Read's chevron, lucide's chevron-right.
+const chevron = "m9 18 6-6-6-6";
+---
+
+<Base description={t.description} path="legal" title={`${t.title} · Peal`}>
+  <div class="mx-auto max-w-6xl">
+    <header class="px-4 pt-16 pb-12 sm:px-8 sm:pt-24 sm:pb-16">
+      <h1
+        class="text-4xl leading-[1.05] font-semibold tracking-[-0.025em] sm:text-[56px]"
+      >
+        {t.title}
+      </h1>
+    </header>
+
+    <ul class="grid border-y lg:grid-cols-3">
+      {
+        featured.map((link) => (
+          <li class="border-b last:border-b-0 lg:border-e lg:border-b-0 lg:last:border-e-0">
+            <a
+              href={link.href}
+              class="group hover:bg-accent focus-visible:ring-ring/50 flex h-full min-h-60 flex-col gap-3 p-6 outline-none focus-visible:ring-3 focus-visible:ring-inset sm:p-8"
+            >
+              <h2 class="text-[15px] leading-snug font-semibold">
+                {link.title}
+              </h2>
+              <p class="text-muted-foreground mt-auto text-base leading-relaxed">
+                {link.description}
+              </p>
+              <span class="text-brand-text inline-flex items-center gap-1 pt-3 text-sm font-medium group-hover:underline">
+                {t.read}
+                <svg
+                  aria-hidden="true"
+                  class="size-4"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.75"
+                  viewBox="0 0 24 24"
+                >
+                  <path d={chevron} />
+                </svg>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="pb-24">
+      {
+        groups.map(({ label, links }) => (
+          <section class="grid gap-6 border-b px-4 py-10 sm:px-8 lg:grid-cols-3 lg:gap-0 lg:px-0 lg:py-0">
+            <h2 class="text-muted-foreground text-sm lg:p-8">{label}</h2>
+            <ul class="grid gap-8 sm:grid-cols-2 lg:col-span-2 lg:gap-0">
+              {links.map((link) => (
+                <li class="lg:p-8">
+                  <a
+                    href={link.href}
+                    class="group focus-visible:ring-ring/50 flex flex-col gap-1 rounded-sm outline-none focus-visible:ring-3"
+                  >
+                    <h3 class="text-sm font-semibold">{link.title}</h3>
+                    <p class="text-muted-foreground max-w-80 text-sm leading-relaxed">
+                      {link.description}
+                    </p>
+                    <span class="text-brand-text mt-3 inline-flex items-center gap-1 text-sm font-medium group-hover:underline">
+                      {t.read}
+                      <svg
+                        aria-hidden="true"
+                        class="size-4"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.75"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d={chevron} />
+                      </svg>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</Base>

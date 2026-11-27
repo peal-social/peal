@@ -6,7 +6,6 @@ import type { Locale } from "./locales.ts";
 
 const en = {
   footer: {
-    cancel: "Cancel your contract",
     company: "Company",
     // The section's id is its heading's slug in privacy.md.
     cookies: {
@@ -14,7 +13,7 @@ const en = {
       section: "cookies-and-similar-technologies",
     },
     language: "Language",
-    policies: "Policies",
+    legal: "Legal",
     rights: "All rights reserved.",
     // The status icon's meaning, for its tooltip and screen readers.
     status: {
@@ -24,12 +23,6 @@ const en = {
     },
     socials: "Socials",
     source: "GitHub",
-    withdraw: "Withdraw from contract here",
-  },
-  legal: {
-    "data-deletion": "Data deletion",
-    privacy: "Privacy policy",
-    terms: "Terms of service",
   },
   nav: {
     comparePlatforms: "Compare every platform",
@@ -192,14 +185,13 @@ export type ChromeMessages = typeof en;
 
 const fr: ChromeMessages = {
   footer: {
-    cancel: "Résilier votre contrat",
     company: "Entreprise",
     cookies: {
       label: "Paramètres des cookies",
       section: "cookies-et-technologies-similaires",
     },
     language: "Langue",
-    policies: "Informations légales",
+    legal: "Informations légales",
     rights: "Tous droits réservés.",
     status: {
       degraded: "Certains services ont des problèmes",
@@ -208,12 +200,6 @@ const fr: ChromeMessages = {
     },
     socials: "Réseaux sociaux",
     source: "GitHub",
-    withdraw: "Renoncer au contrat ici",
-  },
-  legal: {
-    "data-deletion": "Suppression des données",
-    privacy: "Politique de confidentialité",
-    terms: "Conditions d’utilisation",
   },
   nav: {
     comparePlatforms: "Comparer toutes les plateformes",

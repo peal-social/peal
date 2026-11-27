@@ -5,8 +5,12 @@ import { getEntry, render } from "astro:content";
 import { pageLocale } from "../../i18n/locales.ts";
 import { messages } from "../../i18n/messages.ts";
 import Base from "../../layouts/base.astro";
+import { legalDates } from "../../legal-page.ts";
 import { legalLayout } from "../../legal-sections.ts";
 import { legalDocument, legalPaths } from "../../legal.ts";
+
+// A legal document: one column under its title and dates, its numbered
+// contents, then its sections.
 
 export const getStaticPaths = (() => legalPaths()) satisfies GetStaticPaths;
 
@@ -35,10 +39,19 @@ const { preamble, sections } = legalLayout(entry.rendered?.html ?? "");
 // summary, which takes no number.
 const numbered = headings.filter(({ depth }) => depth === 2);
 
-const contents =
-  sections[0]?.kind === "opening" ? numbered.slice(1) : numbered;
+const [first, ...others] = sections;
+
+// The opening summary comes before the contents, the numbered sections
+// after them.
+const opening = first?.kind === "opening" ? first : undefined;
+
+const numberedSections = opening === undefined ? sections : others;
+
+const contents = opening === undefined ? numbered : numbered.slice(1);
 
 const t = messages(locale);
+
+const dates = legalDates(t.legalPage, locale, entry.data);
 ---
 
 <Base
@@ -47,49 +60,64 @@ const t = messages(locale);
   path={document}
   title={`${entry.data.title} · ${t.nav.brand}`}
 >
-  <article class="prose prose-neutral prose-table:text-sm mx-auto max-w-6xl px-6 py-16">
-    {
-      entry.data.draft && (
-        <aside
-          role="note"
-          class="not-prose mb-10 max-w-3xl rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-950"
-        >
-          <p class="font-semibold">{t.draft.title}</p>
-          <p class="mt-1 text-sm">{t.draft.body}</p>
-        </aside>
-      )
-    }
-    <h1>{entry.data.title}</h1>
-    {
-      contents.length > 3 && (
-        <nav aria-label={t.legalContents} class="legal-contents not-prose">
-          <p>{t.legalContents}</p>
-          <ol>
-            {contents.map(({ slug, text }) => (
-              <li>
-                <a href={`#${slug}`}>{text}</a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-      )
-    }
-    <div class="legal">
-      <Fragment set:html={preamble} />
+  <article class="mx-auto max-w-6xl px-4 py-16 sm:px-8 sm:py-24">
+    <div class="mx-auto max-w-[44rem]">
       {
-        sections.map(({ aside, kind, text }) => (
-          <section class={`legal-section legal-${kind}`}>
-            {aside === undefined ? (
-              <Fragment set:html={text} />
-            ) : (
-              <>
-                <div class="legal-text" set:html={text} />
-                <Fragment set:html={aside} />
-              </>
-            )}
-          </section>
-        ))
+        entry.data.draft && (
+          <aside
+            role="note"
+            class="mb-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950"
+          >
+            <p class="font-semibold">{t.draft.title}</p>
+            <p class="mt-1 text-sm">{t.draft.body}</p>
+          </aside>
+        )
       }
+      <h1
+        class="text-4xl leading-[1.05] font-semibold tracking-[-0.025em] sm:text-[56px]"
+      >
+        {entry.data.title}
+      </h1>
+      {
+        dates.length > 0 && (
+          <p class="text-muted-foreground mt-6 flex flex-col gap-1 font-mono text-xs tabular-nums">
+            {dates.map((line) => (
+              <span>{line}</span>
+            ))}
+          </p>
+        )
+      }
+      <div class="legal prose prose-neutral prose-table:text-sm">
+        <Fragment set:html={preamble} />
+        {
+          opening !== undefined && (
+            <section class="legal-section legal-opening">
+              <Fragment set:html={opening.text} />
+            </section>
+          )
+        }
+        {
+          contents.length > 3 && (
+            <nav aria-label={t.legalPage.contents} class="legal-contents not-prose">
+              <ol>
+                {contents.map(({ slug, text }) => (
+                  <li>
+                    <a href={`#${slug}`}>{text}</a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )
+        }
+        {
+          numberedSections.map(({ aside, kind, text }) => (
+            <section class={`legal-section legal-${kind}`}>
+              <Fragment set:html={text} />
+              {aside !== undefined && <Fragment set:html={aside} />}
+            </section>
+          ))
+        }
+      </div>
     </div>
   </article>
 </Base>

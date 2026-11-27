@@ -19,17 +19,16 @@ Turning billing on puts every workspace that holds more than {{free-accounts}} a
 
 </Callout>
 
-Billing takes these settings, on the server, the web app and the marketing site:
+Billing takes these settings, on the server and the web app:
 
-| Setting                    | Where                | What it does                                                                                 |
-| -------------------------- | -------------------- | -------------------------------------------------------------------------------------------- |
-| `STRIPE_SECRET_KEY`        | Server               | Turns billing on                                                                             |
-| `STRIPE_WEBHOOK_SECRET`    | Server               | The signing secret of the webhook endpoint                                                   |
-| `STRIPE_LOOKUP_KEY_PREFIX` | Server               | The prefix of the catalogue's lookup keys                                                    |
-| `PEAL_BILLING_GRACE_UNTIL` | Server               | The day until which workspaces over the free tier keep publishing on the accounts they had   |
-| `PEAL_TERMS_URL`           | Web app              | Your terms of service, which the billing page links to before an order                       |
-| `PEAL_CONTACT_URL`         | Web app              | Where people write for more than the largest plan                                            |
-| `SITE_APP_URL`             | Marketing site build | Lets the site's footer link to the app's pages to cancel a contract and to withdraw from one |
+| Setting                    | Where   | What it does                                                                               |
+| -------------------------- | ------- | ------------------------------------------------------------------------------------------ |
+| `STRIPE_SECRET_KEY`        | Server  | Turns billing on                                                                           |
+| `STRIPE_WEBHOOK_SECRET`    | Server  | The signing secret of the webhook endpoint                                                 |
+| `STRIPE_LOOKUP_KEY_PREFIX` | Server  | The prefix of the catalogue's lookup keys                                                  |
+| `PEAL_BILLING_GRACE_UNTIL` | Server  | The day until which workspaces over the free tier keep publishing on the accounts they had |
+| `PEAL_TERMS_URL`           | Web app | Your terms of service, which the billing page links to before an order                     |
+| `PEAL_CONTACT_URL`         | Web app | Where people write for more than the largest plan                                          |
 
 [Environment variables](/self-hosting/environment-variables#billing) has the server's settings with their defaults, and also the [web app's](/self-hosting/environment-variables#web-app) and the [site's](/self-hosting/environment-variables#compose).
 
@@ -102,11 +101,6 @@ Peal leaves these to Stripe:
 The tax code is software as a service: `txcd_10103001` for business use, or `txcd_10103000` for personal use. The command gives the catalogue's products `txcd_10103001` when it makes them. The split between business and personal use matters for US sales tax, which is a question for your accountant.
 
 Checkout then asks every customer for a billing address. It also offers a field for a business's tax id, which Stripe prints on the invoice and uses for the reverse charge.
-
-</Step>
-<Step title="Build the marketing site with SITE_APP_URL">
-
-Set `SITE_APP_URL` when you build the marketing site, so its footer links to the app's pages to cancel a contract and to withdraw from one ([environment variables](/self-hosting/environment-variables)).
 
 </Step>
 </Steps>
@@ -192,7 +186,7 @@ A workspace with a subscription Stripe may still bill, unpaid and paused ones in
 
 ### Cancelling and withdrawing [#cancel-withdraw]
 
-Anyone can cancel a contract or withdraw from one without signing in. They click **Cancel your contract** or **Withdraw from contract here** at the foot of every page of the marketing site, which lead to the web app's `/cancel` and `/withdraw`. The web app doesn't link to them itself, so if you bill without the marketing site, link to both from your own.
+Members who manage billing cancel a contract or withdraw from one on the workspace's **Billing** page, with **Cancel your contract** and **Withdraw from contract here**: contracts are made in the web app, so the web app is where they end. The web app also serves both as forms that need no signing in, at `/cancel` and `/withdraw`. Peal links to them from nowhere: link to them from your own pages if you want them public.
 
 `POST /api/contract-requests` records each request with the moment it came in, which is the moment that counts whenever the request is applied. It acknowledges the request by email. It takes 5 requests an hour from an address (read from `AUTH_IP_HEADERS`), and a Turnstile token when Turnstile is on. It writes to one email address 5 times a day at most.
 

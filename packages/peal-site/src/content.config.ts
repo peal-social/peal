@@ -11,7 +11,11 @@ const legal = defineCollection({
     // A draft shows a banner saying it is pending legal review and is kept
     // out of search engines. Set it to false once the text is approved.
     draft: z.boolean(),
+    // The date the document took effect, and the date of its last change
+    // once it has one, shown under its title.
+    effective: z.coerce.date().optional(),
     title: z.string(),
+    updated: z.coerce.date().optional(),
   }),
 });
 

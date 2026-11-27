@@ -10,8 +10,6 @@ import { cn } from "../lib/utils";
 import { LanguageMenu } from "./language-menu";
 import type { LanguageMenuLink } from "./language-menu";
 import { PealMark } from "./peal-mark";
-import { PolicyMenu } from "./policy-menu";
-import type { PolicyMenuLink } from "./policy-menu";
 
 interface SiteFooterLink {
   /** Marks the link to the page being read. */
@@ -27,13 +25,6 @@ interface SiteFooterLink {
 interface SiteFooterColumn {
   readonly label: string;
   readonly links: readonly SiteFooterLink[];
-  /** A menu after the links, such as the policies: its name and links. */
-  readonly menu?:
-    | {
-        readonly label: string;
-        readonly links: readonly PolicyMenuLink[];
-      }
-    | undefined;
 }
 
 type SiteFooterProps = Omit<PartProps<"footer">, "children" | "className"> & {
@@ -188,11 +179,6 @@ const Column = ({ column }: { readonly column: SiteFooterColumn }) => {
             <FooterLink link={link} />
           </li>
         ))}
-        {column.menu === undefined || column.menu.links.length === 0 ? null : (
-          <li className="text-muted-foreground">
-            <PolicyMenu label={column.menu.label} links={column.menu.links} />
-          </li>
-        )}
       </ul>
     </nav>
   );

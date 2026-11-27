@@ -2,9 +2,8 @@
 title: Accord de traitement des données
 description: Ce que Peal fait, en tant que sous-traitant, des données personnelles qu’une organisation traite au moyen du service hébergé (article 28 du RGPD).
 draft: false
+effective: 2026-11-23
 ---
-
-Date d’entrée en vigueur : 23 novembre 2026
 
 ## En bref
 

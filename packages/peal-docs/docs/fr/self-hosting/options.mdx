@@ -19,17 +19,16 @@ Activer la facturation met au-delà de l’offre gratuite chaque espace de trava
 
 </Callout>
 
-La facturation prend ces réglages, sur le serveur, l’application web et le site vitrine :
+La facturation prend ces réglages, sur le serveur et l’application web :
 
-| Réglage                    | Où                           | Ce qu’il fait                                                                                                                |
-| -------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `STRIPE_SECRET_KEY`        | Serveur                      | Active la facturation                                                                                                        |
-| `STRIPE_WEBHOOK_SECRET`    | Serveur                      | Le secret de signature du webhook                                                                                            |
-| `STRIPE_LOOKUP_KEY_PREFIX` | Serveur                      | Le préfixe des clés de recherche du catalogue                                                                                |
-| `PEAL_BILLING_GRACE_UNTIL` | Serveur                      | Le jour jusqu’auquel les espaces de travail au-delà de l’offre gratuite continuent de publier sur les comptes qu’ils avaient |
-| `PEAL_TERMS_URL`           | Application web              | Vos conditions d’utilisation, vers lesquelles la page de facturation renvoie avant une commande                              |
-| `PEAL_CONTACT_URL`         | Application web              | L’adresse où écrire pour davantage que le plus grand abonnement                                                              |
-| `SITE_APP_URL`             | Construction du site vitrine | Fait renvoyer le pied de page du site vers les pages de l’application qui servent à résilier un contrat et à s’en rétracter  |
+| Réglage                    | Où              | Ce qu’il fait                                                                                                                |
+| -------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `STRIPE_SECRET_KEY`        | Serveur         | Active la facturation                                                                                                        |
+| `STRIPE_WEBHOOK_SECRET`    | Serveur         | Le secret de signature du webhook                                                                                            |
+| `STRIPE_LOOKUP_KEY_PREFIX` | Serveur         | Le préfixe des clés de recherche du catalogue                                                                                |
+| `PEAL_BILLING_GRACE_UNTIL` | Serveur         | Le jour jusqu’auquel les espaces de travail au-delà de l’offre gratuite continuent de publier sur les comptes qu’ils avaient |
+| `PEAL_TERMS_URL`           | Application web | Vos conditions d’utilisation, vers lesquelles la page de facturation renvoie avant une commande                              |
+| `PEAL_CONTACT_URL`         | Application web | L’adresse où écrire pour davantage que le plus grand abonnement                                                              |
 
 [Variables d’environnement](/self-hosting/environment-variables#billing) donne les réglages du serveur avec leurs valeurs par défaut, ainsi que ceux de l’[application web](/self-hosting/environment-variables#web-app) et du [site](/self-hosting/environment-variables#compose).
 
@@ -102,11 +101,6 @@ Peal les laisse à Stripe :
 Le code de taxe est celui du logiciel en tant que service : `txcd_10103001` pour un usage professionnel, ou `txcd_10103000` pour un usage personnel. La commande donne `txcd_10103001` aux produits du catalogue quand elle les crée. La distinction entre usage professionnel et personnel compte pour la taxe sur les ventes aux États-Unis, une question pour votre expert-comptable.
 
 Le paiement demande alors à chaque client une adresse de facturation. Il propose aussi un champ pour le numéro fiscal d’une entreprise, que Stripe imprime sur la facture et utilise pour l’autoliquidation.
-
-</Step>
-<Step title="Construire le site vitrine avec SITE_APP_URL">
-
-Définissez `SITE_APP_URL` à la construction du site vitrine, pour que son pied de page renvoie vers les pages de l’application qui servent à résilier un contrat et à s’en rétracter ([variables d’environnement](/self-hosting/environment-variables)).
 
 </Step>
 </Steps>
@@ -192,7 +186,7 @@ Un espace de travail dont un abonnement peut encore être facturé par Stripe, i
 
 ### Résilier et se rétracter [#cancel-withdraw]
 
-Chacun peut résilier un contrat ou s’en rétracter sans se connecter. Il suffit de cliquer sur **Résilier votre contrat** ou **Renoncer au contrat ici** au pied de chaque page du site vitrine, qui mènent à `/fr/cancel` et `/fr/withdraw` dans l’application web. L’application web n’y renvoie pas elle-même : si vous facturez sans le site vitrine, ajoutez les deux liens à votre propre site.
+Les membres qui gèrent la facturation résilient un contrat ou s’en rétractent sur la page **Facturation** de l’espace de travail, avec **Résilier votre contrat** et **Renoncer au contrat ici** : les contrats se concluent dans l’application web, c’est donc là qu’ils prennent fin. L’application web sert aussi ces deux fonctions sous forme de formulaires qui ne demandent pas de connexion, à `/fr/cancel` et `/fr/withdraw`. Peal n’y renvoie nulle part : ajoutez des liens depuis vos propres pages si vous voulez les rendre publics.
 
 `POST /api/contract-requests` enregistre chaque demande avec le moment de sa réception, qui fait foi quel que soit le moment où elle est appliquée. Il en accuse réception par e-mail. Il accepte 5 demandes par heure d’une même adresse (lue dans `AUTH_IP_HEADERS`), et un jeton Turnstile quand Turnstile est activé. Il n’écrit à une même adresse e-mail que 5 fois par jour au plus.
 
