@@ -1854,6 +1854,23 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   after a 5 px square in yellow, then a link with an arrow to read more.
   It cannot be dismissed, and the site removes it once it no longer holds;
   no page repeats it.
+- **Legal pages.** `/legal` lists them: its title at the
+  site's display size, then the privacy policy, the terms and the data
+  processing agreement in three bordered cells side by side (one a row
+  on a phone), each its title (15 px, 600), its one line at the lead's
+  size, muted, at the cell's foot and Read with a chevron in
+  `brand-text`, the whole cell a link with the `accent` hover; then a
+  row per group, its label (14 px, muted) in the first third and its
+  documents in the other two, each a title (14 px, 600), a line in muted
+  text and Read. A
+  document is one column, 44 rem wide, centred: its title at the
+  display size, its dates under it in Geist Mono (12 px, muted), then
+  its numbered contents (numbers in Geist Mono, muted) after a rule;
+  sections are ruled apart, their numbers (2, 2.1) in Geist Mono, muted,
+  hanging in the margin left of the heading from 1024 px; the summary
+  is a `muted` cell, and a section's plain lines follow its text behind
+  a 2 px `brand` line, under a Geist Mono label. A table spreads 8 rem
+  past the column on each side from 1152 px.
 - **Consent notice.** The one question the site, the docs and the blog
   ask a visitor: whether Peal may keep a cookie to follow their visits.
   It is peal-ui's `<peal-consent>`, the same on all three. A white card
@@ -2077,12 +2094,12 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   links, in this order: PealCreative, PealAPI (each product's docs pages),
   Resources (the docs, the blog, the changelog, self-hosting,
   security), Socials (Peal's accounts, Discord and GitHub) and Company
-  (pricing, cookie settings, which opens the consent notice where the
-  site measures, then the Policies menu). A caption row at
-  the foot: `© <year> Peal. All rights reserved.` alone. The Policies menu is Company's last entry, a quiet text
-  trigger with a chevron, in the links' type, that opens upward the
-  privacy policy, the terms and the contract's functions (cancel,
-  withdraw), each a link, repeated in a `<noscript>`.
+  (pricing, Legal, which leads to the page listing every legal
+  document, and cookie settings, which opens the consent notice where
+  the site measures). A caption row at the foot: `© <year> Peal. All
+  rights reserved.` at its start and, at its end, the contract's
+  functions (cancel, withdraw), which the law wants on every page, as
+  links in the row's mono type.
   The language menu is a small
   outline button (30 px): `Languages`, the current language's own name
   and a chevron, named "Language" and that name for screen readers. It

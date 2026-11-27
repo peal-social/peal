@@ -13,7 +13,18 @@ const en = {
     body: "This document is not in force yet. Text in square brackets is still to be written.",
     title: "Draft pending legal review",
   },
-  legalContents: "Contents",
+  // The legal pages' own words: the page listing every document (/legal),
+  // and the lines under a document's title.
+  legalPage: {
+    contents: "Contents",
+    description:
+      "Peal's privacy policy, terms of service, data processing agreement and other legal documents.",
+    effective: "Effective date",
+    groups: { company: "Company", data: "Personal data" },
+    read: "Read",
+    title: "Legal",
+    updated: "Last updated",
+  },
   home: {
     api: {
       action: "Explore the docs",
@@ -625,7 +636,16 @@ const fr: Messages = {
     body: "Ce document n’est pas encore en vigueur. Le texte entre crochets reste à rédiger.",
     title: "Projet en attente de relecture juridique",
   },
-  legalContents: "Sommaire",
+  legalPage: {
+    contents: "Sommaire",
+    description:
+      "La politique de confidentialité, les conditions d’utilisation, l’accord de traitement des données et les autres documents juridiques de Peal.",
+    effective: "Date d’entrée en vigueur",
+    groups: { company: "Société", data: "Données personnelles" },
+    read: "Lire",
+    title: "Informations légales",
+    updated: "Dernière mise à jour",
+  },
   home: {
     api: {
       action: "Explorer la documentation",

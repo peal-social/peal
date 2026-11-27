@@ -2,9 +2,9 @@
 title: Conditions d’utilisation
 description: Les conditions qui encadrent l’utilisation du service Peal hébergé.
 draft: false
+effective: 2026-11-23
+updated: 2026-11-27
 ---
-
-Date d’entrée en vigueur : 23 novembre 2026
 
 ## En bref
 
@@ -17,7 +17,7 @@ Ce résumé vous aide à lire les conditions. Il n’en fait pas partie, et ce s
 - Les publicités sont achetées auprès du réseau publicitaire, qui vous facture lui-même. Rien n’est dépensé tant qu’un propriétaire n’a pas activé les dépenses et fixé un plafond mensuel.
 - Le spam, les contenus illicites et les attaques contre le service sont interdits, et peuvent entraîner la suspension d’un compte.
 - Nous vous prévenons par e-mail 30 jours avant un changement de prix ou une modification de ces conditions.
-- Le droit français s’applique. Les consommateurs conservent les protections du pays où ils résident.
+- Le droit français s’applique. Les consommateurs conservent les protections du pays où ils résident, et peuvent soumettre gratuitement un litige à notre médiateur de la consommation.
 
 ## À propos de ces conditions
 
@@ -439,6 +439,14 @@ Ces conditions sont régies par le droit français. Un consommateur conserve en 
 
 Avant toute action, écrivez-nous à hello@peal.social pour que nous tentions de régler le différend.
 
+Conformément à l’article L. 612-1 du Code de la consommation, et sous réserve de son article L. 612-2, un consommateur peut soumettre gratuitement un litige avec nous à un médiateur de la consommation, en vue de sa résolution amiable, dans un délai inférieur à un an à compter de sa réclamation écrite auprès de nous. Notre médiateur de la consommation est SAS Médiation Solution, qui a enregistré notre adhésion sous le numéro MS/26/F10D6096. Le consommateur le saisit :
+
+- par courrier : SAS Médiation Solution, 222 chemin de la Bergerie, 01800 Saint-Jean-de-Niost, France ;
+- par e-mail : mediation@sasmediationsolution-conso.fr ;
+- en ligne, avec le formulaire « Saisir le médiateur » sur [sasmediationsolution-conso.fr](https://www.sasmediationsolution-conso.fr).
+
+Quel que soit le moyen utilisé, la demande doit contenir les coordonnées postales, téléphoniques et électroniques du consommateur ; notre nom, notre adresse et notre numéro d’adhésion chez SAS Médiation Solution ; un exposé succinct des faits ; une copie de la réclamation écrite qui nous a été adressée ; et tout document utile à l’examen de la demande, comme une facture ou un justificatif de paiement.
+
 Un litige avec un client professionnel relève des tribunaux du ressort de notre siège. Un consommateur peut saisir les juridictions que la loi lui ouvre, y compris celles du lieu où il réside.
 
 <aside>
@@ -447,6 +455,7 @@ Un litige avec un client professionnel relève des tribunaux du ressort de notre
 
 - Le droit français s’applique.
 - Écrivez-nous d’abord en cas de problème.
+- Si cela ne suffit pas, un consommateur peut saisir gratuitement notre médiateur, SAS Médiation Solution, dans l’année qui suit sa réclamation écrite.
 - Un consommateur peut saisir les tribunaux du lieu où il réside.
 - Un litige avec un professionnel relève des tribunaux de notre siège.
 

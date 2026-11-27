@@ -10,8 +10,6 @@ import { cn } from "../lib/utils";
 import { LanguageMenu } from "./language-menu";
 import type { LanguageMenuLink } from "./language-menu";
 import { PealMark } from "./peal-mark";
-import { PolicyMenu } from "./policy-menu";
-import type { PolicyMenuLink } from "./policy-menu";
 
 interface SiteFooterLink {
   /** Marks the link to the page being read. */
@@ -27,19 +25,26 @@ interface SiteFooterLink {
 interface SiteFooterColumn {
   readonly label: string;
   readonly links: readonly SiteFooterLink[];
-  /** A menu after the links, such as the policies: its name and links. */
-  readonly menu?:
-    | {
-        readonly label: string;
-        readonly links: readonly PolicyMenuLink[];
-      }
-    | undefined;
 }
 
 type SiteFooterProps = Omit<PartProps<"footer">, "children" | "className"> & {
-  /** Mono captions in the footer's last row, at its start and its end. */
+  /**
+   * The footer's last row: a mono caption at its start, and at its end a
+   * caption or links, such as the contract's functions (cancel, withdraw),
+   * which the law wants on every page.
+   */
   readonly captions?:
-    | { readonly end?: string | undefined; readonly start?: string | undefined }
+    | {
+        readonly end?: string | undefined;
+        /** The links at the row's end, named for screen readers. */
+        readonly links?:
+          | {
+              readonly label: string;
+              readonly links: readonly SiteFooterLink[];
+            }
+          | undefined;
+        readonly start?: string | undefined;
+      }
     | undefined;
   readonly className?: string | undefined;
   /** A bordered cell per column of links. */
@@ -188,11 +193,6 @@ const Column = ({ column }: { readonly column: SiteFooterColumn }) => {
             <FooterLink link={link} />
           </li>
         ))}
-        {column.menu === undefined || column.menu.links.length === 0 ? null : (
-          <li className="text-muted-foreground">
-            <PolicyMenu label={column.menu.label} links={column.menu.links} />
-          </li>
-        )}
       </ul>
     </nav>
   );
@@ -246,7 +246,20 @@ const SiteFooter = ({
           {captions === undefined ? null : (
             <div className="text-muted-foreground flex flex-wrap justify-between gap-2 border-t px-6 py-4 font-mono text-xs tracking-[0.04em]">
               <span>{captions.start}</span>
-              <span>{captions.end}</span>
+              {captions.links === undefined ||
+              captions.links.links.length === 0 ? (
+                <span>{captions.end}</span>
+              ) : (
+                <nav aria-label={captions.links.label}>
+                  <ul className="flex flex-wrap gap-x-4 gap-y-1">
+                    {captions.links.links.map((link) => (
+                      <li key={link.href}>
+                        <FooterLink link={link} />
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              )}
             </div>
           )}
         </div>

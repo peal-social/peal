@@ -13,8 +13,10 @@ const en = {
       label: "Cookie settings",
       section: "cookies-and-similar-technologies",
     },
+    // The contract's functions, in the footer's last row.
+    contract: "Your contract",
     language: "Language",
-    policies: "Policies",
+    legal: "Legal",
     rights: "All rights reserved.",
     // The status icon's meaning, for its tooltip and screen readers.
     status: {
@@ -25,11 +27,6 @@ const en = {
     socials: "Socials",
     source: "GitHub",
     withdraw: "Withdraw from contract here",
-  },
-  legal: {
-    "data-deletion": "Data deletion",
-    privacy: "Privacy policy",
-    terms: "Terms of service",
   },
   nav: {
     comparePlatforms: "Compare every platform",
@@ -198,8 +195,9 @@ const fr: ChromeMessages = {
       label: "Paramètres des cookies",
       section: "cookies-et-technologies-similaires",
     },
+    contract: "Votre contrat",
     language: "Langue",
-    policies: "Informations légales",
+    legal: "Informations légales",
     rights: "Tous droits réservés.",
     status: {
       degraded: "Certains services ont des problèmes",
@@ -209,11 +207,6 @@ const fr: ChromeMessages = {
     socials: "Réseaux sociaux",
     source: "GitHub",
     withdraw: "Renoncer au contrat ici",
-  },
-  legal: {
-    "data-deletion": "Suppression des données",
-    privacy: "Politique de confidentialité",
-    terms: "Conditions d’utilisation",
   },
   nav: {
     comparePlatforms: "Comparer toutes les plateformes",

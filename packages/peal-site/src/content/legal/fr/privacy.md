@@ -2,11 +2,9 @@
 title: Politique de confidentialité
 description: Comment Peal traite les données personnelles, pourquoi, sur quelles bases légales et pendant combien de temps, et les droits dont vous disposez.
 draft: false
+effective: 2026-11-13
+updated: 2026-11-25
 ---
-
-Date d’entrée en vigueur : 13 novembre 2026
-
-Dernière mise à jour : 25 novembre 2026
 
 ## En bref
 

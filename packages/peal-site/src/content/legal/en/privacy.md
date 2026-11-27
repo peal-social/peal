@@ -2,11 +2,9 @@
 title: Privacy policy
 description: How Peal processes personal data, why, on which legal bases and for how long, and the rights you have.
 draft: false
+effective: 2026-11-13
+updated: 2026-11-25
 ---
-
-Effective date: 13 November 2026
-
-Last updated: 25 November 2026
 
 ## Summary
 

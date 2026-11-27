@@ -12,11 +12,12 @@ const settings = blogSettings({
   BLOG_SITE_URL: "https://synthetic.test/",
 });
 
-const links = (props: ReturnType<typeof chromeProps>) =>
-  props.footer.columns.flatMap((column) => [
-    ...column.links.map((link) => link.href),
-    ...(column.menu?.links.map((link) => link.href) ?? []),
-  ]);
+const links = (props: ReturnType<typeof chromeProps>) => [
+  ...props.footer.columns.flatMap((column) =>
+    column.links.map((link) => link.href)
+  ),
+  ...(props.footer.captions?.links?.links.map((link) => link.href) ?? []),
+];
 
 describe("the language links", () => {
   it("leads to the translation where there is one", () => {
@@ -66,7 +67,7 @@ describe("the header and the footer", () => {
 
     expect(props.header.home.href).toBe("https://synthetic.test/fr/");
     expect(links(props)).toContain("https://synthetic.test/fr/pricing");
-    expect(links(props)).toContain("https://synthetic.test/fr/privacy");
+    expect(links(props)).toContain("https://synthetic.test/fr/legal");
     expect(links(props)).toContain("/blog/fr/");
     expect(links(props)).toContain("https://app.synthetic.test/fr/cancel");
     expect(props.header.github?.stars?.replaceAll(/\s/gu, " ")).toBe("1,2 k");

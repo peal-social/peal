@@ -381,7 +381,10 @@ self-hoster needs only Postgres and an S3-compatible store:
   the invoice bills it. The legal pages'
   plans section follows it, pointing to the pricing page for figures.
 - Site strings live in `packages/peal-site/src/i18n/messages.ts`, legal
-  documents in `src/content/legal/<locale>/<document>.md`. The header's
+  documents in `src/content/legal/<locale>/<document>.md`, each listed on
+  `/legal` (`src/legal-page.ts`). The terms and the legal notice name the
+  consumer mediator (SAS Médiation Solution, membership MS/26/F10D6096), as
+  the French Consumer Code asks. The header's
   and the footer's strings and links, which the blog
   shares, live in `packages/peal-ui/src/lib/site/` as plain TypeScript
   (no Astro there). A legal

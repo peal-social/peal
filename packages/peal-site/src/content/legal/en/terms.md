@@ -2,9 +2,9 @@
 title: Terms of service
 description: The terms that govern the use of the hosted Peal service.
 draft: false
+effective: 2026-11-23
+updated: 2026-11-27
 ---
-
-Effective date: 23 November 2026
 
 ## Summary
 
@@ -17,7 +17,7 @@ This summary is here to help you read the terms. It is not part of them, and the
 - Ads are bought from the ad network, which bills you itself. Nothing is spent until an owner turns spending on and sets a monthly ceiling.
 - Spam, unlawful content and attacks on the service are not allowed, and can get an account suspended.
 - We tell you by email 30 days before a price or these terms change.
-- French law applies. Consumers keep the protections of the country they live in.
+- French law applies. Consumers keep the protections of the country they live in, and can take a dispute to our consumer mediator for free.
 
 ## About these terms
 
@@ -423,6 +423,14 @@ These terms are governed by French law. A consumer also keeps the protection of 
 
 Before any claim, write to us at hello@peal.social so that we can try to settle the dispute.
 
+Under Article L. 612-1 of the French Consumer Code, and subject to its Article L. 612-2, a consumer may refer a dispute with us to a consumer mediator for an amicable settlement, free of charge, within one year of their written complaint to us. Our consumer mediator is SAS Médiation Solution, which registered our membership under number MS/26/F10D6096. A consumer refers a dispute to it:
+
+- by post: SAS Médiation Solution, 222 chemin de la Bergerie, 01800 Saint-Jean-de-Niost, France;
+- by email: mediation@sasmediationsolution-conso.fr;
+- online, with the "Saisir le médiateur" form at [sasmediationsolution-conso.fr](https://www.sasmediationsolution-conso.fr).
+
+Whichever way it is sent, the request must give the consumer's postal address, phone number and email address; our name, our address and our membership number with SAS Médiation Solution; a short account of the facts; a copy of the written complaint made to us; and any document that helps examine the request, such as an invoice or a proof of payment.
+
 A dispute with a professional customer goes to the courts with jurisdiction over our registered office. A consumer may bring a claim before the courts the law gives them, including those where they live.
 
 <aside>
@@ -431,6 +439,7 @@ A dispute with a professional customer goes to the courts with jurisdiction over
 
 - French law applies.
 - Write to us first if something goes wrong.
+- If that doesn't settle it, a consumer can ask our mediator, SAS Médiation Solution, for free, within a year of writing to us.
 - A consumer can go to the courts where they live.
 - A dispute with a business goes to the courts of our registered office.
 

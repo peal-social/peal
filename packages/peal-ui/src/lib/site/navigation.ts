@@ -40,8 +40,11 @@ interface Row {
   readonly target: Target;
 }
 
-/** The legal documents the footer links to, which the site serves. */
-export type FooterDocument = "privacy" | "terms";
+/**
+ * The legal pages the footer links to, which the site serves: the page
+ * that lists every document, and the privacy policy for its cookies.
+ */
+export type FooterDocument = "legal" | "privacy";
 
 export const repository = "https://github.com/peal-social/peal";
 
@@ -353,9 +356,6 @@ export const headerProps = (
   };
 };
 
-/** The legal documents the footer links to. */
-const footerDocuments: readonly FooterDocument[] = ["privacy", "terms"];
-
 /** The links whose page exists, without those a setting turns off. */
 const present = (
   links: readonly {
@@ -395,14 +395,9 @@ export const footerProps = (
     ],
   };
 
-  // The privacy policy and the terms (the data deletion page is for
-  // platforms' app review), then the contract's functions, which the law
-  // wants within reach of every page.
-  const policies = present([
-    ...footerDocuments.map((document) => ({
-      href: pages.legal(document),
-      label: messages.legal[document],
-    })),
+  // The contract's functions, which the law wants within reach of every
+  // page: in the footer's last row, where the app serves them.
+  const contract = present([
     { href: settings.app("cancel"), label: t.cancel },
     { href: settings.app("withdraw"), label: t.withdraw },
   ]);
@@ -422,20 +417,21 @@ export const footerProps = (
   const statusHref =
     statusRow === undefined ? undefined : hrefOf(statusRow.target, settings);
 
-  // Cookie settings opens the consent notice where the page measures
-  // (`<peal-consent>` intercepts the click), and otherwise leads to the
-  // privacy policy's cookies section, as it does without JavaScript.
+  // Pricing, the legal page, which lists every legal document, then
+  // Cookie settings, which opens the consent notice where the page
+  // measures (`<peal-consent>` intercepts the click), and otherwise leads
+  // to the privacy policy's cookies section, as it does without JavaScript.
   const company: SiteFooterColumn = {
     label: t.company,
     links: [
       { href: pages.pricing, label: messages.pricing.nav },
+      { href: pages.legal("legal"), label: t.legal },
       {
         href: `${pages.legal("privacy")}#${t.cookies.section}`,
         label: t.cookies.label,
         opens: "consent",
       },
     ],
-    menu: { label: t.policies, links: policies },
   };
 
   const columns: SiteFooterColumn[] = [
@@ -448,6 +444,10 @@ export const footerProps = (
 
   return {
     captions: {
+      links:
+        contract.length === 0
+          ? undefined
+          : { label: t.contract, links: contract },
       start: `© ${new Date().getFullYear()} ${messages.nav.brand}. ${t.rights}`,
     },
     columns: columns.filter((column) => column.links.length > 0),
