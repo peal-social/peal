@@ -3,6 +3,7 @@ import { DateTime } from "effect";
 import type { ArticleSummary, Post, PostSort } from "peal-contract";
 
 import {
+  answeredPage,
   listedArticles,
   pageRows,
   postPlace,
@@ -180,6 +181,46 @@ describe(pageRows, () => {
 
     expect(first?.map((row) => row._tag)).toStrictEqual(["post"]);
     expect(last?.map((row) => row._tag)).toStrictEqual(["post", "article"]);
+  });
+});
+
+describe(answeredPage, () => {
+  it("starts each page where the one before ended, and ends the last open", () => {
+    const posts = [post(8), post(6), post(3)];
+    const articles = [article(9), article(7), article(4), article(1)];
+
+    // The pages as posts.list answers them, two then one.
+    const first = answeredPage({
+      after: undefined,
+      articles,
+      page: { items: posts.slice(0, 2), nextCursor: "cursor-2" },
+      sort: "createdDesc",
+    });
+
+    const second = answeredPage({
+      after: first.next,
+      articles,
+      page: { items: posts.slice(2), nextCursor: null },
+      sort: "createdDesc",
+    });
+
+    expect([ids(first.rows), ids(second.rows)]).toStrictEqual([
+      [idOf(9), idOf(8), idOf(7), idOf(6)],
+      [idOf(4), idOf(3), idOf(1)],
+    ]);
+  });
+
+  it("keeps where the page before ended when a page holds no post", () => {
+    const after = postPlace(post(6));
+
+    expect(
+      answeredPage({
+        after,
+        articles: [],
+        page: { items: [], nextCursor: null },
+        sort: "createdDesc",
+      }).next
+    ).toStrictEqual(after);
   });
 });
 

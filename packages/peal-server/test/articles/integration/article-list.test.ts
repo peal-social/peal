@@ -19,6 +19,11 @@ const PageSchema = Schema.Struct({
   items: Schema.Array(Schema.Record(Schema.String, Schema.Unknown)),
 });
 
+const CursorPageSchema = Schema.Struct({
+  items: Schema.Array(Schema.Struct({ id: Schema.String })),
+  nextCursor: Schema.NullOr(Schema.String),
+});
+
 const IdSchema = Schema.Struct({ id: Schema.String });
 
 const articleOf = (title: string) => ({
@@ -100,6 +105,36 @@ layer(IntegrationLive)("the articles' list", (it) => {
           late.id,
           early.id,
         ]);
+
+        // A range read a page at a time, as the calendar reads it, to the
+        // last page.
+        const range =
+          "from=2099-03-01T00:00:00.000Z&to=2099-03-09T00:00:00.000Z";
+
+        const paged: string[] = [];
+        let cursor: string | null = "";
+
+        while (cursor !== null) {
+          const after: string = cursor === "" ? "" : `&cursor=${cursor}`;
+
+          const page = yield* list(`?limit=1&${range}${after}`).pipe(
+            Effect.flatMap((reply) => bodyOf(CursorPageSchema, reply))
+          );
+
+          paged.push(...page.items.map(({ id }) => id));
+          cursor = page.nextCursor;
+        }
+
+        assert.deepStrictEqual(paged, [late.id, early.id]);
+
+        // A status and a range both hold.
+        assert.deepStrictEqual(
+          yield* ids(
+            `?status=scheduled&from=2099-03-01T00:00:00.000Z&to=2099-03-08T00:00:00.000Z`
+          ),
+          [early.id]
+        );
+        assert.deepStrictEqual(yield* ids(`?status=draft&${range}`), []);
 
         // A range that ends where it starts is refused.
         const refused = yield* list(

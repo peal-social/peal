@@ -9,7 +9,6 @@ import {
   GripVerticalIcon,
   ImagesIcon,
   ListOrderedIcon,
-  NewspaperIcon,
   PlusIcon,
 } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
@@ -30,8 +29,8 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { scheduledArticles, workspaceSites } from "#articles/api.ts";
-import { channelName } from "#channels/channel-name.ts";
 import { TimeZoneLine } from "#components/lists/time-zone-line.tsx";
+import { CalendarArticleChip } from "#components/posts/calendar-article-chip.tsx";
 import { CalendarDayView } from "#components/posts/calendar-day-view.tsx";
 import { CalendarToolbar } from "#components/posts/calendar-toolbar.tsx";
 import type { ViewLink } from "#components/posts/calendar-toolbar.tsx";
@@ -329,9 +328,7 @@ interface ArticleChipProps {
   readonly workspaceId: string;
 }
 
-// An article on the calendar: a post's chip in its state's tint, a link to
-// its editor, a mark that names its website, and no handle: its time
-// changes in its editor.
+// An article on the calendar, linked to its editor.
 const ArticleChip = ({
   placed,
   sites,
@@ -339,58 +336,17 @@ const ArticleChip = ({
   workspaceId,
 }: ArticleChipProps) => {
   const workspaceHref = useWorkspaceHref();
-  const t = useTranslations("Posts.Calendar");
-  const tArticles = useTranslations("Articles.list");
-  const format = useFormatter();
-  const timeOptions = useTimeOptions();
-  const { article } = placed;
-  const site = sites.find(({ id }) => id === article.channelId);
-
-  const removed =
-    article.state._tag === "published" && article.state.removedAt !== null;
-
-  const time = format.dateTime(DateTime.toDate(placed.at), {
-    timeStyle: "short",
-    timeZone,
-    ...timeOptions,
-  });
-
-  const title = article.title.trim();
-  const shown = title === "" ? tArticles("untitled") : title;
-
-  const mark = t("articleMark", {
-    site: site === undefined ? article.channelId : channelName(site),
-  });
-
-  const label = t("postLabel", {
-    status: removed
-      ? tArticles("removed")
-      : tArticles(`state.${article.state._tag}`),
-    text: shown,
-    time,
-  });
 
   return (
-    <div
-      className={cn(
-        "flex min-w-0 items-center gap-1 rounded-md px-1 py-0.5 text-xs",
-        chipTone[articleStatusOf(article).status],
-        // In the site's trash: kept, dimmed.
-        removed ? "opacity-60" : null
-      )}
-    >
-      <Link
-        href={workspaceHref(workspaceId, `/articles/${article.id}`)}
-        className="min-w-0 flex-1 truncate underline-offset-2 hover:underline"
-        aria-label={`${label} ${mark}`}
-      >
-        {t("post", { text: shown, time })}
-      </Link>
-      <span title={mark} className="text-muted-foreground shrink-0">
-        <NewspaperIcon aria-hidden className="size-3" />
-        <span className="sr-only">{mark}</span>
-      </span>
-    </div>
+    <CalendarArticleChip
+      article={placed.article}
+      at={placed.at}
+      href={workspaceHref(workspaceId, `/articles/${placed.article.id}`)}
+      link={Link}
+      sites={sites}
+      timeZone={timeZone}
+      tone={chipTone[articleStatusOf(placed.article).status]}
+    />
   );
 };
 

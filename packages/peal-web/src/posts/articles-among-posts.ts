@@ -50,6 +50,16 @@ export const articleStatusOf = (article: ArticleSummary): PostStanding =>
   });
 
 /**
+ * Whether the filters can keep any article: not with the posts alone, nor
+ * a channel, a tag or a queue, which articles have none of.
+ */
+export const listsArticles = (filters: ArticleFilters): boolean =>
+  filters.type !== "post" &&
+  filters.channelId === undefined &&
+  filters.tagId === undefined &&
+  filters.queueId === undefined;
+
+/**
  * The articles the filters keep: none when they keep posts alone, or name
  * a channel, a tag or a queue, which articles have none of; else those of
  * the status and the outcome.
@@ -58,12 +68,7 @@ export const listedArticles = (
   filters: ArticleFilters,
   articles: readonly ArticleSummary[]
 ): readonly ArticleSummary[] => {
-  if (
-    filters.type === "post" ||
-    filters.channelId !== undefined ||
-    filters.tagId !== undefined ||
-    filters.queueId !== undefined
-  ) {
+  if (!listsArticles(filters)) {
     return [];
   }
 
@@ -177,4 +182,43 @@ export const pageRows = ({
   ].toSorted((left, right) =>
     before(sort, placeOf(left), placeOf(right)) ? -1 : 1
   );
+};
+
+/** A page's rows, and where the page after it starts. */
+export interface AnsweredPage {
+  readonly next: Place | undefined;
+  readonly rows: readonly PostsRow[];
+}
+
+/**
+ * A page of posts as `posts.list` answered it, with its rows, and where
+ * the page after it starts: its last post, or where this one started
+ * when it holds none.
+ */
+export const answeredPage = ({
+  after,
+  articles,
+  page,
+  sort,
+}: {
+  readonly after: Place | undefined;
+  readonly articles: readonly ArticleSummary[];
+  readonly page: {
+    readonly items: readonly Post[];
+    readonly nextCursor: string | null;
+  };
+  readonly sort: PostSort;
+}): AnsweredPage => {
+  const last = page.items.at(-1);
+
+  return {
+    next: last === undefined ? after : postPlace(last),
+    rows: pageRows({
+      after,
+      articles,
+      more: page.nextCursor !== null,
+      posts: page.items,
+      sort,
+    }),
+  };
 };

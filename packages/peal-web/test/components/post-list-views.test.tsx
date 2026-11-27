@@ -291,6 +291,27 @@ describe(ArticleItemView, () => {
     expect(html).not.toContain("checkbox");
   });
 
+  it("keeps the room of the posts' checkboxes, with none of its own, while posts are chosen", async () => {
+    const draft = article({ _tag: "draft" });
+
+    const row = async (choosing: boolean) =>
+      await render(
+        "en",
+        <ArticleItemView article={draft} choosing={choosing} sites={[site]}>
+          <span>Title</span>
+        </ArticleItemView>
+      );
+
+    const chosen = await row(true);
+
+    // The checkbox's column on a post's row: 16 px, then the row's gap.
+    expect(chosen).toMatch(
+      /<li data-article-row="[^"]+" class="[^"]*gap-3[^"]*"><div aria-hidden="true" class="w-4 shrink-0"><\/div>/u
+    );
+    expect(chosen).not.toContain("checkbox");
+    await expect(row(false)).resolves.not.toContain("w-4 shrink-0");
+  });
+
   it("says when the site moved it to its trash", async () => {
     const at = DateTime.makeUnsafe("2026-12-02T08:00:00Z");
 

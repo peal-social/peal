@@ -102,7 +102,7 @@ describe("the keys", () => {
   });
 });
 
-const render = async (locale: Locale) =>
+const render = async (locale: Locale, open = false) =>
   renderToStaticMarkup(
     <NextIntlClientProvider
       locale={locale}
@@ -116,7 +116,7 @@ const render = async (locale: Locale) =>
         onOpenChange={() => {
           // The menu stays closed in these tests.
         }}
-        open={false}
+        open={open}
         pages={pageLinksOf({ permissions: owner, workspace })}
         postFilters={[]}
         request={{ command: null, count: 0 }}
@@ -136,6 +136,14 @@ describe(CommandMenuView, () => {
 
     expect(html).toContain('aria-label="Search or jump to…"');
     expect(html).toMatch(/aria-keyshortcuts="(?:Meta|Control)\+K"/u);
+  });
+
+  it("creates a post or an article", async () => {
+    const html = await render("en", true);
+
+    expect(html).toContain("New post");
+    expect(html).toContain("New article");
+    expect(html).toContain(`href="/${workspaceId}/articles/new"`);
   });
 
   it("speaks French under /fr", async () => {

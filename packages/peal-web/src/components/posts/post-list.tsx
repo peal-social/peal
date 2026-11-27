@@ -35,9 +35,10 @@ import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
 import { postSearchPage, workspaceChannels } from "#posts/api.ts";
 import {
+  answeredPage,
   listedArticles,
+  listsArticles,
   pageRows,
-  postPlace,
 } from "#posts/articles-among-posts.ts";
 import type { Place, PostsRow } from "#posts/articles-among-posts.ts";
 import {
@@ -146,17 +147,20 @@ const PostItem = ({
 /** One article, opening in its editor. */
 const ArticleItem = ({
   article,
+  choosing,
   sites,
   workspaceId,
 }: {
   readonly article: ArticleSummary;
+  /** Whether posts are chosen, so the row keeps their checkbox's room. */
+  readonly choosing: boolean;
   readonly sites: readonly Channel[];
   readonly workspaceId: string;
 }) => {
   const workspaceHref = useWorkspaceHref();
 
   return (
-    <ArticleItemView article={article} sites={sites}>
+    <ArticleItemView article={article} choosing={choosing} sites={sites}>
       <Link
         href={workspaceHref(workspaceId, `/articles/${article.id}`)}
         dir="auto"
@@ -202,6 +206,7 @@ const Rows = ({
         <ArticleItem
           key={row.article.id}
           article={row.article}
+          choosing={context.choosing !== null}
           sites={context.sites}
           workspaceId={context.workspaceId}
         />
@@ -240,13 +245,14 @@ const EmptyList = ({
 }) => {
   const workspaceHref = useWorkspaceHref();
   const t = useTranslations("Posts.List");
-  const articles = filters.type === "article";
+  const articlesAlone = filters.type === "article";
 
   return (
     <PostListEmpty
-      articles={articles}
+      // A tab's own title says what it lacks ("No drafts").
+      articles={articlesAlone && filters.status === undefined}
       filtering={isFilteringView(
-        articles ? withFilter(filters, "type", undefined) : filters
+        articlesAlone ? withFilter(filters, "type", undefined) : filters
       )}
       view={
         postViews.find(({ status }) => status === filters.status)?.view ?? "all"
@@ -316,15 +322,15 @@ const PostPages = ({
     onInitial: () => <LoadingList />,
     onSuccess: ({ value }) => {
       const next = Option.fromNullOr(value.nextCursor);
-      const last = value.items.at(-1);
 
-      const rows = pageRows({
+      const answered = answeredPage({
         after,
         articles,
-        more: Option.isSome(next),
-        posts: value.items,
+        page: value,
         sort: filters.sort,
       });
+
+      const { rows } = answered;
 
       if (Option.isNone(cursor) && rows.length === 0) {
         return (
@@ -341,7 +347,7 @@ const PostPages = ({
           <Rows context={context} rows={rows} />
           {Option.isSome(next) && more > 0 ? (
             <PostPages
-              after={last === undefined ? after : postPlace(last)}
+              after={answered.next}
               articles={articles}
               context={context}
               cursor={next}
@@ -395,23 +401,25 @@ const ArticleRows = ({
   );
 };
 
-// The list's rows, once every article and the websites are read: the
-// pages place the articles among their posts, or show them alone.
-const ListRows = ({
-  context,
-  emptyActions,
-  filters,
-  more,
-  onMore,
-  onPosts,
-}: {
+interface ListRowsProps {
   readonly context: Omit<RowsContext, "sites">;
   readonly emptyActions: EmptyActions;
   readonly filters: PostListFilters;
   readonly more: number;
   readonly onMore: () => void;
   readonly onPosts: (depth: number, posts: readonly Post[]) => void;
-}) => {
+}
+
+// The list's rows, once every article and the websites are read: the
+// pages place the articles among their posts, or show them alone.
+const ArticlesAndPosts = ({
+  context,
+  emptyActions,
+  filters,
+  more,
+  onMore,
+  onPosts,
+}: ListRowsProps) => {
   const articlesQuery = workspaceArticles(context.workspaceId);
   const sitesQuery = workspaceSites(context.workspaceId);
   const articles = useAtomValue(articlesQuery);
@@ -457,6 +465,26 @@ const ListRows = ({
     },
   });
 };
+
+// The list's rows: posts alone, no article read, when the filters leave
+// articles out.
+const ListRows = (props: ListRowsProps) =>
+  listsArticles(props.filters) ? (
+    <ArticlesAndPosts {...props} />
+  ) : (
+    <PostPages
+      after={undefined}
+      articles={[]}
+      context={{ ...props.context, sites: [] }}
+      cursor={Option.none()}
+      depth={0}
+      emptyActions={props.emptyActions}
+      filters={props.filters}
+      more={props.more}
+      onMore={props.onMore}
+      onPosts={props.onPosts}
+    />
+  );
 
 // Whether the member may do anything to several posts at once.
 const choosesPosts = (permissions: readonly Permission[]): boolean =>

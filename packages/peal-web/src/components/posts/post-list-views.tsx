@@ -180,10 +180,13 @@ export const useArticleTitle = (article: ArticleSummary): string => {
 export const ArticleItemView = ({
   article,
   children,
+  choosing = false,
   sites,
 }: {
   readonly article: ArticleSummary;
   readonly children: ReactNode;
+  /** Whether the list's posts have checkboxes: the row keeps their room. */
+  readonly choosing?: boolean;
   /** The workspace's websites, which name the article's. */
   readonly sites: readonly Channel[];
 }) => {
@@ -197,6 +200,7 @@ export const ArticleItemView = ({
 
   return (
     <li data-article-row={article.id} className={rowClass}>
+      {choosing ? <div aria-hidden className="w-4 shrink-0" /> : null}
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         {children}
         <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
