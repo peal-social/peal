@@ -3598,7 +3598,8 @@
       "agent": "Agent",
       "agentChat": "Conversation",
       "platforms": "Plateformes",
-      "articles": "Articles",
+      "blogs": "Blogs",
+      "blog": "Blog",
       "article": "Article",
       "newArticle": "Nouvel article",
       "messages": "Messages privés",
@@ -5593,7 +5594,7 @@
     "notFound": "Cet article n’est pas dans l’espace de travail.",
     "list": {
       "untitled": "Sans titre",
-      "meta": "{site} · modifié {updated}",
+      "meta": "Modifié {updated}",
       "removed": "Dans la corbeille du site",
       "state": {
         "draft": "Brouillon",
@@ -5603,14 +5604,21 @@
         "failed": "Échec",
         "unconfirmed": "À vérifier"
       },
-      "noSite": "Connectez un site web sur la page Canaux (un site WordPress, WordPress.com, DEV ou Hashnode) pour y écrire des articles.",
-      "sites": "{count, plural, one {# site web connecté} other {# sites web connectés}}.",
       "new": "Nouvel article",
-      "connect": "Connecter un site",
       "loading": "Chargement des articles…",
       "loadFailed": "Les articles n’ont pas pu être chargés.",
       "retry": "Réessayer",
-      "empty": "Aucun article pour l’instant."
+      "emptyTitle": "Aucun article pour l’instant",
+      "siteNotFound": "Ce site web n’est pas connecté à l’espace de travail."
+    },
+    "blogs": {
+      "loading": "Chargement des sites web…",
+      "loadFailed": "Les sites web n’ont pas pu être chargés.",
+      "retry": "Réessayer",
+      "emptyTitle": "Aucun site web connecté",
+      "empty": "Connectez un site WordPress, WordPress.com, DEV ou Hashnode sur la page Canaux pour y écrire ses articles.",
+      "connect": "Aller aux canaux",
+      "articleCount": "{count, plural, one {# article} other {# articles}}"
     },
     "editor": {
       "toolbar": "Mise en forme",

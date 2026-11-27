@@ -3598,7 +3598,8 @@
       "agent": "Agent",
       "agentChat": "Chat",
       "platforms": "Platforms",
-      "articles": "Articles",
+      "blogs": "Blogs",
+      "blog": "Blog",
       "article": "Article",
       "newArticle": "New article",
       "messages": "Direct messages",
@@ -5593,7 +5594,7 @@
     "notFound": "This article is not in the workspace.",
     "list": {
       "untitled": "Untitled",
-      "meta": "{site} · updated {updated}",
+      "meta": "Updated {updated}",
       "removed": "In the site’s trash",
       "state": {
         "draft": "Draft",
@@ -5603,14 +5604,21 @@
         "failed": "Failed",
         "unconfirmed": "To check"
       },
-      "noSite": "Connect a website on the Channels page (a WordPress site, WordPress.com, DEV or Hashnode) to write articles for it.",
-      "sites": "{count, plural, one {# website} other {# websites}} connected.",
       "new": "New article",
-      "connect": "Connect a website",
       "loading": "Loading the articles…",
       "loadFailed": "The articles could not be loaded.",
       "retry": "Try again",
-      "empty": "No article yet."
+      "emptyTitle": "No articles yet",
+      "siteNotFound": "This website is not connected to the workspace."
+    },
+    "blogs": {
+      "loading": "Loading the websites…",
+      "loadFailed": "The websites could not be loaded.",
+      "retry": "Try again",
+      "emptyTitle": "No website connected",
+      "empty": "Connect a WordPress site, WordPress.com, DEV or Hashnode on the Channels page to write its articles here.",
+      "connect": "Go to Channels",
+      "articleCount": "{count, plural, one {# article} other {# articles}}"
     },
     "editor": {
       "toolbar": "Formatting",

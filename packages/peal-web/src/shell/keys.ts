@@ -8,6 +8,7 @@ import type { Page } from "#shell/navigation.ts";
  */
 export const goKeys: Readonly<Partial<Record<Page, string>>> = {
   analytics: "y",
+  blogs: "b",
   calendar: "c",
   general: "s",
   home: "h",

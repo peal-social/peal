@@ -6,11 +6,11 @@ import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
 import { workspacePageTitle } from "#shell/page-title.ts";
 
-// Writes a new article for one of the workspace's websites.
-const NewArticlePage = async ({
+// An article of a blog, in the editor, with what it can do next.
+const ArticlePage = async ({
   params,
-}: PageProps<"/[locale]/[workspaceId]/articles/new">) => {
-  const { locale, workspaceId } = await params;
+}: PageProps<"/[locale]/[workspaceId]/blogs/[channelId]/[articleId]">) => {
+  const { articleId, channelId, locale, workspaceId } = await params;
 
   if (!hasLocale(routing.locales, locale)) {
     notFound();
@@ -21,7 +21,8 @@ const NewArticlePage = async ({
   return (
     <div className="flex flex-col gap-8">
       <ArticleScreen
-        articleId={undefined}
+        articleId={articleId}
+        channelId={channelId}
         permissions={membership.permissions}
         workspaceId={membership.id}
       />
@@ -29,6 +30,6 @@ const NewArticlePage = async ({
   );
 };
 
-export const generateMetadata = workspacePageTitle("newArticle");
+export const generateMetadata = workspacePageTitle("article");
 
-export default NewArticlePage;
+export default ArticlePage;

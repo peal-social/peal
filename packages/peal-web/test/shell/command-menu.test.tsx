@@ -40,7 +40,13 @@ describe(pageLinksOf, () => {
       ({ page }) => page
     );
 
-    expect(pages.slice(0, 3)).toStrictEqual(["home", "channels", "posts"]);
+    expect(pages.slice(0, 4)).toStrictEqual([
+      "home",
+      "channels",
+      "posts",
+      "blogs",
+    ]);
+    expect(pages).not.toContain("articles");
     expect(pages.at(-1)).toBe("partner");
     expect(new Set(pages).size).toBe(pages.length);
   });
@@ -63,12 +69,13 @@ describe(pageLinksOf, () => {
     });
 
     expect(
-      ["media", "calendar"].map(
+      ["media", "calendar", "blogs"].map(
         (name) => links.find(({ page }) => page === name)?.href
       )
     ).toStrictEqual([
       `/${workspace}/media`,
       `/${workspace}/posts?layout=calendar`,
+      `/${workspace}/blogs`,
     ]);
   });
 });

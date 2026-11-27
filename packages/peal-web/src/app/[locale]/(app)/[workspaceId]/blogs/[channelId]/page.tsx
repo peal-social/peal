@@ -6,11 +6,11 @@ import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
 import { workspacePageTitle } from "#shell/page-title.ts";
 
-// The workspace's articles, for its websites, newest first.
-const ArticlesPage = async ({
+// A blog: one of the workspace's websites, with its articles, newest first.
+const BlogPage = async ({
   params,
-}: PageProps<"/[locale]/[workspaceId]/articles">) => {
-  const { locale, workspaceId } = await params;
+}: PageProps<"/[locale]/[workspaceId]/blogs/[channelId]">) => {
+  const { channelId, locale, workspaceId } = await params;
 
   if (!hasLocale(routing.locales, locale)) {
     notFound();
@@ -21,11 +21,12 @@ const ArticlesPage = async ({
   return (
     <ArticlesList
       canCreate={membership.permissions.includes("post:create")}
+      channelId={channelId}
       workspaceId={membership.id}
     />
   );
 };
 
-export const generateMetadata = workspacePageTitle("articles");
+export const generateMetadata = workspacePageTitle("blog");
 
-export default ArticlesPage;
+export default BlogPage;

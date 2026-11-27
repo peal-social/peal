@@ -3,6 +3,7 @@
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 
 import { workspaceArticles, workspaceSites } from "#articles/api.ts";
+import { articlePathOf, blogPathOf } from "#articles/blog-paths.ts";
 import {
   ArticlesListView,
   ArticlesLoading,
@@ -13,10 +14,16 @@ import { Link } from "#i18n/navigation.ts";
 
 interface ArticlesListProps {
   readonly canCreate: boolean;
+  /** The website's channel whose blog this is. */
+  readonly channelId: string;
   readonly workspaceId: string;
 }
 
-const LoadedArticles = ({ canCreate, workspaceId }: ArticlesListProps) => {
+const LoadedArticles = ({
+  canCreate,
+  channelId,
+  workspaceId,
+}: ArticlesListProps) => {
   const workspaceHref = useWorkspaceHref();
   const articlesQuery = workspaceArticles(workspaceId);
   const sitesQuery = workspaceSites(workspaceId);
@@ -29,11 +36,14 @@ const LoadedArticles = ({ canCreate, workspaceId }: ArticlesListProps) => {
     <ArticlesListView
       articles={articles}
       canCreate={canCreate}
+      channelId={channelId}
       hrefs={{
         article: (articleId) =>
-          workspaceHref(workspaceId, `/articles/${articleId}`),
-        connect: workspaceHref(workspaceId, "/channels"),
-        newArticle: workspaceHref(workspaceId, "/articles/new"),
+          workspaceHref(
+            workspaceId,
+            articlePathOf({ channelId, id: articleId })
+          ),
+        newArticle: workspaceHref(workspaceId, `${blogPathOf(channelId)}/new`),
       }}
       link={Link}
       onRetry={() => {
@@ -46,10 +56,11 @@ const LoadedArticles = ({ canCreate, workspaceId }: ArticlesListProps) => {
 };
 
 /**
- * The workspace's articles, newest first, each opening in the editor.
- * They and the websites are read with the visitor's cookies, which only
- * the browser sends, so they load once the page has hydrated: the server
- * renders the loading state, as the browser's first render does.
+ * A blog: its website's articles, newest first, each opening in the
+ * editor. They and the websites are read with the visitor's cookies,
+ * which only the browser sends, so they load once the page has hydrated:
+ * the server renders the loading state, as the browser's first render
+ * does.
  */
 export const ArticlesList = (props: ArticlesListProps) => {
   const hydrated = useHydrated();

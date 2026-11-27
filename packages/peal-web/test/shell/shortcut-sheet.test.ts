@@ -33,7 +33,7 @@ describe(shortcutGroupsOf, () => {
   it("lists Go to only for the member's pages that have a key", () => {
     const groups = shortcutGroupsOf({
       canCreate: true,
-      pages: ["home", "channels", "posts"],
+      pages: ["home", "channels", "posts", "blogs"],
     });
 
     expect(
@@ -45,6 +45,7 @@ describe(shortcutGroupsOf, () => {
       ["posts", "g p"],
       [undefined, "g d"],
       [undefined, "g a"],
+      ["blogs", "g b"],
     ]);
   });
 

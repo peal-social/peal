@@ -57,15 +57,15 @@ const timeOf = (article: Article | undefined, timeZone: string): string => {
   );
 };
 
-/** The editor's fields for the article, or for a new one on the first site. */
+/** The editor's fields for the article, or for a new one on `site`. */
 export const draftOf = (
   article: Article | undefined,
-  firstSite: string,
+  site: string,
   timeZone: string
 ): ArticleDraft => ({
   body: documentOf(article),
   categories: article?.categories.join(", ") ?? "",
-  channelId: article?.channelId ?? firstSite,
+  channelId: article?.channelId ?? site,
   cover: article?.coverMediaId ?? null,
   excerpt: article?.excerpt ?? "",
   siteStatus: article?.siteStatus ?? "publish",
