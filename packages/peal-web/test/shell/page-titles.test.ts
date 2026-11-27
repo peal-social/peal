@@ -12,10 +12,13 @@ const app = fileURLToPath(
 );
 
 // Drafts and Approvals open their tabs of Posts, Calendar its calendar
-// layout, and Invitations opens Members, the addresses they had kept
-// working.
+// layout, Articles their blogs, and Invitations opens Members, the
+// addresses they had kept working.
 const redirectsOnly = new Set([
   "[workspaceId]/approvals/page.tsx",
+  "[workspaceId]/articles/[articleId]/page.tsx",
+  "[workspaceId]/articles/new/page.tsx",
+  "[workspaceId]/articles/page.tsx",
   "[workspaceId]/calendar/page.tsx",
   "[workspaceId]/drafts/page.tsx",
   "[workspaceId]/settings/invitations/page.tsx",

@@ -1,12 +1,12 @@
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 
-import { ArticleScreen } from "#components/articles/article-screen.tsx";
+import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
-import { membershipOf } from "#posts/membership.ts";
-import { workspacePageTitle } from "#shell/page-title.ts";
+import { workspacePath } from "#shell/workspace-path.ts";
 
-// Writes a new article for one of the workspace's websites.
+// A new article is written from its blog: an address kept from before
+// opens the websites' list, to choose one.
 const NewArticlePage = async ({
   params,
 }: PageProps<"/[locale]/[workspaceId]/articles/new">) => {
@@ -16,19 +16,7 @@ const NewArticlePage = async ({
     notFound();
   }
 
-  const membership = await membershipOf(locale, workspaceId);
-
-  return (
-    <div className="flex flex-col gap-8">
-      <ArticleScreen
-        articleId={undefined}
-        permissions={membership.permissions}
-        workspaceId={membership.id}
-      />
-    </div>
-  );
+  return redirect({ href: workspacePath(workspaceId, "/blogs"), locale });
 };
-
-export const generateMetadata = workspacePageTitle("newArticle");
 
 export default NewArticlePage;

@@ -14,21 +14,27 @@ import { useHydrated } from "#components/media/use-hydrated.ts";
 interface ArticleScreenProps {
   /** The article to edit; none for a new one. */
   readonly articleId: string | undefined;
+  /** The website's channel whose blog the address names. */
+  readonly channelId: string;
   readonly permissions: readonly string[];
+  readonly workspaceId: string;
+}
+
+interface LoadedProps {
+  readonly article: Article | undefined;
+  readonly channelId: string;
+  readonly permissions: readonly string[];
+  readonly sites: readonly Channel[];
   readonly workspaceId: string;
 }
 
 const Loaded = ({
   article,
+  channelId,
   permissions,
   sites,
   workspaceId,
-}: {
-  readonly article: Article | undefined;
-  readonly permissions: readonly string[];
-  readonly sites: readonly Channel[];
-  readonly workspaceId: string;
-}) => (
+}: LoadedProps) => (
   <ArticleEditor
     // A new answer of the server starts the editor over on it.
     key={
@@ -37,6 +43,7 @@ const Loaded = ({
         : `${article.id}:${DateTime.toEpochMillis(article.updatedAt)}`
     }
     {...(article === undefined ? {} : { article })}
+    channelId={channelId}
     permissions={permissions}
     sites={sites}
     workspaceId={workspaceId}
@@ -45,17 +52,10 @@ const Loaded = ({
 
 const ExistingArticle = ({
   articleId,
-  permissions,
-  sites,
-  workspaceId,
-}: {
-  readonly articleId: string;
-  readonly permissions: readonly string[];
-  readonly sites: readonly Channel[];
-  readonly workspaceId: string;
-}) => {
+  ...props
+}: Omit<LoadedProps, "article"> & { readonly articleId: string }) => {
   const t = useTranslations("Articles");
-  const article = useAtomValue(workspaceArticle(workspaceId, articleId));
+  const article = useAtomValue(workspaceArticle(props.workspaceId, articleId));
 
   if (AsyncResult.isFailure(article)) {
     return (
@@ -66,17 +66,13 @@ const ExistingArticle = ({
   }
 
   return AsyncResult.isSuccess(article) ? (
-    <Loaded
-      article={article.value}
-      permissions={permissions}
-      sites={sites}
-      workspaceId={workspaceId}
-    />
+    <Loaded article={article.value} {...props} />
   ) : null;
 };
 
 const LoadedArticleScreen = ({
   articleId,
+  channelId,
   permissions,
   workspaceId,
 }: ArticleScreenProps) => {
@@ -91,6 +87,7 @@ const LoadedArticleScreen = ({
     return (
       <ExistingArticle
         articleId={articleId}
+        channelId={channelId}
         permissions={permissions}
         sites={sites.value}
         workspaceId={workspaceId}
@@ -98,25 +95,26 @@ const LoadedArticleScreen = ({
     );
   }
 
-  return sites.value.length === 0 ? (
-    <Alert>
-      <AlertDescription>{t("list.noSite")}</AlertDescription>
-    </Alert>
-  ) : (
+  return sites.value.some(({ id }) => id === channelId) ? (
     <Loaded
       article={undefined}
+      channelId={channelId}
       permissions={permissions}
       sites={sites.value}
       workspaceId={workspaceId}
     />
+  ) : (
+    <Alert>
+      <AlertDescription>{t("list.siteNotFound")}</AlertDescription>
+    </Alert>
   );
 };
 
 /**
- * Loads the workspace's websites, and the article, for the editor. Both
- * are read with the visitor's cookies, which only the browser sends, so
- * they load once the page has hydrated, as the browser's first render
- * shows nothing either.
+ * Loads the workspace's websites, and the article, for the editor; a new
+ * article starts on the blog's website. Both are read with the visitor's
+ * cookies, which only the browser sends, so they load once the page has
+ * hydrated, as the browser's first render shows nothing either.
  */
 export const ArticleScreen = (props: ArticleScreenProps) => {
   const hydrated = useHydrated();

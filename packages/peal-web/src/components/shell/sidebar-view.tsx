@@ -78,7 +78,7 @@ export const pageIcons: Readonly<Record<Page, LucideIcon>> = {
   agentSettings: BotIcon,
   analytics: ChartColumnIcon,
   apiKeys: KeyRoundIcon,
-  articles: NewspaperIcon,
+  blogs: NewspaperIcon,
   assistant: SparklesIcon,
   billing: CreditCardIcon,
   calendar: CalendarDaysIcon,

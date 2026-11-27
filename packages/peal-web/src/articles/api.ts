@@ -1,6 +1,11 @@
+import { Effect } from "effect";
 import { Atom } from "effect/reactivity";
-import { isSocialChannel, forWorkspace } from "peal-contract";
-import type { Channel } from "peal-contract";
+import {
+  isSocialChannel,
+  forWorkspace,
+  maxArticlePageSize,
+} from "peal-contract";
+import type { Article, ArticlePage, Channel } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 import { channelsOf } from "#channels/channels-api.ts";
@@ -28,13 +33,45 @@ export const articleListKeys = (workspaceId: string) => [
   ...articleListChanged(workspaceId),
 ];
 
-/** The workspace's articles, newest first. */
-export const workspaceArticles = (workspaceId: string) =>
-  PealApi.query("articles", "list", {
-    headers: forWorkspace(workspaceId),
-    query: {},
-    reactivityKeys: articleListKeys(workspaceId),
+/** Every article of the workspace, newest first, read page after page. */
+export const everyArticle = <E, R>(
+  read: (cursor: string | undefined) => Effect.Effect<ArticlePage, E, R>
+): Effect.Effect<{ readonly items: readonly Article[] }, E, R> =>
+  Effect.gen(function* everyArticlePage() {
+    const items: Article[] = [];
+    let cursor: string | undefined;
+
+    do {
+      const page: ArticlePage = yield* read(cursor);
+
+      items.push(...page.items);
+      cursor = page.nextCursor ?? undefined;
+    } while (cursor !== undefined);
+
+    return { items };
   });
+
+/**
+ * The workspace's articles, newest first, every page of them: the API
+ * has no filter by website, so a blog's page keeps its own from them.
+ */
+export const workspaceArticles = Atom.family((workspaceId: string) =>
+  Atom.withReactivity(articleListKeys(workspaceId))(
+    PealApi.runtime.atom(
+      PealApi.use((client) =>
+        everyArticle((cursor) =>
+          client.articles.list({
+            headers: forWorkspace(workspaceId),
+            query:
+              cursor === undefined
+                ? { limit: maxArticlePageSize }
+                : { cursor, limit: maxArticlePageSize },
+          })
+        )
+      )
+    )
+  )
+);
 
 /** One article of the workspace. */
 export const workspaceArticle = (workspaceId: string, articleId: string) =>

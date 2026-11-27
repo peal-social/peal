@@ -1,12 +1,12 @@
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 
-import { ArticlesList } from "#components/articles/articles-list.tsx";
+import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
-import { membershipOf } from "#posts/membership.ts";
-import { workspacePageTitle } from "#shell/page-title.ts";
+import { workspacePath } from "#shell/workspace-path.ts";
 
-// The workspace's articles, for its websites, newest first.
+// Articles are each blog's, under Blogs: an address kept from before
+// opens the websites' list.
 const ArticlesPage = async ({
   params,
 }: PageProps<"/[locale]/[workspaceId]/articles">) => {
@@ -16,16 +16,7 @@ const ArticlesPage = async ({
     notFound();
   }
 
-  const membership = await membershipOf(locale, workspaceId);
-
-  return (
-    <ArticlesList
-      canCreate={membership.permissions.includes("post:create")}
-      workspaceId={membership.id}
-    />
-  );
+  return redirect({ href: workspacePath(workspaceId, "/blogs"), locale });
 };
-
-export const generateMetadata = workspacePageTitle("articles");
 
 export default ArticlesPage;

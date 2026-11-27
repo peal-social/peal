@@ -2,7 +2,7 @@
 
 import { DateTime } from "effect";
 import { AsyncResult } from "effect/reactivity";
-import { PlugIcon, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import type { Article, Channel } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
@@ -11,7 +11,8 @@ import { Button, buttonVariants } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
 import type { ComponentType, ReactNode } from "react";
 
-import { PageActions } from "#components/shell/frame-view.tsx";
+import { channelTitle } from "#channels/channel-name.ts";
+import { PageActions, PageTitle } from "#components/shell/frame-view.tsx";
 
 /** A link of the page, given by the screen, so tests render the view. */
 export type ArticlesLink = ComponentType<{
@@ -23,7 +24,6 @@ export type ArticlesLink = ComponentType<{
 /** Where the page's links go. */
 export interface ArticlesHrefs {
   readonly article: (articleId: string) => string;
-  readonly connect: string;
   readonly newArticle: string;
 }
 
@@ -36,24 +36,14 @@ const badgeVariant = {
   unconfirmed: "destructive",
 } as const;
 
-const siteName = (sites: readonly Channel[], channelId: string) => {
-  const site = sites.find(({ id }) => id === channelId);
-
-  return site === undefined
-    ? channelId
-    : (site.label ?? site.displayName ?? site.handle);
-};
-
 const ArticleRow = ({
   article,
   hrefs,
   link: Link,
-  sites,
 }: {
   readonly article: Article;
   readonly hrefs: ArticlesHrefs;
   readonly link: ArticlesLink;
-  readonly sites: readonly Channel[];
 }) => {
   const t = useTranslations("Articles.list");
   const format = useFormatter();
@@ -72,7 +62,6 @@ const ArticleRow = ({
         </Link>
         <span className="text-muted-foreground truncate text-sm">
           {t("meta", {
-            site: siteName(sites, article.channelId),
             updated: format.dateTime(DateTime.toDateUtc(article.updatedAt), {
               dateStyle: "medium",
               timeStyle: "short",
@@ -100,44 +89,15 @@ export const ArticlesLoading = () => {
   );
 };
 
-/** The header's actions: New article, or Connect a website where none is. */
-export const ArticlesActions = ({
-  canCreate,
-  hrefs,
-  link: Link,
-  sites,
-}: {
-  readonly canCreate: boolean;
-  readonly hrefs: ArticlesHrefs;
-  readonly link: ArticlesLink;
-  readonly sites: readonly Channel[];
-}) => {
-  const t = useTranslations("Articles.list");
-  const className = buttonVariants({ size: "sm", variant: "ghost" });
-
-  if (sites.length === 0) {
-    return (
-      <Link href={hrefs.connect} className={className}>
-        <PlugIcon aria-hidden />
-        {t("connect")}
-      </Link>
-    );
-  }
-
-  return canCreate ? (
-    <Link href={hrefs.newArticle} className={className}>
-      <PlusIcon aria-hidden />
-      {t("new")}
-    </Link>
-  ) : null;
-};
-
 export interface ArticlesListViewProps {
+  /** Every article of the workspace, whose blog's the page keeps. */
   readonly articles: AsyncResult.AsyncResult<
     { readonly items: readonly Article[] },
     unknown
   >;
   readonly canCreate: boolean;
+  /** The website's channel whose blog this is. */
+  readonly channelId: string;
   readonly hrefs: ArticlesHrefs;
   readonly link: ArticlesLink;
   /** Reads the articles and the websites again. */
@@ -146,15 +106,17 @@ export interface ArticlesListViewProps {
 }
 
 /**
- * The workspace's articles and its websites, once read: loading until
- * both are known, so the page never says there is no website before it
- * knows, and the failure when either could not be read.
+ * A blog: its website's articles, newest first, once read, under the
+ * website's name. Loading until the articles and the websites are known,
+ * the failure when either could not be read, and a line saying so when
+ * the website is not one of the workspace's.
  */
 export const ArticlesListView = ({
   articles,
   canCreate,
+  channelId,
   hrefs,
-  link,
+  link: Link,
   onRetry,
   sites,
 }: ArticlesListViewProps) => {
@@ -177,23 +139,34 @@ export const ArticlesListView = ({
     return <ArticlesLoading />;
   }
 
-  const { items } = articles.value;
+  const site = sites.value.find(({ id }) => id === channelId);
+
+  if (site === undefined) {
+    return (
+      <Alert>
+        <AlertDescription>{t("siteNotFound")}</AlertDescription>
+      </Alert>
+    );
+  }
+
+  const items = articles.value.items.filter(
+    (article) => article.channelId === channelId
+  );
 
   return (
     <div className="flex flex-col gap-4">
-      <PageActions>
-        <ArticlesActions
-          canCreate={canCreate}
-          hrefs={hrefs}
-          link={link}
-          sites={sites.value}
-        />
-      </PageActions>
-      <p className="text-muted-foreground text-sm">
-        {sites.value.length === 0
-          ? t("noSite")
-          : t("sites", { count: sites.value.length })}
-      </p>
+      <PageTitle>{channelTitle(site)}</PageTitle>
+      {canCreate ? (
+        <PageActions>
+          <Link
+            href={hrefs.newArticle}
+            className={buttonVariants({ size: "sm", variant: "ghost" })}
+          >
+            <PlusIcon aria-hidden />
+            {t("new")}
+          </Link>
+        </PageActions>
+      ) : null}
       {items.length === 0 ? (
         <p className="text-muted-foreground text-sm">{t("empty")}</p>
       ) : (
@@ -203,8 +176,7 @@ export const ArticlesListView = ({
               key={article.id}
               article={article}
               hrefs={hrefs}
-              link={link}
-              sites={sites.value}
+              link={Link}
             />
           ))}
         </ul>

@@ -151,7 +151,7 @@ const useArticleRequests = (workspaceId: string) => {
   };
 
   const goTo = (path: string) => {
-    router.push(workspaceHref(workspaceId, `/articles${path}`));
+    router.push(workspaceHref(workspaceId, `/blogs${path}`));
   };
 
   return { failure, goTo, isPending, run };
@@ -261,6 +261,8 @@ const SiteActions = ({
 
 interface ArticleEditorProps {
   readonly article?: Article;
+  /** The website a new article starts on: the blog it is written from. */
+  readonly channelId: string;
   readonly permissions: readonly string[];
   readonly sites: readonly Channel[];
   readonly workspaceId: string;
@@ -274,6 +276,7 @@ interface ArticleEditorProps {
  */
 export const ArticleEditor = ({
   article,
+  channelId,
   permissions,
   sites,
   workspaceId,
@@ -282,7 +285,7 @@ export const ArticleEditor = ({
   const timeZone = browserTimeZone();
 
   const [draft, setDraft] = useState<ArticleDraft>(() =>
-    draftOf(article, sites[0]?.id ?? "", timeZone)
+    draftOf(article, channelId, timeZone)
   );
 
   const { failure, goTo, isPending, run } = useArticleRequests(workspaceId);
@@ -309,10 +312,10 @@ export const ArticleEditor = ({
     setDraft((current) => ({ ...current, ...change }));
   };
 
-  // A new article opens at its own address once made.
+  // A new article opens at its own address once made, in its site's blog.
   const opened = (made: Article) => {
     if (article === undefined) {
-      goTo(`/${made.id}`);
+      goTo(`/${made.channelId}/${made.id}`);
     }
   };
 
@@ -398,7 +401,7 @@ export const ArticleEditor = ({
                   }),
                 "deleted",
                 () => {
-                  goTo("");
+                  goTo(`/${draft.channelId}`);
                 }
               );
             },

@@ -1,12 +1,15 @@
+import { Option } from "effect";
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 
-import { ArticleScreen } from "#components/articles/article-screen.tsx";
+import { articleSiteOf } from "#articles/server.ts";
+import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
-import { workspacePageTitle } from "#shell/page-title.ts";
+import { workspacePath } from "#shell/workspace-path.ts";
 
-// An article of the workspace, in the editor, with what it can do next.
+// An article is its blog's: an address kept from before opens it there,
+// or the websites' list when it cannot be read.
 const ArticlePage = async ({
   params,
 }: PageProps<"/[locale]/[workspaceId]/articles/[articleId]">) => {
@@ -17,18 +20,18 @@ const ArticlePage = async ({
   }
 
   const membership = await membershipOf(locale, workspaceId);
+  const site = await articleSiteOf(membership.id, articleId);
 
-  return (
-    <div className="flex flex-col gap-8">
-      <ArticleScreen
-        articleId={articleId}
-        permissions={membership.permissions}
-        workspaceId={membership.id}
-      />
-    </div>
-  );
+  return redirect({
+    href: workspacePath(
+      workspaceId,
+      Option.match(site, {
+        onNone: () => "/blogs",
+        onSome: (channelId) => `/blogs/${channelId}/${articleId}`,
+      })
+    ),
+    locale,
+  });
 };
-
-export const generateMetadata = workspacePageTitle("article");
 
 export default ArticlePage;

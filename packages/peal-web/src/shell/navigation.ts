@@ -23,9 +23,9 @@ export type Page =
   | "platforms"
   | "analytics"
   | "apiKeys"
-  | "articles"
   | "assistant"
   | "billing"
+  | "blogs"
   | "calendar"
   | "channelSets"
   | "channels"
@@ -55,6 +55,7 @@ export type Page =
 export type Detail =
   | "agentChat"
   | "article"
+  | "blog"
   | "channelPlatform"
   | "newArticle"
   | "newChannel"
@@ -65,31 +66,43 @@ export type Detail =
 
 /**
  * A step the breadcrumb names before the page, each a link back to it:
- * a section (its first page), the agent, the agent's settings, Channels,
- * or New channel.
+ * a section (its first page), the agent, the agent's settings, Blogs, a
+ * blog, Channels, or New channel.
  */
 export type Crumb =
   | Section
   | "agent"
   | "agentSettings"
-  | "articles"
+  | "blog"
+  | "blogs"
   | "channels"
   | "newChannel";
 
-// Where each step of the breadcrumb leads, under /<workspace>.
-const crumbPaths: Readonly<Record<Crumb, string>> = {
+// Where each step of the breadcrumb leads, under /<workspace>, but a
+// blog's, which its website's channel names.
+const crumbPaths: Readonly<Record<Exclude<Crumb, "blog">, string>> = {
   agent: "/agent",
   agentSettings: "/settings/agent",
-  articles: "/articles",
+  blogs: "/blogs",
   channels: "/channels",
   newChannel: "/channels/new",
   posts: "/posts",
   settings: "/settings",
 };
 
-/** Where a step of the breadcrumb leads, for a workspace, by its slug. */
-export const crumbHrefOf = (workspace: string, crumb: Crumb): string =>
-  workspacePath(workspace, crumbPaths[crumb]);
+/**
+ * Where a step of the breadcrumb leads, for a workspace, by its slug; a
+ * blog's leads to its website's articles (`site`, the navigation's).
+ */
+export const crumbHrefOf = (
+  workspace: string,
+  crumb: Crumb,
+  site: string | null
+): string =>
+  workspacePath(
+    workspace,
+    crumb === "blog" ? `/blogs/${site ?? ""}` : crumbPaths[crumb]
+  );
 
 export type Group = "build" | "engage" | "partners" | "studio";
 
@@ -161,12 +174,6 @@ const pages: Readonly<Record<Page, PageRule>> = {
     mode: "api",
     path: "/settings/api-keys",
   },
-  articles: {
-    may: needs("post:read"),
-    mode: "studio",
-    path: "/articles",
-    section: "posts",
-  },
   assistant: {
     may: needs("assistant:configure"),
     mode: "studio",
@@ -178,6 +185,12 @@ const pages: Readonly<Record<Page, PageRule>> = {
     mode: "studio",
     path: "/billing",
     section: "settings",
+  },
+  // The workspace's websites, each opening its articles.
+  blogs: {
+    may: needs("post:read", "channel:read"),
+    mode: "studio",
+    path: "/blogs",
   },
   // The posts page in its calendar layout: no line in the sidebar, but a
   // page of the command menu and of its key.
@@ -338,7 +351,7 @@ const layout: Readonly<
   ],
   studio: [
     { group: null, pages: ["home", "agent", "channels"] },
-    { group: "studio", pages: ["editor", "posts", "media"] },
+    { group: "studio", pages: ["editor", "posts", "blogs", "media"] },
     { group: "engage", pages: ["inbox", "analytics", "ads"] },
   ],
 };
@@ -353,7 +366,7 @@ const sectionLayout: Readonly<
     }[]
   >
 > = {
-  posts: [{ group: null, pages: ["posts", "articles", "import"] }],
+  posts: [{ group: null, pages: ["posts", "import"] }],
   settings: [
     {
       group: "personal",
@@ -424,6 +437,8 @@ export interface Navigation {
   };
   /** Whether the page is a split view, its list beside the item open. */
   readonly split: boolean;
+  /** The website's channel whose blog is open, under Blogs. */
+  readonly site: string | null;
 }
 
 /** Where a page is, for a workspace, by its slug. */
@@ -445,6 +460,26 @@ const pageNames: readonly Page[] = [
   ...sectionPages("posts"),
   ...sectionPages("settings"),
 ];
+
+// A blog's page under Blogs: its website's articles at /blogs/<channel>,
+// a new article at …/new, an article at …/<article>.
+const blogAt = (
+  path: string
+): { readonly detail: Detail; readonly site: string } | null => {
+  const [site = "", item, ...rest] = path.split("/").slice(2);
+
+  if (!path.startsWith("/blogs/") || site === "" || rest.length > 0) {
+    return null;
+  }
+
+  if (item === undefined) {
+    return { detail: "blog", site };
+  }
+
+  return item === ""
+    ? null
+    : { detail: item === "new" ? "newArticle" : "article", site };
+};
 
 // The page a path inside a workspace shows: its own path, or the longest
 // page path it is under (a post's page is under Posts).
@@ -475,12 +510,10 @@ const pageAt = (path: string): PageAt => {
     return { detail: null, page: exact };
   }
 
-  if (path === "/articles/new") {
-    return { detail: "newArticle", page: "articles" };
-  }
+  const blog = blogAt(path);
 
-  if (path.startsWith("/articles/")) {
-    return { detail: "article", page: "articles" };
+  if (blog !== null) {
+    return { detail: blog.detail, page: "blogs" };
   }
 
   if (path.startsWith("/posts/")) {
@@ -500,8 +533,8 @@ const pageAt = (path: string): PageAt => {
 
 // The steps the breadcrumb names before the page, outermost first: a
 // section's own first page stands alone; a page of a section comes under
-// it; an item comes under the list it opens from (an article under
-// Articles, a platform's form under New channel, under Channels).
+// it; an item comes under the list it opens from (an article under its
+// blog, under Blogs; a platform's form under New channel, under Channels).
 const trailOf = (
   detail: Detail | null,
   current: Page | null,
@@ -509,9 +542,10 @@ const trailOf = (
 ): readonly Crumb[] => {
   const items: Partial<Record<Detail, readonly Crumb[]>> = {
     agentChat: ["agent"],
-    article: ["posts", "articles"],
+    article: ["blogs", "blog"],
+    blog: ["blogs"],
     channelPlatform: ["channels", "newChannel"],
-    newArticle: ["posts", "articles"],
+    newArticle: ["blogs", "blog"],
     newChannel: ["channels"],
     newSkill: ["settings", "agentSettings"],
     skill: ["settings", "agentSettings"],
@@ -650,6 +684,7 @@ export const navigationOf = ({
     sectionGroups,
     sectionLinks,
     settings: linkOf("general", "settings"),
+    site: path === null ? null : (blogAt(path)?.site ?? null),
     split: current !== null && pages[current].split === true,
   };
 };

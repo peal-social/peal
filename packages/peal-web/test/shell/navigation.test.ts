@@ -36,13 +36,8 @@ const studio = (navigation: ReturnType<typeof navigationOf>) =>
     .find(({ group }) => group === "studio")
     ?.links.map(({ page }) => page);
 
-// What the breadcrumb names on an article's page.
-const articleCrumb = (path: string) =>
-  navigationOf({
-    pathname: `${base}/articles${path}`,
-    permissions: owner,
-    workspace,
-  }).breadcrumb;
+// A website's channel, whose articles a blog's pages show.
+const site = "00000000-0000-7000-8000-0000000000d1";
 
 // The navigation on a page of the workspace, for its owner.
 const at = (path: string) =>
@@ -62,6 +57,7 @@ describe(navigationOf, () => {
       "home",
       "channels",
       "posts",
+      "blogs",
       "media",
       "inbox",
       "analytics",
@@ -96,9 +92,9 @@ describe(navigationOf, () => {
       "studio",
       "editor",
       { page: "editor", trail: [] },
-      ["editor", "posts", "media"],
+      ["editor", "posts", "blogs", "media"],
       `${base}/editor`,
-      ["posts", "media"],
+      ["posts", "blogs", "media"],
     ]);
   });
 
@@ -146,7 +142,6 @@ describe(navigationOf, () => {
     expect(imported.section).toBe("posts");
     expect(imported.sectionLinks.map(({ page }) => page)).toStrictEqual([
       "posts",
-      "articles",
       "import",
     ]);
     expect(imported.sectionLinks.find(({ current }) => current)?.page).toBe(
@@ -190,32 +185,76 @@ describe(navigationOf, () => {
   it("leads each step of the breadcrumb back to its page", () => {
     expect(
       (
-        ["posts", "settings", "articles", "channels", "newChannel"] as const
-      ).map((crumb) => crumbHrefOf(workspace, crumb))
+        [
+          "posts",
+          "settings",
+          "blogs",
+          "blog",
+          "channels",
+          "newChannel",
+        ] as const
+      ).map((crumb) => crumbHrefOf(workspace, crumb, site))
     ).toStrictEqual([
       `${base}/posts`,
       `${base}/settings`,
-      `${base}/articles`,
+      `${base}/blogs`,
+      `${base}/blogs/${site}`,
       `${base}/channels`,
       `${base}/channels/new`,
     ]);
   });
 
-  it("keeps an article's pages under Posts, an article under Articles", () => {
-    expect(articleCrumb("")).toStrictEqual({
-      page: "articles",
-      trail: ["posts"],
-    });
-    expect(articleCrumb("/new")).toStrictEqual({
+  it("puts Blogs after Posts, outside its section, for who may read posts and channels", () => {
+    const blogs = at("/blogs");
+
+    expect([
+      blogs.current,
+      blogs.section,
+      blogs.site,
+      blogs.breadcrumb,
+      hrefOf(workspace, "blogs"),
+      studio(
+        navigationOf({
+          pathname: `${base}/blogs`,
+          permissions: ["post:read"],
+          workspace,
+        })
+      ),
+    ]).toStrictEqual([
+      "blogs",
+      null,
+      null,
+      { page: "blogs", trail: [] },
+      `${base}/blogs`,
+      ["media"],
+    ]);
+  });
+
+  it("keeps a blog under Blogs, and its articles under the blog", () => {
+    const blog = at(`/blogs/${site}`);
+    const newArticle = at(`/blogs/${site}/new`);
+    const article = at(`/blogs/${site}/00000000-0000-7000-8000-0000000000c1`);
+
+    expect(
+      [blog, newArticle, article].map(({ site: open }) => open)
+    ).toStrictEqual([site, site, site]);
+    expect(blog.breadcrumb).toStrictEqual({ page: "blog", trail: ["blogs"] });
+    expect(newArticle.breadcrumb).toStrictEqual({
       page: "newArticle",
-      trail: ["posts", "articles"],
+      trail: ["blogs", "blog"],
     });
-    expect(articleCrumb("/00000000-0000-7000-8000-0000000000c1")).toStrictEqual(
-      {
-        page: "article",
-        trail: ["posts", "articles"],
-      }
-    );
+    expect(article.breadcrumb).toStrictEqual({
+      page: "article",
+      trail: ["blogs", "blog"],
+    });
+    expect(article.current).toBe("blogs");
+  });
+
+  it("has no Articles page, as each blog lists its own", () => {
+    expect(at("/articles").current).toBeNull();
+    expect(
+      pageLinksOf({ permissions: owner, workspace }).map(({ page }) => page)
+    ).toStrictEqual(expect.not.arrayContaining(["articles"]));
   });
 
   it("keeps a post's own pages under Posts, and names them", () => {
@@ -361,7 +400,7 @@ describe(navigationOf, () => {
       pagesOf(page).slice(0, 2),
       page.current,
       chat.breadcrumb,
-      crumbHrefOf(workspace, "agent"),
+      crumbHrefOf(workspace, "agent", null),
       pagesOf(at("/agent")).includes("agent"),
     ]).toStrictEqual([
       ["home", "agent"],
@@ -396,7 +435,7 @@ describe(navigationOf, () => {
       at("/settings").sectionLinks.some(({ page }) => page === "agentSettings"),
       crumbs("/skills/new"),
       crumbs("/skills/s1"),
-      crumbHrefOf(workspace, "agentSettings"),
+      crumbHrefOf(workspace, "agentSettings", null),
       hrefOf(workspace, "agentSettings"),
     ]).toStrictEqual([
       "agentSettings",

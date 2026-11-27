@@ -21,6 +21,7 @@ describe(ArticlesList, () => {
         <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
           <ArticlesList
             canCreate
+            channelId="00000000-0000-7000-8000-0000000000d1"
             workspaceId="00000000-0000-4000-8000-000000000001"
           />
         </NextIntlClientProvider>

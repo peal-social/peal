@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { chooseWorkspace } from "#auth/choose-workspace.ts";
 import { AgentDock } from "#components/agent/agent-dock.tsx";
 import { AgentPanelProvider } from "#components/agent/agent-panel-context.tsx";
+import { BlogName } from "#components/articles/blog-name.tsx";
 import { AppLink } from "#components/shell/app-link.tsx";
 import { CommandMenu } from "#components/shell/command-menu.tsx";
 import { CommandScopeProvider } from "#components/shell/command-scope.tsx";
@@ -62,12 +63,17 @@ export const WorkspaceShell = ({
 
   const { page, trail } = navigation.breadcrumb;
 
-  // A section is named as the sidebar's foot and its back link name it;
-  // any other step by its page's name.
-  const crumbName = (crumb: Crumb) =>
-    crumb === "posts" || crumb === "settings"
+  // A section is named as the sidebar's foot and its back link name it,
+  // a blog by its website; any other step by its page's name.
+  const crumbName = (crumb: Crumb) => {
+    if (crumb === "blog" && navigation.site !== null) {
+      return <BlogName channelId={navigation.site} workspaceId={workspaceId} />;
+    }
+
+    return crumb === "posts" || crumb === "settings"
       ? t(`sections.${crumb}`)
       : t(`pages.${crumb}`);
+  };
 
   return (
     <CommandScopeProvider>
@@ -94,7 +100,7 @@ export const WorkspaceShell = ({
               key: crumb,
               link: (
                 <AppLink
-                  href={crumbHrefOf(workspaceSlug, crumb)}
+                  href={crumbHrefOf(workspaceSlug, crumb, navigation.site)}
                   className={crumbLinkClass}
                 >
                   {crumbName(crumb)}
