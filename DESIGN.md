@@ -859,9 +859,9 @@ it. There is no bar across the top.
   from one page to the other reads as a step. With reduced motion, nothing
   moves. The pages are at `/login` and `/signup`.
 
-PealCreative holds, in this order: Home, Agent and Channels without a
-label; then **Studio**, what makes and plans the posts: Editor, Posts,
-Blogs and Media; then **Engage**, what answers and measures them: Inbox,
+PealCreative holds, in this order: Home, Agent, Channels, Posts and
+Blogs without a label; then **Studio**, what makes the media: Editor
+and Media; then **Engage**, what answers and measures the posts: Inbox,
 Analytics and Ads. Posts drills down to the posts list (its states as
 tabs, or the calendar, a layout its Display chooses) and Import. Blogs,
 the articles written for the workspace's websites, stays apart from

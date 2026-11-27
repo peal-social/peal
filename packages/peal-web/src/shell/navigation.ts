@@ -350,8 +350,8 @@ const layout: Readonly<
     { group: "partners", pages: ["partner"] },
   ],
   studio: [
-    { group: null, pages: ["home", "agent", "channels"] },
-    { group: "studio", pages: ["editor", "posts", "blogs", "media"] },
+    { group: null, pages: ["home", "agent", "channels", "posts", "blogs"] },
+    { group: "studio", pages: ["editor", "media"] },
     { group: "engage", pages: ["inbox", "analytics", "ads"] },
   ],
 };

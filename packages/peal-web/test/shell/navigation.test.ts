@@ -92,9 +92,9 @@ describe(navigationOf, () => {
       "studio",
       "editor",
       { page: "editor", trail: [] },
-      ["editor", "posts", "blogs", "media"],
+      ["editor", "media"],
       `${base}/editor`,
-      ["posts", "blogs", "media"],
+      ["media"],
     ]);
   });
 
