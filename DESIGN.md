@@ -737,7 +737,7 @@ high, the 4 px radius. Two pressed one after the other read "G then C",
 the word in muted text and in the reader's language.
 
 - **C** opens a new post; **G then** a letter opens the pages people open
-  most (H home, C the posts' calendar, P posts, I inbox, M media, Y
+  most (H home, C the posts' calendar, P posts, B blogs, I inbox, M media, Y
   analytics, S settings) and two tabs of the posts list (D Drafts, A Needs approval).
   Letters are the same in every language. **⌘J** (Ctrl+J) opens the
   agent's panel on a new chat, or hides it.
@@ -807,7 +807,8 @@ it. There is no bar across the top.
   name, 14 px, 500, the page's `h1`) and at its end the page's actions
   as small ghost buttons ("+ New post"). A page nested under another
   is reached back through the breadcrumb, never a "Back" link of its own
-  ("Channels › New channel › Mastodon"; "Posts › Articles › Article").
+  ("Channels › New channel › Mastodon"; "Blogs › Field notes › Article",
+  a blog named by its website).
   A page draws no title of its own under it, and no description: what a
   page holds is said by its empty state.
 - **Content** under the header: a list's toolbar first (its views and
@@ -859,11 +860,13 @@ it. There is no bar across the top.
   moves. The pages are at `/login` and `/signup`.
 
 PealCreative holds, in this order: Home, Agent and Channels without a
-label; then **Studio**, what makes and plans the posts: Editor, Posts
-and Media; then **Engage**, what answers and measures them: Inbox,
+label; then **Studio**, what makes and plans the posts: Editor, Posts,
+Blogs and Media; then **Engage**, what answers and measures them: Inbox,
 Analytics and Ads. Posts drills down to the posts list (its states as
-tabs, or the calendar, a layout its Display chooses), Articles and
-Import. Automations (Queues, Repeating
+tabs, or the calendar, a layout its Display chooses) and Import. Blogs,
+the articles written for the workspace's websites, stays apart from
+Posts and does not drill down: it lists the websites, each opening its
+own articles. Automations (Queues, Repeating
 posts, Follow-ups, Feeds and Comment rules) are in Settings. The creator
 tools are the composer, which New post (C) opens full-bleed with the
 writing assistant, the media library and the signatures inside it, and
@@ -1594,6 +1597,16 @@ destructive button is in its confirmation only.
   36 px tile, its name, its type and its features as outline badges.
   A tile opens that platform's form alone, a page nested under New
   channel (`…/channels/new/mastodon`), which the breadcrumb names.
+- **Blogs** lists the workspace's websites (WordPress, WordPress.com,
+  DEV, Hashnode) in one bordered list, a row each: its platform's mark
+  (20 px tile), its name (14 px, 500), its handle in muted text. A row
+  opens that website's **blog**, its articles (`…/blogs/<channel>`), a
+  page nested under Blogs that the website's name titles. With no
+  website, the empty state says none is connected and its primary
+  button goes to Channels. A blog's rows are its articles, newest first,
+  each its title, when it was last changed in muted text and its state
+  as a badge; **New article** in the header opens the editor on that
+  website ("Blogs › Field notes › New article").
 - **A date in words.** Above the date and time pickers, "Type when" reads
   a date as people say it, in English or in French ("tomorrow 9am",
   "vendredi 10h30", "in 3 days", "27 nov"), on the schedule's clock. Under
