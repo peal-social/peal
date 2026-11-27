@@ -3,27 +3,41 @@
 import { useAtomValue } from "@effect/atom-react";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import type { Channel } from "peal-contract";
 
 import { workspaceSites } from "#articles/api.ts";
 import { channelTitle } from "#channels/channel-name.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 
+/**
+ * What names a blog: its website's name while the website is connected,
+ * none once it is not (a website disconnected since, whose articles stay).
+ */
+export const blogNameOf = (
+  sites: readonly Channel[],
+  channelId: string
+): string | null => {
+  const site = sites.find(({ id }) => id === channelId);
+
+  return site === undefined ? null : channelTitle(site);
+};
+
 const LoadedBlogName = ({
   channelId,
-  fallback,
   workspaceId,
 }: {
   readonly channelId: string;
-  readonly fallback: string;
   readonly workspaceId: string;
 }) => {
+  const t = useTranslations("WorkspaceShell.pages");
+  const tPosts = useTranslations("Posts");
   const sites = useAtomValue(workspaceSites(workspaceId));
 
-  const site = AsyncResult.isSuccess(sites)
-    ? sites.value.find(({ id }) => id === channelId)
-    : undefined;
+  if (!AsyncResult.isSuccess(sites)) {
+    return t("blog");
+  }
 
-  return site === undefined ? fallback : channelTitle(site);
+  return blogNameOf(sites.value, channelId) ?? tPosts("disconnectedChannel");
 };
 
 /**
@@ -41,11 +55,7 @@ export const BlogName = ({
   const hydrated = useHydrated();
 
   return hydrated ? (
-    <LoadedBlogName
-      channelId={channelId}
-      fallback={t("blog")}
-      workspaceId={workspaceId}
-    />
+    <LoadedBlogName channelId={channelId} workspaceId={workspaceId} />
   ) : (
     t("blog")
   );

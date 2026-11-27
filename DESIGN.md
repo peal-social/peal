@@ -1601,12 +1601,17 @@ destructive button is in its confirmation only.
   DEV, Hashnode) in one bordered list, a row each: its platform's mark
   (20 px tile), its name (14 px, 500), its handle in muted text. A row
   opens that website's **blog**, its articles (`…/blogs/<channel>`), a
-  page nested under Blogs that the website's name titles. With no
-  website, the empty state says none is connected and its primary
-  button goes to Channels. A blog's rows are its articles, newest first,
-  each its title, when it was last changed in muted text and its state
-  as a badge; **New article** in the header opens the editor on that
-  website ("Blogs › Field notes › New article").
+  page nested under Blogs that the website's name titles. A website
+  disconnected since keeps a row while its articles stay, named "A
+  disconnected channel" with how many articles it holds in muted text,
+  and its blog lists them without **New article**. With no website, the
+  empty state says none is connected and its primary button goes to
+  Channels. A blog's rows are its articles, newest first, each its
+  title, when it was last changed in muted text and its state as a
+  badge; **New article** in the header opens the editor on that website
+  ("Blogs › Field notes › New article"). A blog with no article shows
+  the empty state ("No articles yet"), **New article** its primary
+  button.
 - **A date in words.** Above the date and time pickers, "Type when" reads
   a date as people say it, in English or in French ("tomorrow 9am",
   "vendredi 10h30", "in 3 days", "27 nov"), on the schedule's clock. Under

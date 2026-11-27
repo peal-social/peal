@@ -2,12 +2,18 @@
 
 import { DateTime } from "effect";
 import { AsyncResult } from "effect/reactivity";
-import { PlusIcon } from "lucide-react";
+import { NewspaperIcon, PlusIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import type { Article, Channel } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Badge } from "peal-ui/components/badge";
 import { Button, buttonVariants } from "peal-ui/components/button";
+import {
+  EmptyState,
+  EmptyStateActions,
+  EmptyStateIcon,
+  EmptyStateTitle,
+} from "peal-ui/components/empty-state";
 import { Skeleton } from "peal-ui/components/skeleton";
 import type { ComponentType, ReactNode } from "react";
 
@@ -107,9 +113,10 @@ export interface ArticlesListViewProps {
 
 /**
  * A blog: its website's articles, newest first, once read, under the
- * website's name. Loading until the articles and the websites are known,
- * the failure when either could not be read, and a line saying so when
- * the website is not one of the workspace's.
+ * website's name, or a disconnected website's, which takes no new one.
+ * Loading until the articles and the websites are known, the failure
+ * when either could not be read, and a line saying so when the website
+ * is not the workspace's and no article names it.
  */
 export const ArticlesListView = ({
   articles,
@@ -121,6 +128,7 @@ export const ArticlesListView = ({
   sites,
 }: ArticlesListViewProps) => {
   const t = useTranslations("Articles.list");
+  const tPosts = useTranslations("Posts");
 
   if (AsyncResult.isFailure(articles) || AsyncResult.isFailure(sites)) {
     return (
@@ -141,7 +149,13 @@ export const ArticlesListView = ({
 
   const site = sites.value.find(({ id }) => id === channelId);
 
-  if (site === undefined) {
+  const items = articles.value.items.filter(
+    (article) => article.channelId === channelId
+  );
+
+  // A website disconnected since keeps its articles here, to read and
+  // delete, but takes no new one.
+  if (site === undefined && items.length === 0) {
     return (
       <Alert>
         <AlertDescription>{t("siteNotFound")}</AlertDescription>
@@ -149,14 +163,16 @@ export const ArticlesListView = ({
     );
   }
 
-  const items = articles.value.items.filter(
-    (article) => article.channelId === channelId
-  );
+  const creates = canCreate && site !== undefined;
 
   return (
     <div className="flex flex-col gap-4">
-      <PageTitle>{channelTitle(site)}</PageTitle>
-      {canCreate ? (
+      <PageTitle>
+        {site === undefined
+          ? tPosts("disconnectedChannel")
+          : channelTitle(site)}
+      </PageTitle>
+      {creates && items.length > 0 ? (
         <PageActions>
           <Link
             href={hrefs.newArticle}
@@ -168,9 +184,20 @@ export const ArticlesListView = ({
         </PageActions>
       ) : null}
       {items.length === 0 ? (
-        <p className="text-muted-foreground text-sm">{t("empty")}</p>
+        <EmptyState>
+          <EmptyStateIcon icon={<NewspaperIcon />} />
+          <EmptyStateTitle>{t("emptyTitle")}</EmptyStateTitle>
+          {creates ? (
+            <EmptyStateActions>
+              <Link href={hrefs.newArticle} className={buttonVariants()}>
+                <PlusIcon aria-hidden />
+                {t("new")}
+              </Link>
+            </EmptyStateActions>
+          ) : null}
+        </EmptyState>
       ) : (
-        <ul className="bg-card divide-y rounded-md border px-4">
+        <ul className="bg-card divide-y rounded-xl border px-4">
           {items.map((article) => (
             <ArticleRow
               key={article.id}

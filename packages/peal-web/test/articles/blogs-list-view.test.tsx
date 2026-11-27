@@ -1,7 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
+import { DateTime } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { NextIntlClientProvider } from "next-intl";
-import type { Channel } from "peal-contract";
+import type { Article, Channel } from "peal-contract";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import type { ArticlesLink } from "#components/articles/articles-list-view.tsx";
@@ -39,8 +40,35 @@ const hrefs = {
   connect: "/north-studio/channels",
 };
 
+// A website disconnected since, which only its articles still name.
+const gone = "00000000-0000-7000-8000-0000000000d9";
+
+const articleOn = (channelId: string, id: string): Article => ({
+  authorId: null,
+  body: { content: [], type: "doc" },
+  categories: [],
+  channelId,
+  coverMediaId: null,
+  createdAt: DateTime.makeUnsafe("2026-11-13T09:00:00Z"),
+  excerpt: null,
+  id,
+  siteStatus: "publish",
+  state: { _tag: "draft" },
+  tags: [],
+  title: "Spring sowing",
+  updatedAt: DateTime.makeUnsafe("2026-11-13T09:00:00Z"),
+});
+
+const none = { items: [] } satisfies { readonly items: readonly Article[] };
+
+const noArticles = AsyncResult.success(none);
+
 const render = async (
-  sites: AsyncResult.AsyncResult<readonly Channel[], unknown>
+  sites: AsyncResult.AsyncResult<readonly Channel[], unknown>,
+  articles: AsyncResult.AsyncResult<
+    { readonly items: readonly Article[] },
+    unknown
+  > = noArticles
 ) => {
   const messages = await loadMessages("en");
 
@@ -48,6 +76,7 @@ const render = async (
     html: renderToStaticMarkup(
       <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
         <BlogsListView
+          articles={articles}
           hrefs={hrefs}
           link={Anchor}
           onRetry={() => {
@@ -87,6 +116,37 @@ describe(BlogsListView, () => {
     expect(html).toContain(t.emptyTitle);
     expect(html).toContain(t.empty);
     expect(html).toContain(`href="${hrefs.connect}"`);
+  });
+
+  it("keeps a row for a website disconnected since, while its articles stay", async () => {
+    const messages = await loadMessages("en");
+
+    const { html, t } = await render(
+      AsyncResult.success([wordpress]),
+      AsyncResult.success({
+        items: [
+          articleOn(gone, "a1"),
+          articleOn(gone, "a2"),
+          articleOn(wordpress.id, "a3"),
+        ],
+      })
+    );
+
+    expect(html).toContain(`href="${hrefs.blog(gone)}"`);
+    expect(html).toContain(messages.Posts.disconnectedChannel);
+    expect(html).toContain("2 articles");
+    expect(html).toContain(`href="${hrefs.blog(wordpress.id)}"`);
+    expect(html).not.toContain(t.emptyTitle);
+  });
+
+  it("loads until the websites and the articles are known, never saying there are none", async () => {
+    const { html, t } = await render(
+      AsyncResult.success([]),
+      AsyncResult.initial()
+    );
+
+    expect(html).toContain("aria-busy");
+    expect(html).not.toContain(t.emptyTitle);
   });
 
   it("loads until the websites are known, never saying there are none", async () => {

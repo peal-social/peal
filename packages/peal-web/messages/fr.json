@@ -5608,7 +5608,7 @@
       "loading": "Chargement des articles…",
       "loadFailed": "Les articles n’ont pas pu être chargés.",
       "retry": "Réessayer",
-      "empty": "Aucun article pour l’instant.",
+      "emptyTitle": "Aucun article pour l’instant",
       "siteNotFound": "Ce site web n’est pas connecté à l’espace de travail."
     },
     "blogs": {
@@ -5617,7 +5617,8 @@
       "retry": "Réessayer",
       "emptyTitle": "Aucun site web connecté",
       "empty": "Connectez un site WordPress, WordPress.com, DEV ou Hashnode sur la page Canaux pour y écrire ses articles.",
-      "connect": "Aller aux canaux"
+      "connect": "Aller aux canaux",
+      "articleCount": "{count, plural, one {# article} other {# articles}}"
     },
     "editor": {
       "toolbar": "Mise en forme",

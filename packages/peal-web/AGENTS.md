@@ -78,12 +78,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   repost and confirm, and its analytics), `…/blogs` (the workspace's
   websites, for post:read and channel:read), `…/blogs/[channelId]` (a
   website's articles, every page of the articles read and kept to it in
-  the browser, as the API has no filter by website), `…/blogs/[channelId]/new`
+  the browser, as the API has no filter by website; a website
+  disconnected since keeps a blog of its own, named as a disconnected
+  channel, without New article), `…/blogs/[channelId]/new`
   and `…/blogs/[channelId]/[articleId]` (the article's editor; the
   address names the website for the breadcrumb, Blogs › site › article,
-  and for the way back after a delete); `…/articles`, `…/articles/new`
-  and `…/articles/[articleId]` only redirect there (an article's
-  address reads the article on the server for its website), `…/settings` (the workspace itself, with `members`, which holds inviting
+  and for the way back after a delete, and moves to the article's own
+  website when it names another); `…/articles`, `…/articles/new`
+  and `…/articles/[articleId]` only redirect to `…/blogs`, `…/settings` (the workspace itself, with `members`, which holds inviting
   and the invitations waiting, `invitations` only redirecting there, `tags`, `signatures`,
   `channel-sets`, `queues`, `recycling`, `feeds`, `api-keys`, `webhooks` and `agent`, the agent's skills, for assistant:use, with `agent/skills/new` and `agent/skills/[skillId]`) and `…/billing`. The person's own
   pages are every workspace's too, in its Settings: `…/settings/account`
@@ -1618,7 +1620,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `TwoStepRefusalWatch` reads the page again. The owners' switch is
   `settings/security`.
 - Articles (`#articles/*`, `components/articles/`, the `Articles`
-  catalogue, under Posts in the sidebar at `/articles`) go to a website's
+  catalogue, under Blogs in the sidebar at `/blogs`) go to a website's
   channel. The composer's posts read social channels only
   (`workspaceChannels` filters with `isSocialChannel`, and the posts area
   types its channels `SocialChannel`); a website's are `workspaceSites`.

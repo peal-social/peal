@@ -6,10 +6,14 @@ import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import type { Article, Channel } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
+import { useEffect } from "react";
 
 import { workspaceArticle, workspaceSites } from "#articles/api.ts";
+import { articlePathOf } from "#articles/blog-paths.ts";
 import { ArticleEditor } from "#components/articles/article-editor.tsx";
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
+import { useRouter } from "#i18n/navigation.ts";
 
 interface ArticleScreenProps {
   /** The article to edit; none for a new one. */
@@ -56,6 +60,22 @@ const ExistingArticle = ({
 }: Omit<LoadedProps, "article"> & { readonly articleId: string }) => {
   const t = useTranslations("Articles");
   const article = useAtomValue(workspaceArticle(props.workspaceId, articleId));
+  const router = useRouter();
+  const workspaceHref = useWorkspaceHref();
+
+  // An address that names another website's blog moves to the article's
+  // own, so the breadcrumb names its website.
+  const elsewhere =
+    AsyncResult.isSuccess(article) &&
+    article.value.channelId !== props.channelId
+      ? articlePathOf(article.value)
+      : null;
+
+  useEffect(() => {
+    if (elsewhere !== null) {
+      router.replace(workspaceHref(props.workspaceId, elsewhere));
+    }
+  }, [elsewhere, props.workspaceId, router, workspaceHref]);
 
   if (AsyncResult.isFailure(article)) {
     return (

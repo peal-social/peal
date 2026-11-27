@@ -3,6 +3,7 @@
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 
 import { workspaceArticles, workspaceSites } from "#articles/api.ts";
+import { articlePathOf, blogPathOf } from "#articles/blog-paths.ts";
 import {
   ArticlesListView,
   ArticlesLoading,
@@ -38,8 +39,11 @@ const LoadedArticles = ({
       channelId={channelId}
       hrefs={{
         article: (articleId) =>
-          workspaceHref(workspaceId, `/blogs/${channelId}/${articleId}`),
-        newArticle: workspaceHref(workspaceId, `/blogs/${channelId}/new`),
+          workspaceHref(
+            workspaceId,
+            articlePathOf({ channelId, id: articleId })
+          ),
+        newArticle: workspaceHref(workspaceId, `${blogPathOf(channelId)}/new`),
       }}
       link={Link}
       onRetry={() => {

@@ -2,7 +2,8 @@
 
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 
-import { workspaceSites } from "#articles/api.ts";
+import { workspaceArticles, workspaceSites } from "#articles/api.ts";
+import { blogPathOf } from "#articles/blog-paths.ts";
 import {
   BlogsListView,
   BlogsLoading,
@@ -14,17 +15,24 @@ import { Link } from "#i18n/navigation.ts";
 const LoadedBlogs = ({ workspaceId }: { readonly workspaceId: string }) => {
   const workspaceHref = useWorkspaceHref();
   const sitesQuery = workspaceSites(workspaceId);
+  const articlesQuery = workspaceArticles(workspaceId);
   const sites = useAtomValue(sitesQuery);
-  const refresh = useAtomRefresh(sitesQuery);
+  const articles = useAtomValue(articlesQuery);
+  const refreshSites = useAtomRefresh(sitesQuery);
+  const refreshArticles = useAtomRefresh(articlesQuery);
 
   return (
     <BlogsListView
+      articles={articles}
       hrefs={{
-        blog: (channelId) => workspaceHref(workspaceId, `/blogs/${channelId}`),
+        blog: (channelId) => workspaceHref(workspaceId, blogPathOf(channelId)),
         connect: workspaceHref(workspaceId, "/channels"),
       }}
       link={Link}
-      onRetry={refresh}
+      onRetry={() => {
+        refreshSites();
+        refreshArticles();
+      }}
       sites={sites}
     />
   );

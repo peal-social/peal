@@ -74,15 +74,21 @@ describe("Blogs", () => {
     // Another website's blog holds none of this one's articles.
     await app.open(`/${slug}/blogs/${other}`);
     await expect(
-      screen.getByRole("main").getByText("No article yet.")
+      screen.getByRole("main").getByRole("heading", "No articles yet")
     ).toBeVisible();
     await expect(
       screen.getByRole("main").getByRole("link", title)
     ).not.toBeVisible();
 
-    // The addresses Articles had open the same pages under Blogs.
-    await app.open(`/${slug}/articles/${articleId}`);
+    // An article under another website's blog moves to its own.
+    await app.open(`/${slug}/blogs/${other}/${articleId}`);
     await expect(browser).toHaveURL(`/${slug}/blogs/${site}/${articleId}`);
+
+    // The addresses Articles had open Blogs.
+    await app.open(`/${slug}/articles/${articleId}`);
+    await expect(browser).toHaveURL(`/${slug}/blogs`);
+    await app.open(`/${slug}/articles/new`);
+    await expect(browser).toHaveURL(`/${slug}/blogs`);
     await app.open(`/${slug}/articles`);
     await expect(browser).toHaveURL(`/${slug}/blogs`);
   });

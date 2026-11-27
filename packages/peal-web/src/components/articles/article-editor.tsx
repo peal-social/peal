@@ -41,6 +41,7 @@ import {
   timeInputOf,
 } from "#articles/article-draft.ts";
 import type { ArticleDraft, ArticleFailure } from "#articles/article-draft.ts";
+import { articlePathOf, blogPathOf } from "#articles/blog-paths.ts";
 import { ArticleFields } from "#components/articles/article-fields.tsx";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { useRouter } from "#i18n/navigation.ts";
@@ -151,7 +152,7 @@ const useArticleRequests = (workspaceId: string) => {
   };
 
   const goTo = (path: string) => {
-    router.push(workspaceHref(workspaceId, `/blogs${path}`));
+    router.push(workspaceHref(workspaceId, path));
   };
 
   return { failure, goTo, isPending, run };
@@ -315,7 +316,7 @@ export const ArticleEditor = ({
   // A new article opens at its own address once made, in its site's blog.
   const opened = (made: Article) => {
     if (article === undefined) {
-      goTo(`/${made.channelId}/${made.id}`);
+      goTo(articlePathOf(made));
     }
   };
 
@@ -401,7 +402,7 @@ export const ArticleEditor = ({
                   }),
                 "deleted",
                 () => {
-                  goTo(`/${draft.channelId}`);
+                  goTo(blogPathOf(draft.channelId));
                 }
               );
             },

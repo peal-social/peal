@@ -5608,7 +5608,7 @@
       "loading": "Loading the articles…",
       "loadFailed": "The articles could not be loaded.",
       "retry": "Try again",
-      "empty": "No article yet.",
+      "emptyTitle": "No articles yet",
       "siteNotFound": "This website is not connected to the workspace."
     },
     "blogs": {
@@ -5617,7 +5617,8 @@
       "retry": "Try again",
       "emptyTitle": "No website connected",
       "empty": "Connect a WordPress site, WordPress.com, DEV or Hashnode on the Channels page to write its articles here.",
-      "connect": "Go to Channels"
+      "connect": "Go to Channels",
+      "articleCount": "{count, plural, one {# article} other {# articles}}"
     },
     "editor": {
       "toolbar": "Formatting",

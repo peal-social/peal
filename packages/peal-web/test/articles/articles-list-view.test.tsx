@@ -123,7 +123,7 @@ describe(ArticlesListView, () => {
     expect(html).not.toContain("Autumn pruning");
   });
 
-  it("says a blog without an article has none", async () => {
+  it("says a blog without an article has none, with New article as the next step", async () => {
     const { html, t } = await render(
       listOf(
         AsyncResult.success({ items: [articleOn(other, "a2", "Autumn")] }),
@@ -131,17 +131,32 @@ describe(ArticlesListView, () => {
       )
     );
 
-    expect(html).toContain(t.empty);
+    expect(html).toContain('data-slot="empty-state"');
+    expect(html).toContain(t.emptyTitle);
+    expect(html).toContain(`href="${hrefs.newArticle}"`);
     expect(html).not.toContain("aria-busy");
   });
 
-  it("says so when the website is not the workspace's", async () => {
+  it("keeps a disconnected website's articles, and takes no new one there", async () => {
+    const { html, t } = await render(
+      listOf(
+        AsyncResult.success({ items: [articleOn(site, "a1", "Spring")] }),
+        AsyncResult.success([other])
+      )
+    );
+
+    expect(html).toContain(`href="${hrefs.article("a1")}"`);
+    expect(html).not.toContain(t.siteNotFound);
+    expect(html).not.toContain(`href="${hrefs.newArticle}"`);
+  });
+
+  it("says so when the website is not the workspace's and no article names it", async () => {
     const { html, t } = await render(
       listOf(AsyncResult.success(none), AsyncResult.success([other]))
     );
 
     expect(html).toContain(t.siteNotFound);
-    expect(html).not.toContain(t.empty);
+    expect(html).not.toContain(t.emptyTitle);
   });
 
   it("says the page could not be read when the websites could not", async () => {
