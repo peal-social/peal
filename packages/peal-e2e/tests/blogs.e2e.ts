@@ -15,9 +15,10 @@ const title = "A synthetic field guide";
 
 // Writes a draft article for the website through the API, as the page's
 // member, and answers its id.
-const draftArticle = `([workspaceId, channelId, title]) => fetch('/api/v1/articles', {
-  body: JSON.stringify({ body: { content: [], type: 'doc' }, channelId, title }),
-  headers: { 'content-type': 'application/json', 'peal-workspace': workspaceId },
+const draftArticle = (workspaceId: string, channelId: string) =>
+  `fetch('/api/v1/articles', {
+  body: ${JSON.stringify(JSON.stringify({ body: { content: [], type: "doc" }, channelId, title }))},
+  headers: { 'content-type': 'application/json', 'peal-workspace': ${JSON.stringify(workspaceId)} },
   method: 'POST',
 }).then((answer) => answer.json()).then((article) => article.id)`;
 
@@ -56,11 +57,9 @@ describe("Blogs", () => {
     const site = await seedChannel(workspaceId, "notes.example", "wordpress");
     const other = await seedChannel(workspaceId, "other.example", "wordpress");
 
-    const articleId = await browser.evaluate<string>(draftArticle, [
-      workspaceId,
-      site,
-      title,
-    ]);
+    const articleId = await browser.evaluate<string>(
+      draftArticle(workspaceId, site)
+    );
 
     await app.open(`/${slug}/blogs`);
     await screen
