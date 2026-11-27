@@ -11,7 +11,9 @@ module Peal
       end
 
       # Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in
-      # one `status` when it is given. Pass the page's `nextCursor` as `cursor` for the next. Needs post:read.
+      # one `status` when it is given, and those scheduled from `from` (included) to `to` (excluded) when either is
+      # given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's
+      # `nextCursor` as `cursor`, with the same filters, for the next. Needs post:read.
       #
       # @param request_options [Hash]
       # @param params [Hash]
@@ -21,8 +23,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
       # @option params [String, nil] :cursor
+      # @option params [String, nil] :from
       # @option params [String, nil] :limit
       # @option params [Peal::Types::ArticleStateName, nil] :status
+      # @option params [String, nil] :to
       #
       # @example
       #   client.articles.list
@@ -32,8 +36,10 @@ module Peal
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         query_params = {}
         query_params["cursor"] = params[:cursor] if params.key?(:cursor)
+        query_params["from"] = params[:from] if params.key?(:from)
         query_params["limit"] = params[:limit] if params.key?(:limit)
         query_params["status"] = params[:status] if params.key?(:status)
+        query_params["to"] = params[:to] if params.key?(:to)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],

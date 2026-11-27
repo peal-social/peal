@@ -7,8 +7,6 @@ module Peal
     class Article < Internal::Types::Model
       field :author_id, -> { String }, optional: false, nullable: true, api_name: "authorId"
 
-      field :body, -> { Peal::Types::ArticleBody }, optional: false, nullable: false
-
       field :categories, -> { Internal::Types::Array[String] }, optional: false, nullable: false
 
       field :channel_id, -> { String }, optional: false, nullable: false, api_name: "channelId"
@@ -30,6 +28,8 @@ module Peal
       field :title, -> { String }, optional: false, nullable: false
 
       field :updated_at, -> { String }, optional: false, nullable: false, api_name: "updatedAt"
+
+      field :body, -> { Peal::Types::ArticleBody }, optional: false, nullable: false
     end
   end
 end

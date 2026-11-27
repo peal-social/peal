@@ -56,7 +56,7 @@ class ArticlesClient
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given. Pass the page's `nextCursor` as `cursor` for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given, and those scheduled from `from` (included) to `to` (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's `nextCursor` as `cursor`, with the same filters, for the next. Needs post:read.
      *
      * Example:
      * ```php
@@ -85,11 +85,17 @@ class ArticlesClient
         if ($request->cursor != null) {
             $query['cursor'] = $request->cursor;
         }
+        if ($request->from != null) {
+            $query['from'] = $request->from;
+        }
         if ($request->limit != null) {
             $query['limit'] = $request->limit;
         }
         if ($request->status != null) {
             $query['status'] = $request->status;
+        }
+        if ($request->to != null) {
+            $query['to'] = $request->to;
         }
         try {
             $response = $this->client->sendRequest(

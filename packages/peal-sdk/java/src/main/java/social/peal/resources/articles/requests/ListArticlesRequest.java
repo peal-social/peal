@@ -23,26 +23,39 @@ import social.peal.types.ArticleStateName;
 public final class ListArticlesRequest {
     private final Optional<String> cursor;
 
+    private final Optional<String> from;
+
     private final Optional<String> limit;
 
     private final Optional<ArticleStateName> status;
+
+    private final Optional<String> to;
 
     private final Map<String, Object> additionalProperties;
 
     private ListArticlesRequest(
             Optional<String> cursor,
+            Optional<String> from,
             Optional<String> limit,
             Optional<ArticleStateName> status,
+            Optional<String> to,
             Map<String, Object> additionalProperties) {
         this.cursor = cursor;
+        this.from = from;
         this.limit = limit;
         this.status = status;
+        this.to = to;
         this.additionalProperties = additionalProperties;
     }
 
     @JsonProperty("cursor")
     public Optional<String> getCursor() {
         return cursor;
+    }
+
+    @JsonProperty("from")
+    public Optional<String> getFrom() {
+        return from;
     }
 
     @JsonProperty("limit")
@@ -53,6 +66,11 @@ public final class ListArticlesRequest {
     @JsonProperty("status")
     public Optional<ArticleStateName> getStatus() {
         return status;
+    }
+
+    @JsonProperty("to")
+    public Optional<String> getTo() {
+        return to;
     }
 
     @java.lang.Override
@@ -67,12 +85,16 @@ public final class ListArticlesRequest {
     }
 
     private boolean equalTo(ListArticlesRequest other) {
-        return cursor.equals(other.cursor) && limit.equals(other.limit) && status.equals(other.status);
+        return cursor.equals(other.cursor)
+                && from.equals(other.from)
+                && limit.equals(other.limit)
+                && status.equals(other.status)
+                && to.equals(other.to);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.cursor, this.limit, this.status);
+        return Objects.hash(this.cursor, this.from, this.limit, this.status, this.to);
     }
 
     @java.lang.Override
@@ -88,9 +110,13 @@ public final class ListArticlesRequest {
     public static final class Builder {
         private Optional<String> cursor = Optional.empty();
 
+        private Optional<String> from = Optional.empty();
+
         private Optional<String> limit = Optional.empty();
 
         private Optional<ArticleStateName> status = Optional.empty();
+
+        private Optional<String> to = Optional.empty();
 
         private Map<String, Object> additionalProperties = new HashMap<>();
 
@@ -98,8 +124,10 @@ public final class ListArticlesRequest {
 
         public Builder from(ListArticlesRequest other) {
             cursor(other.getCursor());
+            from(other.getFrom());
             limit(other.getLimit());
             status(other.getStatus());
+            to(other.getTo());
             return this;
         }
 
@@ -111,6 +139,17 @@ public final class ListArticlesRequest {
 
         public Builder cursor(String cursor) {
             this.cursor = Optional.ofNullable(cursor);
+            return this;
+        }
+
+        @JsonSetter(value = "from", nulls = Nulls.SKIP)
+        public Builder from(Optional<String> from) {
+            this.from = from;
+            return this;
+        }
+
+        public Builder from(String from) {
+            this.from = Optional.ofNullable(from);
             return this;
         }
 
@@ -136,13 +175,28 @@ public final class ListArticlesRequest {
             return this;
         }
 
+        @JsonSetter(value = "to", nulls = Nulls.SKIP)
+        public Builder to(Optional<String> to) {
+            this.to = to;
+            return this;
+        }
+
+        public Builder to(String to) {
+            this.to = Optional.ofNullable(to);
+            return this;
+        }
+
         public ListArticlesRequest build() {
-            return new ListArticlesRequest(cursor, limit, status, additionalProperties);
+            return new ListArticlesRequest(cursor, from, limit, status, to, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
-            if (key.equalsIgnoreCase("cursor") || key.equalsIgnoreCase("limit") || key.equalsIgnoreCase("status")) {
+            if (key.equalsIgnoreCase("cursor")
+                    || key.equalsIgnoreCase("from")
+                    || key.equalsIgnoreCase("limit")
+                    || key.equalsIgnoreCase("status")
+                    || key.equalsIgnoreCase("to")) {
                 return;
             }
             this.additionalProperties.put(key, value);

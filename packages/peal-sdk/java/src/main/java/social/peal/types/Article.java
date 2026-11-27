@@ -28,8 +28,6 @@ import social.peal.core.ObjectMappers;
 public final class Article {
     private final Optional<String> authorId;
 
-    private final ArticleBody body;
-
     private final List<String> categories;
 
     private final String channelId;
@@ -52,11 +50,12 @@ public final class Article {
 
     private final String updatedAt;
 
+    private final ArticleBody body;
+
     private final Map<String, Object> additionalProperties;
 
     private Article(
             Optional<String> authorId,
-            ArticleBody body,
             List<String> categories,
             String channelId,
             Optional<String> coverMediaId,
@@ -68,9 +67,9 @@ public final class Article {
             List<String> tags,
             String title,
             String updatedAt,
+            ArticleBody body,
             Map<String, Object> additionalProperties) {
         this.authorId = authorId;
-        this.body = body;
         this.categories = categories;
         this.channelId = channelId;
         this.coverMediaId = coverMediaId;
@@ -82,6 +81,7 @@ public final class Article {
         this.tags = tags;
         this.title = title;
         this.updatedAt = updatedAt;
+        this.body = body;
         this.additionalProperties = additionalProperties;
     }
 
@@ -91,11 +91,6 @@ public final class Article {
             return Optional.empty();
         }
         return authorId;
-    }
-
-    @JsonProperty("body")
-    public ArticleBody getBody() {
-        return body;
     }
 
     @JsonProperty("categories")
@@ -159,6 +154,11 @@ public final class Article {
         return updatedAt;
     }
 
+    @JsonProperty("body")
+    public ArticleBody getBody() {
+        return body;
+    }
+
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("authorId")
     private Optional<String> _getAuthorId() {
@@ -190,7 +190,6 @@ public final class Article {
 
     private boolean equalTo(Article other) {
         return authorId.equals(other.authorId)
-                && body.equals(other.body)
                 && categories.equals(other.categories)
                 && channelId.equals(other.channelId)
                 && coverMediaId.equals(other.coverMediaId)
@@ -201,14 +200,14 @@ public final class Article {
                 && state.equals(other.state)
                 && tags.equals(other.tags)
                 && title.equals(other.title)
-                && updatedAt.equals(other.updatedAt);
+                && updatedAt.equals(other.updatedAt)
+                && body.equals(other.body);
     }
 
     @java.lang.Override
     public int hashCode() {
         return Objects.hash(
                 this.authorId,
-                this.body,
                 this.categories,
                 this.channelId,
                 this.coverMediaId,
@@ -219,7 +218,8 @@ public final class Article {
                 this.state,
                 this.tags,
                 this.title,
-                this.updatedAt);
+                this.updatedAt,
+                this.body);
     }
 
     @java.lang.Override
@@ -227,18 +227,14 @@ public final class Article {
         return ObjectMappers.stringify(this);
     }
 
-    public static BodyStage builder() {
+    public static ChannelIdStage builder() {
         return new Builder();
-    }
-
-    public interface BodyStage {
-        ChannelIdStage body(@NotNull ArticleBody body);
-
-        Builder from(Article other);
     }
 
     public interface ChannelIdStage {
         CreatedAtStage channelId(@NotNull String channelId);
+
+        Builder from(Article other);
     }
 
     public interface CreatedAtStage {
@@ -262,7 +258,11 @@ public final class Article {
     }
 
     public interface UpdatedAtStage {
-        _FinalStage updatedAt(@NotNull String updatedAt);
+        BodyStage updatedAt(@NotNull String updatedAt);
+    }
+
+    public interface BodyStage {
+        _FinalStage body(@NotNull ArticleBody body);
     }
 
     public interface _FinalStage {
@@ -305,17 +305,15 @@ public final class Article {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder
-            implements BodyStage,
-                    ChannelIdStage,
+            implements ChannelIdStage,
                     CreatedAtStage,
                     IdStage,
                     SiteStatusStage,
                     StateStage,
                     TitleStage,
                     UpdatedAtStage,
+                    BodyStage,
                     _FinalStage {
-        private ArticleBody body;
-
         private String channelId;
 
         private String createdAt;
@@ -329,6 +327,8 @@ public final class Article {
         private String title;
 
         private String updatedAt;
+
+        private ArticleBody body;
 
         private List<String> tags = new ArrayList<>();
 
@@ -347,7 +347,6 @@ public final class Article {
         @java.lang.Override
         public Builder from(Article other) {
             authorId(other.getAuthorId());
-            body(other.getBody());
             categories(other.getCategories());
             channelId(other.getChannelId());
             coverMediaId(other.getCoverMediaId());
@@ -359,13 +358,7 @@ public final class Article {
             tags(other.getTags());
             title(other.getTitle());
             updatedAt(other.getUpdatedAt());
-            return this;
-        }
-
-        @java.lang.Override
-        @JsonSetter("body")
-        public ChannelIdStage body(@NotNull ArticleBody body) {
-            this.body = Objects.requireNonNull(body, "body must not be null");
+            body(other.getBody());
             return this;
         }
 
@@ -413,8 +406,15 @@ public final class Article {
 
         @java.lang.Override
         @JsonSetter("updatedAt")
-        public _FinalStage updatedAt(@NotNull String updatedAt) {
+        public BodyStage updatedAt(@NotNull String updatedAt) {
             this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("body")
+        public _FinalStage body(@NotNull ArticleBody body) {
+            this.body = Objects.requireNonNull(body, "body must not be null");
             return this;
         }
 
@@ -545,7 +545,6 @@ public final class Article {
         public Article build() {
             return new Article(
                     authorId,
-                    body,
                     categories,
                     channelId,
                     coverMediaId,
@@ -557,13 +556,13 @@ public final class Article {
                     tags,
                     title,
                     updatedAt,
+                    body,
                     additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
             if (key.equalsIgnoreCase("authorId")
-                    || key.equalsIgnoreCase("body")
                     || key.equalsIgnoreCase("categories")
                     || key.equalsIgnoreCase("channelId")
                     || key.equalsIgnoreCase("coverMediaId")
@@ -574,7 +573,8 @@ public final class Article {
                     || key.equalsIgnoreCase("state")
                     || key.equalsIgnoreCase("tags")
                     || key.equalsIgnoreCase("title")
-                    || key.equalsIgnoreCase("updatedAt")) {
+                    || key.equalsIgnoreCase("updatedAt")
+                    || key.equalsIgnoreCase("body")) {
                 return;
             }
             this.additionalProperties.put(key, value);

@@ -15,12 +15,6 @@ class Article extends JsonSerializableType
     public ?string $authorId;
 
     /**
-     * @var ArticleBody $body
-     */
-    #[JsonProperty('body')]
-    public ArticleBody $body;
-
-    /**
      * @var array<string> $categories
      */
     #[JsonProperty('categories'), ArrayType(['string'])]
@@ -87,8 +81,13 @@ class Article extends JsonSerializableType
     public string $updatedAt;
 
     /**
+     * @var ArticleBody $body
+     */
+    #[JsonProperty('body')]
+    public ArticleBody $body;
+
+    /**
      * @param array{
-     *   body: ArticleBody,
      *   categories: array<string>,
      *   channelId: string,
      *   createdAt: string,
@@ -98,6 +97,7 @@ class Article extends JsonSerializableType
      *   tags: array<string>,
      *   title: string,
      *   updatedAt: string,
+     *   body: ArticleBody,
      *   authorId?: ?string,
      *   coverMediaId?: ?string,
      *   excerpt?: ?string,
@@ -107,7 +107,6 @@ class Article extends JsonSerializableType
         array $values,
     ) {
         $this->authorId = $values['authorId'] ?? null;
-        $this->body = $values['body'];
         $this->categories = $values['categories'];
         $this->channelId = $values['channelId'];
         $this->coverMediaId = $values['coverMediaId'] ?? null;
@@ -119,6 +118,7 @@ class Article extends JsonSerializableType
         $this->tags = $values['tags'];
         $this->title = $values['title'];
         $this->updatedAt = $values['updatedAt'];
+        $this->body = $values['body'];
     }
 
     /**

@@ -9,9 +9,9 @@ use Peal\Core\Types\ArrayType;
 class ArticlePage extends JsonSerializableType
 {
     /**
-     * @var array<Article> $items
+     * @var array<ArticleSummary> $items
      */
-    #[JsonProperty('items'), ArrayType([Article::class])]
+    #[JsonProperty('items'), ArrayType([ArticleSummary::class])]
     public array $items;
 
     /**
@@ -22,7 +22,7 @@ class ArticlePage extends JsonSerializableType
 
     /**
      * @param array{
-     *   items: array<Article>,
+     *   items: array<ArticleSummary>,
      *   nextCursor?: ?string,
      * } $values
      */

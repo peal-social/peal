@@ -58,28 +58,28 @@ public class AsyncRawArticlesClient {
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given, and those scheduled from <code>from</code> (included) to <code>to</code> (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<ArticlePage>> list() {
         return list(ListArticlesRequest.builder().build());
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given, and those scheduled from <code>from</code> (included) to <code>to</code> (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<ArticlePage>> list(RequestOptions requestOptions) {
         return list(ListArticlesRequest.builder().build(), requestOptions);
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given, and those scheduled from <code>from</code> (included) to <code>to</code> (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<ArticlePage>> list(ListArticlesRequest request) {
         return list(request, null);
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given, and those scheduled from <code>from</code> (included) to <code>to</code> (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<ArticlePage>> list(
             ListArticlesRequest request, RequestOptions requestOptions) {
@@ -90,6 +90,10 @@ public class AsyncRawArticlesClient {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "cursor", request.getCursor().get(), false);
         }
+        if (request.getFrom().isPresent()) {
+            QueryStringMapper.addQueryParameter(
+                    httpUrl, "from", request.getFrom().get(), false);
+        }
         if (request.getLimit().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "limit", request.getLimit().get(), false);
@@ -97,6 +101,9 @@ public class AsyncRawArticlesClient {
         if (request.getStatus().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "status", request.getStatus().get(), false);
+        }
+        if (request.getTo().isPresent()) {
+            QueryStringMapper.addQueryParameter(httpUrl, "to", request.getTo().get(), false);
         }
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {

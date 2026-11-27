@@ -14,9 +14,6 @@ public record Article : IJsonOnDeserialized
     [JsonPropertyName("authorId")]
     public string? AuthorId { get; set; }
 
-    [JsonPropertyName("body")]
-    public required ArticleBody Body { get; set; }
-
     [JsonPropertyName("categories")]
     public IEnumerable<string> Categories { get; set; } = new List<string>();
 
@@ -49,6 +46,9 @@ public record Article : IJsonOnDeserialized
 
     [JsonPropertyName("updatedAt")]
     public required string UpdatedAt { get; set; }
+
+    [JsonPropertyName("body")]
+    public required ArticleBody Body { get; set; }
 
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();

@@ -6,9 +6,13 @@ module Peal
       class ListArticlesRequest < Internal::Types::Model
         field :cursor, -> { String }, optional: true, nullable: false
 
+        field :from, -> { String }, optional: true, nullable: false
+
         field :limit, -> { String }, optional: true, nullable: false
 
         field :status, -> { Peal::Types::ArticleStateName }, optional: true, nullable: false
+
+        field :to, -> { String }, optional: true, nullable: false
       end
     end
   end

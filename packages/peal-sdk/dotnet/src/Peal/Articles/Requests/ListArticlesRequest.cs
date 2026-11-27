@@ -10,10 +10,16 @@ public record ListArticlesRequest
     public string? Cursor { get; set; }
 
     [JsonIgnore]
+    public string? From { get; set; }
+
+    [JsonIgnore]
     public string? Limit { get; set; }
 
     [JsonIgnore]
     public ArticleStateName? Status { get; set; }
+
+    [JsonIgnore]
+    public string? To { get; set; }
 
     /// <inheritdoc />
     public override string ToString()

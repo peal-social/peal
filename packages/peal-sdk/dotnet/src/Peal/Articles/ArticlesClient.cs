@@ -18,10 +18,12 @@ public partial class ArticlesClient : IArticlesClient
         CancellationToken cancellationToken = default
     )
     {
-        var _queryString = new Peal.Core.QueryStringBuilder.Builder(capacity: 3)
+        var _queryString = new Peal.Core.QueryStringBuilder.Builder(capacity: 5)
             .Add("cursor", request.Cursor)
+            .Add("from", request.From)
             .Add("limit", request.Limit)
             .Add("status", request.Status)
+            .Add("to", request.To)
             .MergeAdditional(options?.AdditionalQueryParameters)
             .Build();
         var _headers = await new Peal.Core.HeadersBuilder.Builder()
@@ -1803,7 +1805,7 @@ public partial class ArticlesClient : IArticlesClient
     }
 
     /// <summary>
-    /// Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given. Pass the page's `nextCursor` as `cursor` for the next. Needs post:read.
+    /// Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given, and those scheduled from `from` (included) to `to` (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's `nextCursor` as `cursor`, with the same filters, for the next. Needs post:read.
     /// </summary>
     /// <example><code>
     /// await client.Articles.ListAsync(new ListArticlesRequest());

@@ -12,7 +12,7 @@ public record ArticlePage : IJsonOnDeserialized
         new Dictionary<string, JsonElement>();
 
     [JsonPropertyName("items")]
-    public IEnumerable<Article> Items { get; set; } = new List<Article>();
+    public IEnumerable<ArticleSummary> Items { get; set; } = new List<ArticleSummary>();
 
     [JsonPropertyName("nextCursor")]
     public string? NextCursor { get; set; }

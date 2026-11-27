@@ -36,28 +36,28 @@ public class ArticlesClient {
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given, and those scheduled from <code>from</code> (included) to <code>to</code> (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next. Needs post:read.
      */
     public ArticlePage list() {
         return this.rawClient.list().body();
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given, and those scheduled from <code>from</code> (included) to <code>to</code> (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next. Needs post:read.
      */
     public ArticlePage list(RequestOptions requestOptions) {
         return this.rawClient.list(requestOptions).body();
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given, and those scheduled from <code>from</code> (included) to <code>to</code> (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next. Needs post:read.
      */
     public ArticlePage list(ListArticlesRequest request) {
         return this.rawClient.list(request).body();
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given, and those scheduled from <code>from</code> (included) to <code>to</code> (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next. Needs post:read.
      */
     public ArticlePage list(ListArticlesRequest request, RequestOptions requestOptions) {
         return this.rawClient.list(request, requestOptions).body();

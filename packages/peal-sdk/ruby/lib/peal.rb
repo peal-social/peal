@@ -525,6 +525,7 @@ module Peal
     autoload :ArticleChangeRefusedEncoded, ::File.join(__dir__, "peal/types/article_change_refused_encoded")
     autoload :ArticleInput, ::File.join(__dir__, "peal/types/article_input")
     autoload :ArticleNotFoundEncoded, ::File.join(__dir__, "peal/types/article_not_found_encoded")
+    autoload :ArticleSummary, ::File.join(__dir__, "peal/types/article_summary")
     autoload :ArticlePage, ::File.join(__dir__, "peal/types/article_page")
     autoload :ArticleViolationApprovalRequired, ::File.join(__dir__, "peal/types/article_violation_approval_required")
     autoload :ArticleViolationBodyInvalid, ::File.join(__dir__, "peal/types/article_violation_body_invalid")

@@ -17,17 +17,6 @@ public class ListTest : BaseMockServerTest
               "items": [
                 {
                   "authorId": "authorId",
-                  "body": {
-                    "content": [
-                      {
-                        "key": "value"
-                      },
-                      {
-                        "key": "value"
-                      }
-                    ],
-                    "type": "doc"
-                  },
                   "categories": [
                     "categories",
                     "categories"
@@ -50,17 +39,6 @@ public class ListTest : BaseMockServerTest
                 },
                 {
                   "authorId": "authorId",
-                  "body": {
-                    "content": [
-                      {
-                        "key": "value"
-                      },
-                      {
-                        "key": "value"
-                      }
-                    ],
-                    "type": "doc"
-                  },
                   "categories": [
                     "categories",
                     "categories"
@@ -109,10 +87,6 @@ public class ListTest : BaseMockServerTest
               "items": [
                 {
                   "authorId": "authorId",
-                  "body": {
-                    "content": [],
-                    "type": "doc"
-                  },
                   "categories": [
                     "categories"
                   ],

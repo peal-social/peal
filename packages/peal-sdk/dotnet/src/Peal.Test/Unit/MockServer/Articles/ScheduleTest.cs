@@ -21,17 +21,6 @@ public class ScheduleTest : BaseMockServerTest
         const string mockResponse = """
             {
               "authorId": "authorId",
-              "body": {
-                "content": [
-                  {
-                    "key": "value"
-                  },
-                  {
-                    "key": "value"
-                  }
-                ],
-                "type": "doc"
-              },
               "categories": [
                 "categories",
                 "categories"
@@ -50,7 +39,18 @@ public class ScheduleTest : BaseMockServerTest
                 "tags"
               ],
               "title": "title",
-              "updatedAt": "updatedAt"
+              "updatedAt": "updatedAt",
+              "body": {
+                "content": [
+                  {
+                    "key": "value"
+                  },
+                  {
+                    "key": "value"
+                  }
+                ],
+                "type": "doc"
+              }
             }
             """;
 
@@ -92,14 +92,6 @@ public class ScheduleTest : BaseMockServerTest
         const string mockResponse = """
             {
               "authorId": "authorId",
-              "body": {
-                "content": [
-                  {
-                    "key": "value"
-                  }
-                ],
-                "type": "doc"
-              },
               "categories": [
                 "categories"
               ],
@@ -116,7 +108,15 @@ public class ScheduleTest : BaseMockServerTest
                 "tags"
               ],
               "title": "title",
-              "updatedAt": "updatedAt"
+              "updatedAt": "updatedAt",
+              "body": {
+                "content": [
+                  {
+                    "key": "value"
+                  }
+                ],
+                "type": "doc"
+              }
             }
             """;
 

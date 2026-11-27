@@ -25,20 +25,21 @@ import social.peal.core.ObjectMappers;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = ArticlePage.Builder.class)
 public final class ArticlePage {
-    private final List<Article> items;
+    private final List<ArticleSummary> items;
 
     private final Optional<String> nextCursor;
 
     private final Map<String, Object> additionalProperties;
 
-    private ArticlePage(List<Article> items, Optional<String> nextCursor, Map<String, Object> additionalProperties) {
+    private ArticlePage(
+            List<ArticleSummary> items, Optional<String> nextCursor, Map<String, Object> additionalProperties) {
         this.items = items;
         this.nextCursor = nextCursor;
         this.additionalProperties = additionalProperties;
     }
 
     @JsonProperty("items")
-    public List<Article> getItems() {
+    public List<ArticleSummary> getItems() {
         return items;
     }
 
@@ -87,7 +88,7 @@ public final class ArticlePage {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private List<Article> items = new ArrayList<>();
+        private List<ArticleSummary> items = new ArrayList<>();
 
         private Optional<String> nextCursor = Optional.empty();
 
@@ -102,7 +103,7 @@ public final class ArticlePage {
         }
 
         @JsonSetter(value = "items", nulls = Nulls.SKIP)
-        public Builder items(List<Article> items) {
+        public Builder items(List<ArticleSummary> items) {
             this.items.clear();
             if (items != null) {
                 this.items.addAll(items);
@@ -110,12 +111,12 @@ public final class ArticlePage {
             return this;
         }
 
-        public Builder addItems(Article items) {
+        public Builder addItems(ArticleSummary items) {
             this.items.add(items);
             return this;
         }
 
-        public Builder addAllItems(List<Article> items) {
+        public Builder addAllItems(List<ArticleSummary> items) {
             if (items != null) {
                 this.items.addAll(items);
             }

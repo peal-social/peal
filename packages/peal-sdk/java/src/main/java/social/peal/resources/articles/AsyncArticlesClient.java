@@ -38,7 +38,7 @@ public class AsyncArticlesClient {
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given, and those scheduled from <code>from</code> (included) to <code>to</code> (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next. Needs post:read.
      */
     public CompletableFuture<ArticlePage> list() {
         CompletableFuture<PealClientHttpResponse<ArticlePage>> rawFuture = this.rawClient.list();
@@ -52,7 +52,7 @@ public class AsyncArticlesClient {
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given, and those scheduled from <code>from</code> (included) to <code>to</code> (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next. Needs post:read.
      */
     public CompletableFuture<ArticlePage> list(RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ArticlePage>> rawFuture = this.rawClient.list(requestOptions);
@@ -66,7 +66,7 @@ public class AsyncArticlesClient {
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given, and those scheduled from <code>from</code> (included) to <code>to</code> (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next. Needs post:read.
      */
     public CompletableFuture<ArticlePage> list(ListArticlesRequest request) {
         CompletableFuture<PealClientHttpResponse<ArticlePage>> rawFuture = this.rawClient.list(request);
@@ -80,7 +80,7 @@ public class AsyncArticlesClient {
     }
 
     /**
-     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
+     * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given, and those scheduled from <code>from</code> (included) to <code>to</code> (excluded) when either is given, which leaves out drafts. Each article comes without its body: get reads it whole. Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next. Needs post:read.
      */
     public CompletableFuture<ArticlePage> list(ListArticlesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ArticlePage>> rawFuture = this.rawClient.list(request, requestOptions);
