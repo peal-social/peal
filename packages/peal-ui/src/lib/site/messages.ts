@@ -6,15 +6,12 @@ import type { Locale } from "./locales.ts";
 
 const en = {
   footer: {
-    cancel: "Cancel your contract",
     company: "Company",
     // The section's id is its heading's slug in privacy.md.
     cookies: {
       label: "Cookie settings",
       section: "cookies-and-similar-technologies",
     },
-    // The contract's functions, in the footer's last row.
-    contract: "Your contract",
     language: "Language",
     legal: "Legal",
     rights: "All rights reserved.",
@@ -26,7 +23,6 @@ const en = {
     },
     socials: "Socials",
     source: "GitHub",
-    withdraw: "Withdraw from contract here",
   },
   nav: {
     comparePlatforms: "Compare every platform",
@@ -189,13 +185,11 @@ export type ChromeMessages = typeof en;
 
 const fr: ChromeMessages = {
   footer: {
-    cancel: "Résilier votre contrat",
     company: "Entreprise",
     cookies: {
       label: "Paramètres des cookies",
       section: "cookies-et-technologies-similaires",
     },
-    contract: "Votre contrat",
     language: "Langue",
     legal: "Informations légales",
     rights: "Tous droits réservés.",
@@ -206,7 +200,6 @@ const fr: ChromeMessages = {
     },
     socials: "Réseaux sociaux",
     source: "GitHub",
-    withdraw: "Renoncer au contrat ici",
   },
   nav: {
     comparePlatforms: "Comparer toutes les plateformes",

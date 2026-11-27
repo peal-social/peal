@@ -2907,7 +2907,7 @@
       "managing": "Ouverture de l’espace de facturation…",
       "manageHint": "Changez de moyen de paiement, d’adresse de facturation ou de numéro de TVA, ou téléchargez les factures et les reçus, dans l’espace de facturation de Stripe.",
       "trialEnds": "L’essai prend fin le {date}. Rien n’est facturé : l’espace de travail passe ensuite à l’offre gratuite, sauf si quelqu’un commande un abonnement.",
-      "withdrawable": "Jusqu’au {date}, en tant que consommateur, vous pouvez vous rétracter du contrat, ici ou avec « Renoncer au contrat ici » au pied de chaque page du site : il prend fin immédiatement et la part non utilisée vous est remboursée.",
+      "withdrawable": "Jusqu’au {date}, en tant que consommateur, vous pouvez vous rétracter du contrat, avec « Renoncer au contrat ici », ci-dessous : il prend fin immédiatement et la part non utilisée vous est remboursée.",
       "trialHint": "Un abonnement commandé pendant l’essai y met fin une fois payé ; rien n’est facturé pour l’essai.",
       "freeTier": "Jusqu’à {free, number} comptes connectés sur l’ensemble du compte de facturation, sans moyen de paiement.",
       "perAccount": "Chaque compte connecté au-delà des {free, number} premiers, compté au jour, est facturé chaque mois pour le mois écoulé, aux tarifs ci-dessous.",
@@ -2976,7 +2976,7 @@
       "perAccountNote": "Les prix sont en dollars américains. Au paiement, vous pouvez payer dans votre devise, convertie par notre prestataire de paiement au cours du jour ; sinon votre carte est débitée en dollars américains."
     },
     "consent": {
-      "startNow": "Je demande que le tarif par compte commence dès maintenant : chaque compte connecté au-delà des comptes gratuits, compté au jour, et chaque usage au-delà de son allocation mensuelle sont facturés aux prix de la grille tarifaire, hors taxes, chaque mois pour le mois écoulé. Je sais qu’en tant que consommateur, je peux me rétracter dans les 14 jours, avec « Renoncer au contrat ici », au pied de chaque page du site et sur celle-ci, et ne payer alors que ce qui a été utilisé.",
+      "startNow": "Je demande que le tarif par compte commence dès maintenant : chaque compte connecté au-delà des comptes gratuits, compté au jour, et chaque usage au-delà de son allocation mensuelle sont facturés aux prix de la grille tarifaire, hors taxes, chaque mois pour le mois écoulé. Je sais qu’en tant que consommateur, je peux me rétracter dans les 14 jours, avec « Renoncer au contrat ici », sur cette page, et ne payer alors que ce qui a été utilisé.",
       "terms": "Commander vaut acceptation des conditions générales, qui indiquent comment résilier et comment se rétracter, et contiennent le modèle de formulaire de rétractation.",
       "termsLink": "Commander vaut acceptation des conditions générales, qui indiquent comment résilier et comment se rétracter, et contiennent le modèle de formulaire de rétractation."
     },

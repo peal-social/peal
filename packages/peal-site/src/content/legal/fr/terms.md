@@ -257,7 +257,7 @@ Le tarif par compte est facturé par mois civil (UTC) : le premier de chaque moi
 
 ### Résiliation
 
-- Un contrat peut être résilié en ligne à tout moment, gratuitement, avec « Résilier votre contrat » : le lien figure au pied de chaque page de ce site, ainsi que sur la page de facturation, et ne demande ni compte ni connexion.
+- Un contrat peut être résilié en ligne à tout moment, gratuitement, avec « Résilier votre contrat », sur la page de facturation de l’espace de travail dans Peal.
 - Il vous est demandé votre nom, l’adresse e-mail à laquelle envoyer l’accusé de réception, le contrat (son numéro, qui figure dans l’e-mail de confirmation de l’abonnement, ou le nom de l’espace de travail) et, si vous le souhaitez, la date de résiliation souhaitée ; un récapitulatif vous est présenté, puis « Notification de la résiliation ».
 - Il n’y a ni préavis ni frais.
 - Le tarif par compte prend fin avec le mois en cours, dont l’usage est facturé ; un abonnement au nombre de canaux prend fin avec la période déjà payée, qui n’est pas remboursée, sauf dans le cas ci-dessous ; à la date ultérieure que vous avez indiquée, la dernière période n’est facturée que jusqu’à cette date ; un essai prend fin immédiatement.
@@ -272,7 +272,7 @@ Pour qu’un tiers qui connaît votre adresse ne puisse pas mettre fin à votre 
 - Le délai de rétractation expire quatorze jours après le jour de la conclusion du contrat.
 - Pour exercer le droit de rétractation, vous devez nous notifier (Peal SAS, 15 rue Paul Verlaine, 85710 La Garnache, France, hello@peal.social) votre décision de rétractation du contrat au moyen d’une déclaration dénuée d’ambiguïté (par exemple, lettre envoyée par la poste ou courrier électronique).
 - Vous pouvez utiliser le modèle de formulaire de rétractation ci-dessous, mais ce n’est pas obligatoire.
-- Vous pouvez également exercer votre droit de rétractation en ligne avec « Renoncer au contrat ici », au pied de chaque page de ce site ainsi que sur la page de facturation, sans vous connecter, puis « Confirmer la rétractation ».
+- Vous pouvez également exercer votre droit de rétractation en ligne avec « Renoncer au contrat ici », sur la page de facturation de l’espace de travail dans Peal, puis « Confirmer la rétractation ».
 - Si vous utilisez cette fonctionnalité en ligne, nous vous enverrons, dans les meilleurs délais, un accusé de réception de la rétractation sur un support durable (par courriel), y compris son contenu ainsi que la date et l’heure de sa soumission.
 - Pour que le délai de rétractation soit respecté, il suffit que vous transmettiez votre communication relative à l’exercice du droit de rétractation avant l’expiration du délai de rétractation.
 

@@ -20,7 +20,10 @@ const en = {
     description:
       "Peal's privacy policy, terms of service, data processing agreement and other legal documents.",
     effective: "Effective date",
-    groups: { company: "Company", data: "Personal data" },
+    groups: {
+      company: "Company",
+      data: "Personal data",
+    },
     read: "Read",
     title: "Legal",
     updated: "Last updated",
@@ -535,7 +538,7 @@ const en = {
       billing:
         "We bill you on the first of each month for the month that just ended. You never pay in advance.",
       cancel:
-        "You can cancel online at any time, signed in or not. Click “Cancel your contract” at the foot of any page or on the billing page. We invoice that month's use, billing ends with the month, and we charge nothing after it.",
+        "You can cancel online at any time. Click “Cancel your contract” on your workspace's billing page. We invoice that month's use, billing ends with the month, and we charge nothing after it.",
       legacy:
         "A subscription to one of the earlier plans, priced by channels, keeps its plan and price until it ends.",
       prices:
@@ -543,7 +546,7 @@ const en = {
       terms: "Read the terms of service",
       title: "Clear terms",
       withdrawal:
-        "If you're a consumer, you can withdraw within 14 days of subscribing. Click “Withdraw from contract here” at the foot of any page or on the billing page. Your subscription ends at once, and you pay only for what you used until then.",
+        "If you're a consumer, you can withdraw within 14 days of subscribing. Click “Withdraw from contract here” on your workspace's billing page. Your subscription ends at once, and you pay only for what you used until then.",
     },
     meters: {
       allowance: "{count} a month included",
@@ -641,7 +644,10 @@ const fr: Messages = {
     description:
       "La politique de confidentialité, les conditions d’utilisation, l’accord de traitement des données et les autres documents juridiques de Peal.",
     effective: "Date d’entrée en vigueur",
-    groups: { company: "Société", data: "Données personnelles" },
+    groups: {
+      company: "Société",
+      data: "Données personnelles",
+    },
     read: "Lire",
     title: "Informations légales",
     updated: "Dernière mise à jour",
@@ -1159,7 +1165,7 @@ const fr: Messages = {
       billing:
         "Nous vous facturons le premier de chaque mois pour le mois écoulé. Vous ne payez jamais d’avance.",
       cancel:
-        "Vous pouvez résilier en ligne à tout moment, connecté ou non. Cliquez sur « Résilier votre contrat », au pied de chaque page ou sur la page de facturation. Nous facturons l’usage de ce mois, la facturation prend fin avec le mois, et nous ne facturons plus rien ensuite.",
+        "Vous pouvez résilier en ligne à tout moment. Cliquez sur « Résilier votre contrat », sur la page de facturation de votre espace de travail. Nous facturons l’usage de ce mois, la facturation prend fin avec le mois, et nous ne facturons plus rien ensuite.",
       legacy:
         "Un abonnement à l’une des offres précédentes, au nombre de canaux, garde son offre et son prix jusqu’à sa fin.",
       prices:
@@ -1167,7 +1173,7 @@ const fr: Messages = {
       terms: "Lire les conditions d’utilisation",
       title: "Des conditions claires",
       withdrawal:
-        "Si vous êtes consommateur, vous pouvez vous rétracter dans les 14 jours suivant la souscription. Cliquez sur « Renoncer au contrat ici », au pied de chaque page ou sur la page de facturation. Votre abonnement prend fin immédiatement, et vous ne payez que ce que vous avez utilisé jusque-là.",
+        "Si vous êtes consommateur, vous pouvez vous rétracter dans les 14 jours suivant la souscription. Cliquez sur « Renoncer au contrat ici », sur la page de facturation de votre espace de travail. Votre abonnement prend fin immédiatement, et vous ne payez que ce que vous avez utilisé jusque-là.",
     },
     meters: {
       allowance: "{count} inclus par mois",

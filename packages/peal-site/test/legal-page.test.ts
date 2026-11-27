@@ -9,15 +9,17 @@ import { legalDates, legalIndex } from "../src/legal-page.ts";
 import { legalDocuments } from "../src/legal.ts";
 import type { LegalDocument } from "../src/legal.ts";
 
-const summary = (document: LegalDocument) => ({
-  description: `About ${document}.`,
-  title: document,
+const summary = (name: LegalDocument) => ({
+  description: `About ${name}.`,
+  title: name,
 });
+
+const documentHref = (name: LegalDocument) => `/${name}/`;
 
 describe("the legal page", () => {
   const { featured, groups } = legalIndex(
     messages("en").legalPage,
-    (document) => `/${document}/`,
+    documentHref,
     summary
   );
 
@@ -27,7 +29,7 @@ describe("the legal page", () => {
         .map(({ href }) => href)
         .toSorted()
     ).toStrictEqual(
-      legalDocuments.map((document) => `/${document}/`).toSorted()
+      legalDocuments.map((name) => documentHref(name)).toSorted()
     );
   });
 
@@ -47,7 +49,7 @@ describe("the legal documents", () => {
     );
 
     expect(files.toSorted()).toStrictEqual(
-      legalDocuments.map((document) => `${document}.md`).toSorted()
+      legalDocuments.map((name) => `${name}.md`).toSorted()
     );
   });
 

@@ -2097,9 +2097,9 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   (pricing, Legal, which leads to the page listing every legal
   document, and cookie settings, which opens the consent notice where
   the site measures). A caption row at the foot: `© <year> Peal. All
-  rights reserved.` at its start and, at its end, the contract's
-  functions (cancel, withdraw), which the law wants on every page, as
-  links in the row's mono type.
+  rights reserved.` alone. The contract's functions (cancel, withdraw)
+  are on the app's billing page, where contracts are made, not on the
+  site.
   The language menu is a small
   outline button (30 px): `Languages`, the current language's own name
   and a chevron, named "Language" and that name for screen readers. It

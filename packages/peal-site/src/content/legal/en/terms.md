@@ -244,7 +244,7 @@ Per-account pricing is billed by calendar month (UTC): on the first of each mont
 
 ### Cancelling
 
-- A contract can be cancelled online at any time, free of charge, with "Cancel your contract": the link is at the foot of every page of this site, and on the billing page, and needs no account and no signing in.
+- A contract can be cancelled online at any time, free of charge, with "Cancel your contract", on the workspace's billing page in Peal.
 - It asks for your name, the email address the acknowledgement goes to, the contract (its number, which is in the email that confirmed the subscription, or the workspace's name) and, if you wish, the day you want it to end; it shows a summary, then "Notify the cancellation".
 - There is no notice period and no fee.
 - Per-account pricing ends with the current month, whose use is invoiced; a plan priced by channels ends with the period already paid for, which is not refunded, except as below; on the later day you asked for, the last period is charged only up to that day; a trial ends at once.
@@ -259,7 +259,7 @@ To make sure a stranger who knows your address cannot end your contract, a reque
 - The withdrawal period expires 14 days after the day of the conclusion of the contract.
 - To exercise the right of withdrawal, you must inform us (Peal SAS, 15 rue Paul Verlaine, 85710 La Garnache, France, hello@peal.social) of your decision to withdraw from the contract by an unequivocal statement (for example a letter sent by post or an email).
 - You may use the model withdrawal form below, but it is not obligatory.
-- You can also exercise your right of withdrawal online with "Withdraw from contract here", at the foot of every page of this site and on the billing page, without signing in, then "Confirm withdrawal".
+- You can also exercise your right of withdrawal online with "Withdraw from contract here", on the workspace's billing page in Peal, then "Confirm withdrawal".
 - If you use this online function, we will send you an acknowledgement of receipt of the withdrawal on a durable medium (by email), including its content and the date and time of its submission, without undue delay.
 - To meet the withdrawal deadline, it is sufficient for you to send your communication before the withdrawal period has expired.
 

@@ -4,7 +4,11 @@ import type { LegalDocument } from "./legal.ts";
 
 // What the page listing every legal document (/legal) holds: the three
 // documents most people look for first, each in a cell of its own, then
-// the others in groups; and the lines under a document's title.
+// the others in groups; and the lines under a document's title. The
+// contract's functions (cancel, withdraw) are not here: contracts are made
+// in the app, and its billing page holds them.
+
+type LegalCopy = Messages["legalPage"];
 
 /** The documents the legal page opens on. */
 export const featuredDocuments = [
@@ -16,7 +20,7 @@ export const featuredDocuments = [
 /** The legal page's groups, under its featured documents. */
 export const legalGroups: readonly {
   readonly documents: readonly LegalDocument[];
-  readonly name: keyof Messages["legalPage"]["groups"];
+  readonly name: keyof LegalCopy["groups"];
 }[] = [
   { documents: ["subprocessors", "data-deletion"], name: "data" },
   { documents: ["legal-notice"], name: "company" },
@@ -36,7 +40,7 @@ export type DocumentSummary = (document: LegalDocument) => {
 
 /** What the legal page shows: its featured documents, then its groups. */
 export const legalIndex = (
-  t: Messages["legalPage"],
+  t: LegalCopy,
   // A document's address in the page's language.
   href: (document: LegalDocument) => string,
   summary: DocumentSummary
@@ -57,7 +61,7 @@ export const legalIndex = (
 
 /** The lines under a document's title: when it took effect, when it changed. */
 export const legalDates = (
-  t: Messages["legalPage"],
+  t: LegalCopy,
   locale: Locale,
   dates: {
     readonly effective?: Date | undefined;

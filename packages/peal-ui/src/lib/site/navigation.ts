@@ -395,13 +395,6 @@ export const footerProps = (
     ],
   };
 
-  // The contract's functions, which the law wants within reach of every
-  // page: in the footer's last row, where the app serves them.
-  const contract = present([
-    { href: settings.app("cancel"), label: t.cancel },
-    { href: settings.app("withdraw"), label: t.withdraw },
-  ]);
-
   // The status page has its own place, at the foot of the mark's cell.
   const resources: SiteFooterColumn = {
     label: messages.nav.resources,
@@ -444,10 +437,6 @@ export const footerProps = (
 
   return {
     captions: {
-      links:
-        contract.length === 0
-          ? undefined
-          : { label: t.contract, links: contract },
       start: `© ${new Date().getFullYear()} ${messages.nav.brand}. ${t.rights}`,
     },
     columns: columns.filter((column) => column.links.length > 0),
