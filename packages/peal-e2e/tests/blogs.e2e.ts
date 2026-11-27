@@ -7,8 +7,7 @@ import { confirmedAccount } from "./support/accounts.ts";
 import { seedChannel } from "./support/channels.ts";
 import { openedWorkspace } from "./support/workspaces.ts";
 
-// Blogs lists the workspace's websites, each opening its articles, and
-// the addresses Articles had open there.
+// Blogs lists the workspace's websites, each opening its articles.
 const run = randomUUID();
 const password = "synthetic blogs password";
 const title = "A synthetic field guide";
@@ -83,13 +82,5 @@ describe("Blogs", () => {
     // An article under another website's blog moves to its own.
     await app.open(`/${slug}/blogs/${other}/${articleId}`);
     await expect(browser).toHaveURL(`/${slug}/blogs/${site}/${articleId}`);
-
-    // The addresses Articles had open Blogs.
-    await app.open(`/${slug}/articles/${articleId}`);
-    await expect(browser).toHaveURL(`/${slug}/blogs`);
-    await app.open(`/${slug}/articles/new`);
-    await expect(browser).toHaveURL(`/${slug}/blogs`);
-    await app.open(`/${slug}/articles`);
-    await expect(browser).toHaveURL(`/${slug}/blogs`);
   });
 });

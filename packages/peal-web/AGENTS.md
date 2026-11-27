@@ -84,8 +84,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   and `…/blogs/[channelId]/[articleId]` (the article's editor; the
   address names the website for the breadcrumb, Blogs › site › article,
   and for the way back after a delete, and moves to the article's own
-  website when it names another); `…/articles`, `…/articles/new`
-  and `…/articles/[articleId]` only redirect to `…/blogs`, `…/settings` (the workspace itself, with `members`, which holds inviting
+  website when it names another), `…/settings` (the workspace itself, with `members`, which holds inviting
   and the invitations waiting, `invitations` only redirecting there, `tags`, `signatures`,
   `channel-sets`, `queues`, `recycling`, `feeds`, `api-keys`, `webhooks` and `agent`, the agent's skills, for assistant:use, with `agent/skills/new` and `agent/skills/[skillId]`) and `…/billing`. The person's own
   pages are every workspace's too, in its Settings: `…/settings/account`
