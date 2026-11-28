@@ -195,19 +195,25 @@ that holds `ads:authorize`, which no application is ever given.
 The same rules, with curl. `Idempotency-Key` is required to create.
 
 ```sh
-curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/ads/accounts"
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" -d @boost.json \
   "$PEAL_API_URL/api/v1/ads/boosts/quote"
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" -H "Idempotency-Key: <key>" -d @boost.json \
   "$PEAL_API_URL/api/v1/ads/boosts"
-curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/ads/boosts/<boost-id>"
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/ads/boosts/<boost-id>/pause"
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/ads/boosts/<boost-id>/stop"
 ```
 

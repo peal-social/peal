@@ -44,6 +44,13 @@ package has no build: the Nx project exists so that `peal-cli` and
   instructions in the file: the portal takes them.
 - Hermes Agent's are under `extensions."com.nousresearch.hermes"`: the
   server is `untrusted`, as its tools publish, send messages and spend.
+  Hermes scans a plugin before installing it and refuses one from a
+  community source on any critical finding, which no flag overrides. One
+  is `curl` on the same line as a variable named `…KEY`, `…TOKEN`,
+  `…SECRET`, `…PASSWORD` or `…CREDENTIAL`: every curl in a skill puts
+  its `-H "Authorization: Bearer $PEAL_API_KEY"` on a continuation line
+  of its own. `hermes plugins validate packages/peal-skills` runs the
+  scan.
 - ClawHub (OpenClaw's hub) releases every skill published there under
   MIT-0. The owner accepted that for ClawHub's copy (2026-11-28); the
   skills stay Apache-2.0 here and everywhere else. OpenClaw takes the

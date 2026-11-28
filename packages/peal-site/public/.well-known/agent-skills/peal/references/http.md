@@ -35,11 +35,14 @@ curl -sS "$PEAL_API_URL/api/changelog"
 ## Find ids
 
 ```sh
-curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/channels"
-curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/media?limit=20"
-curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/media/<media-id>"
 ```
 
@@ -50,7 +53,8 @@ Import a media from a public https address. It answers the media, with its
 `id` and `status`:
 
 ```sh
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://example.com/cover.png", "altText": "The spring catalogue cover"}' \
   "$PEAL_API_URL/api/v1/media/import"
@@ -65,7 +69,8 @@ from an address.
 Create a draft. It answers 201 with the post, and its `id`:
 
 ```sh
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"channelIds": ["<channel-id>"], "content": {"text": "Our spring catalogue is out.", "media": [], "overrides": []}}' \
   "$PEAL_API_URL/api/v1/posts/drafts"
@@ -79,9 +84,11 @@ Replace a draft. `PUT` takes the whole draft, and replaces its options too:
 read it, change it, send it all back.
 
 ```sh
-curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/posts/<post-id>"
-curl -sS -X PUT -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X PUT \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"channelIds": ["<channel-id>"], "content": {"text": "Our spring catalogue is out today.", "media": [], "overrides": []}}' \
   "$PEAL_API_URL/api/v1/posts/<post-id>"
@@ -90,9 +97,11 @@ curl -sS -X PUT -H "Authorization: Bearer $PEAL_API_KEY" \
 List drafts, and delete one:
 
 ```sh
-curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/posts/drafts?limit=20"
-curl -sS -X DELETE -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X DELETE \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/posts/drafts/<post-id>"
 ```
 
@@ -108,7 +117,8 @@ is `{"_tag": "at", "at": "<instant>", "timeZone": "<IANA zone>"}` or
 `{"_tag": "now"}`.
 
 ```sh
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: <key>" \
   -d '{"channelIds": ["<channel-id>"], "content": {"text": "Our spring catalogue is out.", "media": [], "overrides": []}, "when": {"_tag": "at", "at": "2026-11-20T09:00:00Z", "timeZone": "Europe/Paris"}}' \
@@ -128,28 +138,35 @@ made.
 Schedule a draft, move it, take it back to draft, or cancel it:
 
 ```sh
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"at": "2026-11-20T09:00:00Z", "timeZone": "Europe/Paris", "channelIds": ["<channel-id>"]}' \
   "$PEAL_API_URL/api/v1/posts/<post-id>/schedule"
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"at": "2026-11-21T09:00:00Z", "timeZone": "Europe/Paris"}' \
   "$PEAL_API_URL/api/v1/posts/<post-id>/reschedule"
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/posts/<post-id>/unschedule"
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/posts/<post-id>/cancel"
 ```
 
 ## Read how it went
 
 ```sh
-curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/posts/<post-id>"
-curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/posts/<post-id>/attempts"
-curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/posts/calendar?from=2026-11-01T00:00:00Z&to=2026-12-01T00:00:00Z"
 ```
 
@@ -158,11 +175,13 @@ target, have the platform checked, then say what was found. Never repost it
 blindly.
 
 ```sh
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"_tag": "published", "permalink": "https://social.example/@studio/1"}' \
   "$PEAL_API_URL/api/v1/posts/<post-id>/targets/<target-id>/confirm"
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"_tag": "notPublished"}' \
   "$PEAL_API_URL/api/v1/posts/<post-id>/targets/<target-id>/confirm"
@@ -172,16 +191,19 @@ Repost a target that failed, only when the user wants it sent again. Each
 request sends the post again:
 
 ```sh
-curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -X POST \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/posts/<post-id>/targets/<target-id>/repost"
 ```
 
 Counts and the activity log:
 
 ```sh
-curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/analytics/posts/<post-id>"
-curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/workspace/activity?limit=20"
 ```
 
@@ -206,6 +228,7 @@ Every answer to a key carries `RateLimit-Policy` and `RateLimit`. A 429
 long, then send the same request once. Print the headers with `-D -`:
 
 ```sh
-curl -sS -D - -o /dev/null -H "Authorization: Bearer $PEAL_API_KEY" \
+curl -sS -D - -o /dev/null \
+  -H "Authorization: Bearer $PEAL_API_KEY" \
   "$PEAL_API_URL/api/v1/channels"
 ```
