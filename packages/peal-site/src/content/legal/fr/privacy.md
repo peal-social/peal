@@ -3,7 +3,7 @@ title: Politique de confidentialité
 description: Comment Peal traite les données personnelles, pourquoi, sur quelles bases légales et pendant combien de temps, et les droits dont vous disposez.
 draft: false
 effective: 2026-11-13
-updated: 2026-11-25
+updated: 2026-11-28
 ---
 
 ## En bref
@@ -309,6 +309,19 @@ Vous pouvez déconnecter un compte dans Peal, depuis la page Canaux de l’organ
 - L’identifiant du membre qui a connecté une page LinkedIn part avec la page : à sa déconnexion ou à la suppression de son organisation, quand un autre membre la reconnecte, et dans la journée une fois que nous cessons de lire les commentaires LinkedIn.
 - La fermeture du compte Peal de la personne qui l’a connectée le laisse à l’organisation, où la page reste ; LinkedIn n’envoie aucune demande de suppression des données d’un membre, si bien qu’une telle demande nous parvient à privacy@peal.social.
 
+### Google et YouTube
+
+Peal reçoit des données de Google quand vous vous connectez avec Google, et quand une organisation connecte une chaîne YouTube. Peal accède à YouTube par les services d’API YouTube : en connectant une chaîne, vous acceptez les [conditions d’utilisation de YouTube](https://www.youtube.com/t/terms), et Google traite ce qu’il détient sur vous selon les [règles de confidentialité de Google](https://policies.google.com/privacy).
+
+- Ce à quoi Peal accède : la connexion avec Google nous donne votre identifiant Google, votre nom, votre adresse e-mail et si Google l’a confirmée. Connecter une chaîne YouTube permet à Peal d’y mettre en ligne des vidéos et de la lire : l’identifiant, le nom et l’image de la chaîne, ses nombres d’abonnés et de vidéos ; pour chaque vidéo que Peal y a publiée, son état de traitement et ses nombres de vues, de « J’aime » et de commentaires ; les catégories de vidéos et les playlists, quand un membre en choisit une ; et, une fois que nous l’activons, les commentaires sous ces vidéos.
+- Ce que Peal en fait : vous connecter ; mettre en ligne les vidéos que les membres planifient ou publient, avec le titre, la description, la visibilité et la miniature qu’ils ont choisis ; et montrer à l’organisation, dans Peal, la chaîne, les chiffres de ses vidéos et leurs commentaires. Peal ne met en ligne rien qu’un membre n’a pas demandé, et ne lit rien d’autre de la chaîne.
+- Qui les reçoit : seulement les prestataires qui hébergent et sauvegardent pour nous les données de Peal, listés sur la page des sous-traitants. Peal ne les vend jamais, et ne les utilise ni ne les transfère jamais pour de la publicité (ciblée, personnalisée, de reciblage ou par centres d’intérêt), pour constituer des bases de données, pour des courtiers en données ou des revendeurs d’informations, ni pour évaluer une solvabilité ou accorder un prêt.
+- IA et apprentissage automatique : Peal n’utilise jamais les données utilisateur Google pour développer, améliorer ou entraîner des modèles d’IA ou d’apprentissage automatique, et ne les transfère jamais à cette fin.
+- Comment elles sont protégées : les jetons d’une chaîne sont stockés chiffrés en AES-256-GCM, les échanges sont chiffrés, et seuls les membres de l’organisation qui a connecté une chaîne voient ses données dans Peal (voir Sécurité).
+- Combien de temps elles sont conservées : votre identifiant Google, tant que votre compte existe ; les jetons et les informations d’une chaîne, jusqu’à sa déconnexion ou la suppression de son organisation ; ses chiffres, comme l’indique la section Durées de conservation, et 7 jours au plus après sa déconnexion ; ses commentaires, comme décrit sous Commentaires sur vos publications.
+- Comment les supprimer : déconnectez la chaîne depuis la page Canaux de l’organisation, ce qui supprime aussitôt ses jetons, ou fermez votre compte pour effacer vos données de connexion. Vous pouvez retirer l’accès de Peal à votre compte Google sur la [page des paramètres de sécurité de Google](https://security.google.com/settings/security/permissions), et nous demander à privacy@peal.social de supprimer ce que nous détenons.
+- L’utilisation et le transfert vers toute autre application, par Peal, des informations reçues des API Google respectent la [politique relative aux données utilisateur des services d’API Google](https://developers.google.com/terms/api-services-user-data-policy), y compris les exigences d’utilisation limitée.
+
 <aside>
 
 **En clair**
@@ -316,6 +329,7 @@ Vous pouvez déconnecter un compte dans Peal, depuis la page Canaux de l’organ
 - Ce qu’une plateforme partage avec nous nous sert à publier vos publications et à vous montrer leurs chiffres et les réponses qu’elles reçoivent.
 - Déconnecter un compte supprime les jetons que nous détenons pour lui.
 - Les comptes Google Ads sont seulement lus.
+- Ce que partagent Google et YouTube sert à vous connecter, à publier vos vidéos et à montrer leurs chiffres et leurs commentaires. Peal ne le vend jamais, ne s’en sert pas pour de la publicité et n’entraîne aucune IA dessus.
 
 </aside>
 
@@ -531,6 +545,7 @@ Nous prévenons par e-mail les titulaires de compte au moins 30 jours avant qu�
 
 Modifications depuis la première publication de cette politique :
 
+- 28 novembre 2026 : ce à quoi Peal accède chez Google et YouTube, comment il l’utilise, le partage, le protège et le conserve, et comment le supprimer ; que Peal utilise les services d’API YouTube, sous les conditions d’utilisation de YouTube et les règles de confidentialité de Google ; que Peal n’utilise jamais les données utilisateur Google pour entraîner des modèles d’IA.
 - 25 novembre 2026 : les images que chargent nos e-mails, que votre application ou votre service de messagerie va chercher sur app.peal.social, et dont nous ne nous servons pas pour savoir si vous avez ouvert un e-mail.
 - 23 novembre 2026 : un résumé en haut de la page et quelques lignes en clair après chaque section, qui ne changent rien à ce que dit la politique ; la liste de nos prestataires passe sur la page des sous-traitants ; l’accord de traitement des données qui s’applique entre une organisation et nous ; notre numéro d’immatriculation.
 - 22 novembre 2026 : une discussion d’assistance, avec Crisp, sur ce site, la documentation, le blog et l’application, qui ne se charge qu’une fois que vous l’ouvrez ; ses discussions sont conservées 3 ans après leur dernier message.

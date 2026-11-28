@@ -3,7 +3,7 @@ title: Terms of service
 description: The terms that govern the use of the hosted Peal service.
 draft: false
 effective: 2026-11-23
-updated: 2026-11-27
+updated: 2026-11-28
 ---
 
 ## Summary
@@ -73,6 +73,8 @@ When you connect a social media account, you authorise Peal to act on that accou
 
 Your use of each platform stays subject to that platform's own terms. Platforms can change or restrict access to their services, which can change what Peal is able to do with them.
 
+Peal reaches YouTube through the YouTube API Services. By connecting a YouTube channel to Peal, you agree to be bound by the [YouTube Terms of Service](https://www.youtube.com/t/terms), and our privacy policy says what Peal does with the data Google and YouTube share.
+
 When a platform does not confirm whether a post was published, Peal marks the post as unconfirmed instead of retrying it, so that it is not published twice. Check the platform before you publish such a post again.
 
 We do not control the platforms. A platform can refuse, delay, change or remove a post, limit an account, or be unavailable, and we are not responsible for what it decides or for its outages. Peal shows each post's outcome as the platform reported it: check that what matters to you went out as intended. You are responsible for respecting each platform's rules when you publish there.
@@ -83,6 +85,7 @@ We do not control the platforms. A platform can refuse, delay, change or remove 
 
 - Peal acts on your accounts within the permissions you grant.
 - Each platform applies its own terms, and may refuse, delay or remove a post or be down, which we can't answer for.
+- Connecting a YouTube channel means agreeing to YouTube's Terms of Service.
 - When a platform doesn't confirm that a post went out, Peal says so and doesn't try again, so check the platform before you publish it a second time.
 
 </aside>
