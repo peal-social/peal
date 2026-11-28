@@ -2,7 +2,7 @@
   "name": "peal",
   "displayName": "Peal",
   "version": "0.1.0",
-  "description": "Draft, schedule and publish social media posts in a Peal workspace, and read how they did. Connects Peal's MCP server, signed in with OAuth, and adds the skill for Peal's command line and HTTP API.",
+  "description": "Unified AI infrastructure for marketing teams and agents. Connect your agents to Peal and run your marketing on autopilot: they draft, schedule and publish your social media posts, then read how they did. Adds Peal's MCP server, signed in with OAuth, and the skill for its command line and API.",
   "author": {
     "name": "Peal"
   },

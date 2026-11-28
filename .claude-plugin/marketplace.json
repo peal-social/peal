@@ -11,7 +11,7 @@
     {
       "name": "peal",
       "source": "./packages/peal-skills",
-      "description": "Draft, schedule and publish social media posts in a Peal workspace, and read how they did.",
+      "description": "Unified AI infrastructure for marketing teams and agents: connect your agents to Peal and run your marketing on autopilot.",
       "category": "productivity"
     }
   ]
