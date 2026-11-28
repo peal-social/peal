@@ -69,10 +69,16 @@ export const rules: Readonly<Record<Job, Rule>> = {
       name === "peal-sdk" ||
       name.startsWith("peal-sdk-"),
   },
-  // The error catalogue's test reads the docs, and the metric names' test
-  // the Ansible roles' alerts and dashboards.
+  // The error catalogue's test reads the docs, the metric names' test the
+  // Ansible roles' alerts and dashboards, and the plugin's test the tools
+  // its review cases name.
   server: {
-    paths: [compose, "packages/peal-docs/", "packages/peal-infra/ansible/"],
+    paths: [
+      compose,
+      "packages/peal-docs/",
+      "packages/peal-infra/ansible/",
+      "packages/peal-skills/plugin.json",
+    ],
     project: named("peal-server"),
   },
 };

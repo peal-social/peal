@@ -1,0 +1,19 @@
+{
+  "name": "peal",
+  "displayName": "Peal",
+  "version": "0.1.0",
+  "description": "Draft, schedule and publish social media posts in a Peal workspace, and read how they did. Connects Peal's MCP server, signed in with OAuth, and adds the skill for Peal's command line and HTTP API.",
+  "author": {
+    "name": "Peal"
+  },
+  "homepage": "https://docs.peal.social/developers/mcp",
+  "repository": "https://github.com/peal-social/peal",
+  "license": "Apache-2.0",
+  "keywords": ["social media", "scheduling", "publishing", "analytics", "mcp"],
+  "logo": "assets/logo.svg",
+  "mcpServers": {
+    "peal": {
+      "url": "https://app.peal.social/api/mcp"
+    }
+  }
+}

@@ -367,7 +367,8 @@ The repository holds a skill for agents in the folder [`packages/peal-skills/ski
 
 It teaches the command line and the HTTP API: setting up and checking with `peal doctor --json`, signing in or using a workspace API key, finding channel and media ids, drafting, scheduling and publishing, sending under an idempotency key, reading how a post went, and handling errors and rate limits. Its first two rules are this page's: a draft is safe and publishing is public, and a refusal is never to be worked around. To get it and share it:
 
-- To install it, copy the folder to where your agent reads skills.
+- To install it, run `npx skills add peal-social/peal`, which puts it where your agent reads skills, or copy the folder there yourself.
+- It's also part of Peal's plugin, which adds the MCP server beside it in the clients that install plugins ([Install Peal's plugin](/developers/mcp#plugin)).
 - Peal's site publishes it for discovery, at `https://peal.social/.well-known/agent-skills/index.json`, which lists the skill with its address and its digest.
 - It's under the Apache License 2.0, unlike most of the repository, so you can install it, change it and share it.
 
