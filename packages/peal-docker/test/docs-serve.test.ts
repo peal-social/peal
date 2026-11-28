@@ -1,6 +1,7 @@
 // The docs assistant's rate limit counts readers by the address serve.ts
 // puts in X-Forwarded-For. One IPv6 network (a /64) is one reader there,
 // as anyone holding it can pick any address in it for every question.
+import { once } from "node:events";
 import { createServer } from "node:http";
 
 import { describe, expect, it } from "vitest";
@@ -55,21 +56,19 @@ describe("the docs' Node server", () => {
       response.end("docs");
     });
 
-    await new Promise<void>((resolve) => {
-      server.listen(0, "127.0.0.1", resolve);
-    });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
 
     try {
       const address = server.address();
-      const port =
-        typeof address === "object" && address !== null ? address.port : 0;
+      const port = address instanceof Object ? address.port : 0;
+
       const response = await fetch(`http://127.0.0.1:${port}/`);
 
       expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
     } finally {
-      await new Promise((resolve) => {
-        server.close(resolve);
-      });
+      server.close();
+      await once(server, "close");
     }
   });
 });
