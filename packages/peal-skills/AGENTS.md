@@ -44,6 +44,12 @@ package has no build: the Nx project exists so that `peal-cli` and
   instructions in the file: the portal takes them.
 - Hermes Agent's are under `extensions."com.nousresearch.hermes"`: the
   server is `untrusted`, as its tools publish, send messages and spend.
+  Hermes (0.23.5) signs in with OAuth only to the servers in its own
+  `config.yaml`, never to a plugin's, so the docs add Peal's server there
+  first (`hermes mcp add peal --url … --auth oauth`) with `trust:
+  untrusted`: a `config.yaml` server of the same name replaces the
+  plugin's, its trust included. Peal has no entry in Hermes's MCP
+  catalog (`optional-mcps/`): the owner chose not to submit one.
   Hermes scans a plugin before installing it and refuses one from a
   community source on any critical finding, which no flag overrides. One
   is `curl` on the same line as a variable named `…KEY`, `…TOKEN`,
