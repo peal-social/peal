@@ -2,7 +2,7 @@
   "name": "peal",
   "displayName": "Peal",
   "version": "0.1.0",
-  "description": "Unified AI infrastructure for marketing teams and agents. Connect your agents to Peal and run your marketing on autopilot: they draft, schedule and publish your social media posts, then read how they did. Adds Peal's MCP server, signed in with OAuth, and the skill for its command line and API.",
+  "description": "Unified AI infrastructure for marketing teams and agents. With Peal's MCP server and skill, your agent drafts, schedules and publishes posts to your connected accounts, answers comments and messages, runs automations, boosts posts as ads and reads your analytics, in the Peal workspace you sign in to.",
   "author": {
     "name": "Peal"
   },

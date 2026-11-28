@@ -10,7 +10,7 @@
     {
       "name": "peal",
       "source": "packages/peal-skills",
-      "description": "Unified AI infrastructure for marketing teams and agents: connect your agents to Peal and run your marketing on autopilot."
+      "description": "Unified AI infrastructure for marketing teams and agents: Peal's MCP server and skill, for posts, the inbox, automations, ads and analytics."
     }
   ]
 }
