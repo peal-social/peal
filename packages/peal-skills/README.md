@@ -13,12 +13,12 @@ its own format.
 
 ## Install
 
-| Client                     | How                                                                                                                        |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Claude Code                | `/plugin install peal --marketplace peal-social/peal`                                                                      |
-| Hermes Agent               | `hermes plugins install peal-social/peal/packages/peal-skills`, then `hermes plugins enable peal`                          |
-| The skill alone, any agent | `npx skills add peal-social/peal`, or copy `skills/peal/` to where your agent reads skills                                 |
-| Any other MCP client       | Add the remote server `https://app.peal.social/api/mcp` ([Connect an MCP client](https://docs.peal.social/developers/mcp)) |
+| Client                     | How                                                                                                                                                                                                                                                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claude Code                | `/plugin install peal --marketplace peal-social/peal`                                                                                                                                                                                                                                                                |
+| Hermes Agent               | `hermes mcp add peal --url https://app.peal.social/api/mcp --auth oauth`, then `hermes plugins install peal-social/peal/packages/peal-skills` and `hermes plugins enable peal`; add `trust: untrusted` to `mcp_servers.peal` in `~/.hermes/config.yaml` ([the docs](https://docs.peal.social/developers/mcp#plugin)) |
+| The skill alone, any agent | `npx skills add peal-social/peal`, or copy `skills/peal/` to where your agent reads skills                                                                                                                                                                                                                           |
+| Any other MCP client       | Add the remote server `https://app.peal.social/api/mcp` ([Connect an MCP client](https://docs.peal.social/developers/mcp))                                                                                                                                                                                           |
 
 Peal's site also serves the skill for discovery, at
 `https://peal.social/.well-known/agent-skills/index.json`.

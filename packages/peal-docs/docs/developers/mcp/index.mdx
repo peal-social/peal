@@ -41,6 +41,7 @@ Some clients install Peal as a plugin, which adds the MCP server at `https://app
 ```
 
 ```bash Hermes Agent
+hermes mcp add peal --url https://app.peal.social/api/mcp --auth oauth
 hermes plugins install peal-social/peal/packages/peal-skills
 hermes plugins enable peal
 ```
@@ -48,6 +49,16 @@ hermes plugins enable peal
 </CodeGroup>
 
 The plugin's files are in [`packages/peal-skills`](https://github.com/peal-social/peal/tree/main/packages/peal-skills), under the Apache License 2.0. Once it's installed, the client signs in as below.
+
+Hermes Agent signs in only to the servers in its own configuration, so the first line adds Peal's server there, and the plugin adds the skill. Then add `trust: untrusted` to the entry the first line wrote in `~/.hermes/config.yaml`, so Hermes asks you before each tool that changes something:
+
+```yaml
+mcp_servers:
+  peal:
+    url: https://app.peal.social/api/mcp
+    auth: oauth
+    trust: untrusted
+```
 
 ## Sign the client in [#sign-in]
 
