@@ -3,7 +3,7 @@ title: Privacy policy
 description: How Peal processes personal data, why, on which legal bases and for how long, and the rights you have.
 draft: false
 effective: 2026-11-13
-updated: 2026-11-25
+updated: 2026-11-28
 ---
 
 ## Summary
@@ -303,6 +303,19 @@ You can disconnect an account in Peal, from the organisation's Channels page: Pe
 
 The identifier of the member who connected a LinkedIn page goes with the page: when it is disconnected or its organisation is deleted, when another member reconnects it, and within a day once we stop reading LinkedIn comments. Closing the Peal account of whoever connected it leaves it with the organisation, as the page stays there; LinkedIn sends no request to delete a member's data, so such a request reaches us at privacy@peal.social.
 
+### Google and YouTube
+
+Peal receives data from Google when you sign in with Google, and when an organisation connects a YouTube channel. Peal reaches YouTube through the YouTube API Services: by connecting a channel, you agree to the [YouTube Terms of Service](https://www.youtube.com/t/terms), and Google processes what it holds about you under the [Google Privacy Policy](https://policies.google.com/privacy).
+
+- What Peal accesses: signing in with Google gives us your Google identifier, your name, your email address and whether Google confirmed it. Connecting a YouTube channel lets Peal upload videos to it and read it: the channel's identifier, name and picture, its subscriber and video counts; for each video Peal published there, its processing status and its view, like and comment counts; the video categories and playlists, when a member picks one; and, once we turn it on, the comments under those videos.
+- How Peal uses it: to sign you in; to upload the videos members schedule or publish, with the title, description, visibility and thumbnail they chose; and to show the channel, its videos' figures and their comments to the organisation in Peal. Peal uploads nothing a member did not ask for, and reads nothing else from the channel.
+- Who receives it: only the providers that host and back up Peal's data for us, listed on the sub-processors page. Peal never sells it, and never uses or transfers it for advertising (targeted, personalised, retargeted or interest-based), to build databases, for data brokers or information resellers, or to decide creditworthiness or lending.
+- AI and machine learning: Peal never uses Google user data to develop, improve or train AI or machine learning models, and never transfers it for that purpose.
+- How it is protected: a channel's tokens are stored encrypted with AES-256-GCM, traffic is encrypted, and only the members of the organisation that connected a channel see its data in Peal (see Security).
+- How long it is kept: your Google identifier, as long as your account exists; a channel's tokens and details, until it is disconnected or its organisation is deleted; its figures, as the Retention section says, and 7 days at most after it is disconnected; its comments, as described under Comments on your posts.
+- How to remove it: disconnect the channel from the organisation's Channels page, which deletes its tokens at once, or close your account to erase your sign-in data. You can remove Peal's access to your Google account on [Google's security settings page](https://security.google.com/settings/security/permissions), and ask us at privacy@peal.social to delete what we hold.
+- Peal's use and transfer to any other app of information received from Google APIs will adhere to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
+
 <aside>
 
 **What it means**
@@ -310,6 +323,7 @@ The identifier of the member who connected a LinkedIn page goes with the page: w
 - We use what a platform shares with us to publish your posts and to show you their figures and the replies to them.
 - Disconnecting an account deletes the tokens we hold for it.
 - Google Ads accounts are only read.
+- What Google and YouTube share serves to sign you in, publish your videos and show their figures and comments. Peal never sells it, uses it for ads or trains AI on it.
 
 </aside>
 
@@ -521,6 +535,7 @@ We email account holders at least 30 days before a substantial change to this po
 
 Changes since this policy was first published:
 
+- 28 November 2026: what Peal accesses from Google and YouTube, how it uses, shares, protects and keeps it, and how to remove it; that Peal uses the YouTube API Services, under YouTube's Terms of Service and Google's Privacy Policy; that Peal never uses Google user data to train AI models.
 - 25 November 2026: the images our emails load, which your mail app or mail service fetches from app.peal.social, and which we don't use to know whether you opened an email.
 - 23 November 2026: a summary at the top and a few plain lines after each section, which change nothing of what the policy says; the list of our providers moves to the sub-processors page; the data processing agreement that applies between an organisation and us; our registration number.
 - 22 November 2026: a support chat, with Crisp, on this website, the documentation, the blog and the app, which loads only once you open it; its conversations are kept 3 years after their last message.

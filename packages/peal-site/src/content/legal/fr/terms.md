@@ -3,7 +3,7 @@ title: Conditions d’utilisation
 description: Les conditions qui encadrent l’utilisation du service Peal hébergé.
 draft: false
 effective: 2026-11-23
-updated: 2026-11-27
+updated: 2026-11-28
 ---
 
 ## En bref
@@ -73,6 +73,8 @@ Lorsque vous connectez un compte de réseau social, vous autorisez Peal à agir 
 
 Votre utilisation de chaque plateforme reste soumise à ses propres conditions. Les plateformes peuvent modifier ou restreindre l’accès à leurs services, ce qui peut changer ce que Peal est en mesure d’y faire.
 
+Peal accède à YouTube par les services d’API YouTube. En connectant une chaîne YouTube à Peal, vous acceptez d’être lié par les [conditions d’utilisation de YouTube](https://www.youtube.com/t/terms), et notre politique de confidentialité indique ce que Peal fait des données que Google et YouTube partagent.
+
 Lorsqu’une plateforme ne confirme pas si une publication a bien été publiée, Peal la marque comme non confirmée au lieu de réessayer, pour qu’elle ne soit pas publiée deux fois. Vérifiez sur la plateforme avant de publier de nouveau une telle publication.
 
 - Nous ne contrôlons pas les plateformes.
@@ -86,6 +88,7 @@ Lorsqu’une plateforme ne confirme pas si une publication a bien été publiée
 
 - Peal agit sur vos comptes dans la limite des autorisations que vous accordez.
 - Chaque plateforme applique ses propres conditions, et peut refuser, retarder ou retirer une publication, ou être en panne, ce dont nous ne pouvons pas répondre.
+- Connecter une chaîne YouTube, c’est accepter les conditions d’utilisation de YouTube.
 - Quand une plateforme ne confirme pas qu’une publication est partie, Peal le dit et ne réessaie pas : vérifiez sur la plateforme avant de la publier une seconde fois.
 
 </aside>
