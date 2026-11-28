@@ -373,7 +373,8 @@ Le dépôt contient une compétence (skill) pour agents dans le dossier [`packag
 
 Elle enseigne la ligne de commande et l’API HTTP : s’installer et vérifier avec `peal doctor --json`, se connecter ou utiliser une clé d’API d’espace de travail, trouver les identifiants des canaux et des médias, rédiger, programmer et publier, envoyer sous une clé d’idempotence, lire ce qu’une publication est devenue, et traiter les erreurs et les limites de débit. Ses deux premières règles sont celles de cette page : un brouillon est sans risque et publier est public, et un refus ne se contourne jamais. Pour l’obtenir et la partager :
 
-- Pour l’installer, copiez le dossier là où votre agent lit ses compétences.
+- Pour l’installer, lancez `npx skills add peal-social/peal`, qui la place là où votre agent lit ses compétences, ou copiez-y le dossier vous-même.
+- Elle fait aussi partie du plugin de Peal, qui ajoute le serveur MCP à côté d’elle dans les clients qui installent des plugins ([Installer le plugin de Peal](/developers/mcp#plugin)).
 - Le site de Peal la publie pour qu’elle soit découverte, à `https://peal.social/.well-known/agent-skills/index.json`, qui liste la compétence avec son adresse et son empreinte.
 - Elle est sous licence Apache 2.0, contrairement à la plus grande partie du dépôt. Vous pouvez donc l’installer, la modifier et la partager.
 

@@ -237,7 +237,7 @@ const credential = await peal.credential.get();
 AI agents can work in a workspace through the
 [MCP endpoint](https://docs.peal.social/developers/mcp), the
 [`peal` command line](https://docs.peal.social/developers/cli) or the
-[agent skill](packages/peal-skills/skills/peal/SKILL.md). The workspace
+[agent skill](packages/peal-skills/skills/peal/SKILL.md), which [Peal's plugin](packages/peal-skills) installs with the MCP server in one step. The workspace
 decides whether an agent only drafts posts for a person to review, or
 publishes them.
 
@@ -300,7 +300,7 @@ which part is under which:
 | Everything, unless a folder below has a `LICENSE` of its own | [FSL-1.1-ALv2](LICENSE.md): any use but a competing service, and Apache-2.0 two years after each release |
 | [`peal-contract`](packages/peal-contract), the API contract  | [Apache-2.0](packages/peal-contract/LICENSE)                                                             |
 | [`peal-sdk`](packages/peal-sdk), the SDKs                    | [Apache-2.0](packages/peal-sdk/LICENSE)                                                                  |
-| [`peal-skills`](packages/peal-skills), the agent skill       | [Apache-2.0](packages/peal-skills/LICENSE)                                                               |
+| [`peal-skills`](packages/peal-skills), the plugin and skill  | [Apache-2.0](packages/peal-skills/LICENSE)                                                               |
 
 Peal is fair source, not open source. You can use, change and self-host it
 for anything except offering it to others as a competing service. Each

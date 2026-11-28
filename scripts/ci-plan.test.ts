@@ -4,6 +4,7 @@ import { everything, outsideProjects, plan } from "./ci-plan.ts";
 
 const roots = [
   "packages/peal-blog",
+  "packages/peal-cli",
   "packages/peal-contract",
   "packages/peal-docker",
   "packages/peal-docs",
@@ -15,6 +16,7 @@ const roots = [
   "packages/peal-sdk/node",
   "packages/peal-server",
   "packages/peal-site",
+  "packages/peal-skills",
   "packages/peal-ui",
   "packages/peal-web",
 ];
@@ -115,6 +117,16 @@ describe("the CI plan", () => {
       plan({
         affected: ["peal-docs"],
         files: ["packages/peal-docs/docs/index.mdx"],
+        roots,
+      })
+    ).toEqual({ ...none, server: true });
+  });
+
+  it("runs the server's tests for a change to the plugin's manifest, whose review cases name tools", () => {
+    expect(
+      plan({
+        affected: ["peal-skills", "peal-cli", "peal-site"],
+        files: ["packages/peal-skills/plugin.json"],
         roots,
       })
     ).toEqual({ ...none, server: true });

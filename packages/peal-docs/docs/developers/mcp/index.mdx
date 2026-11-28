@@ -30,6 +30,25 @@ Give the client this address, or this configuration, the way its documentation s
 
 Before it connects, a client can read the endpoint's server card at `/api/mcp/server-card`, such as `https://peal.example.com/api/mcp/server-card`. The card gives the endpoint's address, the protocol revisions it speaks and the header that carries the credential. Reading it needs no credential, and pages of any origin may read it ([Discovery](/developers/conventions/discovery#discovery)).
 
+## Install Peal's plugin [#plugin]
+
+Some clients install Peal as a plugin, which adds the MCP server at `https://app.peal.social/api/mcp` and the [agent skill](/developers/agents#skill) in one step. The plugin connects to Peal Cloud: for a self-hosted server, add its address as above.
+
+<CodeGroup>
+
+```text Claude Code
+/plugin install peal --marketplace peal-social/peal
+```
+
+```bash Hermes Agent
+hermes plugins install peal-social/peal/packages/peal-skills
+hermes plugins enable peal
+```
+
+</CodeGroup>
+
+The plugin's files are in [`packages/peal-skills`](https://github.com/peal-social/peal/tree/main/packages/peal-skills), under the Apache License 2.0. Once it's installed, the client signs in as below.
+
 ## Sign the client in [#sign-in]
 
 Peal signs MCP clients in with OAuth, so you don't give the client a key. On its first request, Peal answers that it needs a token and tells it where to ask for one.

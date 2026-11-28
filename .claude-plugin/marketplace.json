@@ -1,0 +1,18 @@
+{
+  "name": "peal",
+  "owner": {
+    "name": "Peal",
+    "url": "https://peal.social"
+  },
+  "metadata": {
+    "description": "Peal's plugin: its MCP server and its agent skill."
+  },
+  "plugins": [
+    {
+      "name": "peal",
+      "source": "./packages/peal-skills",
+      "description": "Unified AI infrastructure for marketing teams and agents: Peal's MCP server and skill, for posts, the inbox, automations, ads and analytics.",
+      "category": "productivity"
+    }
+  ]
+}

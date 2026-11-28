@@ -30,6 +30,25 @@ Donnez au client cette adresse, ou cette configuration, comme sa documentation l
 
 Avant de se connecter, un client peut lire la fiche du point d’accès (server card), à `/api/mcp/server-card`, comme `https://peal.example.com/api/mcp/server-card`. Elle donne l’adresse du point d’accès, les révisions du protocole qu’il parle et l’en-tête qui porte le moyen d’authentification. Elle se lit sans authentification, et depuis des pages de n’importe quelle origine ([Découverte](/developers/conventions/discovery#discovery)).
 
+## Installer le plugin de Peal [#plugin]
+
+Certains clients installent Peal comme un plugin, qui ajoute le serveur MCP à `https://app.peal.social/api/mcp` et la [compétence pour agents](/developers/agents#skill) en une étape. Le plugin se connecte à Peal Cloud : pour un serveur auto-hébergé, ajoutez son adresse comme ci-dessus.
+
+<CodeGroup>
+
+```text Claude Code
+/plugin install peal --marketplace peal-social/peal
+```
+
+```bash Hermes Agent
+hermes plugins install peal-social/peal/packages/peal-skills
+hermes plugins enable peal
+```
+
+</CodeGroup>
+
+Les fichiers du plugin sont dans [`packages/peal-skills`](https://github.com/peal-social/peal/tree/main/packages/peal-skills), sous licence Apache 2.0. Une fois installé, le client se connecte comme ci-dessous.
+
 ## Connecter le client [#sign-in]
 
 Peal connecte les clients MCP avec OAuth, donc vous ne donnez aucune clé au client. À sa première requête, Peal lui répond qu’il lui faut un jeton, et lui indique où le demander.

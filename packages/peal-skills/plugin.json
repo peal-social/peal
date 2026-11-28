@@ -1,0 +1,101 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "peal",
+  "version": "0.1.0",
+  "description": "Unified AI infrastructure for marketing teams and agents. With Peal's MCP server and skill, your agent drafts, schedules and publishes posts to your connected accounts, answers comments and messages, runs automations, boosts posts as ads and reads your analytics, in the Peal workspace you sign in to.",
+  "author": {
+    "name": "Peal",
+    "url": "https://peal.social"
+  },
+  "homepage": "https://docs.peal.social/developers/mcp",
+  "repository": "https://github.com/peal-social/peal/tree/main/packages/peal-skills",
+  "license": "Apache-2.0",
+  "keywords": ["social media", "scheduling", "publishing", "analytics", "mcp"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Peal",
+        "shortDescription": "Schedule social media posts",
+        "longDescription": "Peal schedules posts for teams across the social platforms they connect. With this plugin, ChatGPT works in the one Peal workspace you pick when you sign in: it lists your connected channels, writes drafts for you to review, checks a post against each platform's rules, and reads how your posts performed. When you allow publishing on Peal's consent page, it can also schedule and publish posts, which then go out in public on those platforms. Leave publishing unticked and it writes drafts only.",
+        "developerName": "Peal",
+        "category": "Productivity",
+        "websiteURL": "https://peal.social",
+        "supportURL": "https://docs.peal.social/developers/mcp",
+        "privacyPolicyURL": "https://peal.social/privacy",
+        "termsOfServiceURL": "https://peal.social/terms",
+        "defaultPrompt": [
+          "Draft a LinkedIn post announcing our new feature, for me to review in Peal",
+          "Which of my posts did best last month, and on which channel?",
+          "What is scheduled to go out this week?"
+        ],
+        "brandColor": "#415EEE",
+        "logo": "./assets/logo.svg"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Lists the channels the workspace can post to",
+              "prompt": "Which social accounts can I post to from Peal?",
+              "tools_triggered": ["list_channels"],
+              "expected_behavior": "Lists each connected channel with its platform and name, and changes nothing."
+            },
+            {
+              "description": "Writes a draft without publishing it",
+              "prompt": "Write a short post about our spring sale and save it as a draft in Peal for my Bluesky account.",
+              "tools_triggered": ["list_channels", "create_draft"],
+              "expected_behavior": "Saves one draft on the Bluesky channel and says it was not published."
+            },
+            {
+              "description": "Checks a post against the platforms' rules",
+              "prompt": "Would this text fit on X and on LinkedIn: \"We are hiring two engineers in Lyon. Apply on our site.\"",
+              "tools_triggered": ["list_channels", "validate_post"],
+              "expected_behavior": "Reports, for each channel, whether the post is accepted, and makes nothing."
+            },
+            {
+              "description": "Reads what is scheduled",
+              "prompt": "What posts are scheduled in Peal for the next seven days?",
+              "tools_triggered": ["list_posts"],
+              "expected_behavior": "Lists the scheduled posts with their channels and times, and changes nothing."
+            },
+            {
+              "description": "Reads how the workspace's posts did",
+              "prompt": "Summarise how my posts performed over the last 30 days.",
+              "tools_triggered": ["analytics_summary"],
+              "expected_behavior": "Gives the workspace's totals for the period from Peal's analytics, and changes nothing."
+            }
+          ],
+          "negative": [
+            {
+              "description": "A general writing request that needs no workspace",
+              "prompt": "Give me three tips for writing a good LinkedIn headline."
+            },
+            {
+              "description": "A question about a platform's own settings",
+              "prompt": "How do I change my Instagram password?"
+            },
+            {
+              "description": "A request about another kind of scheduling",
+              "prompt": "Schedule a meeting with my team for Thursday at 10."
+            }
+          ]
+        }
+      },
+      "publication": {
+        "translations": {
+          "fr": {
+            "subtitle": "Planifier ses publications",
+            "description": "Peal planifie les publications des équipes sur les réseaux sociaux qu'elles connectent. Avec ce plugin, ChatGPT travaille dans l'espace Peal que vous choisissez en vous connectant : il liste vos comptes connectés, rédige des brouillons que vous relisez, vérifie une publication selon les règles de chaque réseau et lit les résultats de vos publications. Si vous autorisez la publication sur la page de consentement de Peal, il peut aussi planifier et publier, en public sur ces réseaux. Sans cette autorisation, il rédige des brouillons seulement."
+          }
+        }
+      }
+    },
+    "com.nousresearch.hermes": {
+      "servers": {
+        "peal": {
+          "trust": "untrusted"
+        }
+      }
+    }
+  }
+}

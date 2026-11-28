@@ -1,0 +1,19 @@
+{
+  "name": "peal",
+  "displayName": "Peal",
+  "version": "0.1.0",
+  "description": "Unified AI infrastructure for marketing teams and agents. With Peal's MCP server and skill, your agent drafts, schedules and publishes posts to your connected accounts, answers comments and messages, runs automations, boosts posts as ads and reads your analytics, in the Peal workspace you sign in to.",
+  "author": {
+    "name": "Peal"
+  },
+  "homepage": "https://docs.peal.social/developers/mcp",
+  "repository": "https://github.com/peal-social/peal",
+  "license": "Apache-2.0",
+  "keywords": ["social media", "scheduling", "publishing", "analytics", "mcp"],
+  "logo": "assets/logo.svg",
+  "mcpServers": {
+    "peal": {
+      "url": "https://app.peal.social/api/mcp"
+    }
+  }
+}
