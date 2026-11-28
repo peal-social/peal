@@ -43,6 +43,7 @@ describe("next.config.ts", () => {
     ["X-Content-Type-Options", "nosniff"],
     ["Referrer-Policy", "strict-origin-when-cross-origin"],
     ["Permissions-Policy", "camera=(), microphone=(), geolocation=()"],
+    ["X-Robots-Tag", "noindex, nofollow"],
   ])("sends %s", async (key, value) => {
     const [everywhere] = await rules();
     const headers = everywhere?.headers ?? [];

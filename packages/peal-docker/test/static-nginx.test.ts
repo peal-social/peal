@@ -16,13 +16,20 @@ const config = readFileSync(
 // The web app's value (packages/peal-web/next.config.ts).
 const hsts = '"max-age=63072000; includeSubDomains"';
 
+// The docs' server, from its `server {` to the end of the file.
+const docsServer = config.slice(
+  config.lastIndexOf("server {", config.indexOf("listen 8081;"))
+);
+
 // The blocks that set headers: each server, and each location in one, with
 // the lines that are its own (not a nested block's).
-const blocksWithHeaders = (): { name: string; own: string[] }[] => {
+const blocksWithHeaders = (
+  text = config
+): { name: string; own: string[] }[] => {
   const blocks: { name: string; own: string[] }[] = [];
   const open: { name: string; own: string[] }[] = [];
 
-  for (const raw of config.split("\n")) {
+  for (const raw of text.split("\n")) {
     const line = raw.replace(/#.*$/u, "").trim();
 
     if (line.endsWith("{")) {
@@ -71,5 +78,26 @@ describe("the static image's nginx", () => {
         )
         .map(({ name }) => name)
     ).toStrictEqual([]);
+  });
+
+  it("keeps the docs out of search from every block of theirs that sets headers", () => {
+    const blocks = blocksWithHeaders(docsServer);
+
+    expect(blocks.map(({ name }) => name)).toContain("server");
+
+    expect(
+      blocks
+        .filter(
+          ({ own }) =>
+            !own.includes('add_header X-Robots-Tag "noindex, nofollow" always;')
+        )
+        .map(({ name }) => name)
+    ).toStrictEqual([]);
+  });
+
+  it("leaves the site's pages to their own robots tag", () => {
+    expect(config.slice(0, config.indexOf(docsServer))).not.toContain(
+      "X-Robots-Tag"
+    );
   });
 });
