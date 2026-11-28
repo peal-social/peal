@@ -51,8 +51,12 @@ export const socialAccounts: readonly SocialAccount[] = [
 ];
 
 /**
- * Whether search engines may index peal.social's pages. Not until Peal is
- * released: every page says noindex, nofollow, and the site's robots.txt
- * disallows all. At launch, set it to true and allow crawling there.
+ * Whether search engines may index peal.social's pages. While false, every
+ * page says noindex, nofollow. The site's robots.txt allows crawling all
+ * the same: a crawler that may not fetch a page never reads its noindex,
+ * and lists the bare address anyway for anyone who searches for it. The
+ * docs say the same in a header until then (peal-docker's
+ * config/static/default.conf and config/docs/serve.ts): at launch, drop it
+ * there too.
  */
 export const indexable = false;

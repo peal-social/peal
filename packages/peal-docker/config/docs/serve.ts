@@ -20,9 +20,14 @@
 // environment, apart from the server's TURNSTILE_SECRET_KEY (which, without
 // TURNSTILE_SITE_KEY, stops the server), and Blume reads it as
 // TURNSTILE_SECRET_KEY.
+//
+// Every answer says noindex, nofollow in a header, as the static image's
+// docs do (config/static/default.conf), until peal.social's pages are
+// indexable (packages/peal-ui/src/lib/site/links.ts): Blume has no setting
+// for every page.
 import { subscribe } from "node:diagnostics_channel";
 import type { IncomingHttpHeaders } from "node:http";
-import { IncomingMessage } from "node:http";
+import { IncomingMessage, ServerResponse } from "node:http";
 import { isIPv4, isIPv6 } from "node:net";
 import process from "node:process";
 
@@ -129,14 +134,20 @@ const forwardReader = (request: IncomingMessage): void => {
   }
 };
 
-if (addressHeaders.length > 0) {
-  subscribe("http.server.request.start", (message) => {
-    if (
-      message instanceof Object &&
-      "request" in message &&
-      message.request instanceof IncomingMessage
-    ) {
-      forwardReader(message.request);
-    }
-  });
-}
+subscribe("http.server.request.start", (message) => {
+  if (!(message instanceof Object)) {
+    return;
+  }
+
+  if (
+    addressHeaders.length > 0 &&
+    "request" in message &&
+    message.request instanceof IncomingMessage
+  ) {
+    forwardReader(message.request);
+  }
+
+  if ("response" in message && message.response instanceof ServerResponse) {
+    message.response.setHeader("X-Robots-Tag", "noindex, nofollow");
+  }
+});
